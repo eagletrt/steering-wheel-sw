@@ -55,6 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern JPEG_HandleTypeDef hjpeg;
 extern UART_HandleTypeDef hlpuart1;
 /* USER CODE BEGIN EV */
 
@@ -197,6 +198,20 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32h7xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles JPEG global interrupt.
+  */
+void JPEG_IRQHandler(void)
+{
+  /* USER CODE BEGIN JPEG_IRQn 0 */
+
+  /* USER CODE END JPEG_IRQn 0 */
+  HAL_JPEG_IRQHandler(&hjpeg);
+  /* USER CODE BEGIN JPEG_IRQn 1 */
+
+  /* USER CODE END JPEG_IRQn 1 */
+}
 
 /**
   * @brief This function handles LPUART1 global interrupt.
