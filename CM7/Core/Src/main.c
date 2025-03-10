@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma2d.h"
+#include "fatfs.h"
 #include "jpeg.h"
 #include "usart.h"
 #include "ltdc.h"
@@ -135,6 +136,7 @@ HSEM notification */
   MX_LTDC_Init();
   MX_JPEG_Init();
   MX_SDMMC1_SD_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
