@@ -22,6 +22,7 @@
 #include "jpeg.h"
 #include "usart.h"
 #include "ltdc.h"
+#include "sdmmc.h"
 #include "gpio.h"
 #include "fmc.h"
 
@@ -133,6 +134,7 @@ HSEM notification */
   MX_LPUART1_UART_Init();
   MX_LTDC_Init();
   MX_JPEG_Init();
+  MX_SDMMC1_SD_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
