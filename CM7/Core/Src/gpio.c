@@ -50,11 +50,11 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
-  /*Configure GPIO pin : PH13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : FATFS_REQUIRED_INPUT_Pin */
+  GPIO_InitStruct.Pin = FATFS_REQUIRED_INPUT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+  HAL_GPIO_Init(FATFS_REQUIRED_INPUT_GPIO_Port, &GPIO_InitStruct);
 
 }
 

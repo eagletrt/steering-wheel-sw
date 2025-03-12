@@ -57,6 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define FATFS_REQUIRED_INPUT_Pin GPIO_PIN_13
+#define FATFS_REQUIRED_INPUT_GPIO_Port GPIOH
 
 /* USER CODE BEGIN Private defines */
 
