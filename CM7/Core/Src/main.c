@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dac.h"
 #include "dma2d.h"
 #include "fatfs.h"
 #include "jpeg.h"
@@ -133,6 +134,7 @@ Error_Handler();
   MX_LTDC_Init();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
