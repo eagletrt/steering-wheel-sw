@@ -61,6 +61,8 @@ void Error_Handler(void);
 #define BACKLIGHT_DIM_GPIO_Port GPIOA
 #define FATFS_REQUIRED_INPUT_Pin GPIO_PIN_13
 #define FATFS_REQUIRED_INPUT_GPIO_Port GPIOH
+#define BACKLIGHT_ENABLE_Pin GPIO_PIN_5
+#define BACKLIGHT_ENABLE_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 
