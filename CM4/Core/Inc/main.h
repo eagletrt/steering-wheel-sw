@@ -63,8 +63,8 @@ void Error_Handler(void);
 #define PWM_GREEN_2_GPIO_Port GPIOA
 #define PWM_BLUE_2_Pin GPIO_PIN_2
 #define PWM_BLUE_2_GPIO_Port GPIOA
-#define PWM_BACKLIGHT_Pin GPIO_PIN_6
-#define PWM_BACKLIGHT_GPIO_Port GPIOC
+#define PWM_BUZZER_Pin GPIO_PIN_6
+#define PWM_BUZZER_GPIO_Port GPIOC
 #define PWM_BLUE_1_Pin GPIO_PIN_8
 #define PWM_BLUE_1_GPIO_Port GPIOA
 #define PWM_GREEN_1_Pin GPIO_PIN_9
