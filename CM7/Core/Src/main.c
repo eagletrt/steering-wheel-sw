@@ -19,12 +19,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dac.h"
+#include "dma.h"
 #include "dma2d.h"
 #include "fatfs.h"
 #include "jpeg.h"
 #include "usart.h"
 #include "ltdc.h"
 #include "sdmmc.h"
+#include "tim.h"
 #include "gpio.h"
 #include "fmc.h"
 
@@ -127,6 +129,7 @@ Error_Handler();
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_DMA2D_Init();
   MX_FMC_Init();
   MX_JPEG_Init();
@@ -135,6 +138,7 @@ Error_Handler();
   MX_SDMMC1_SD_Init();
   MX_FATFS_Init();
   MX_DAC1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

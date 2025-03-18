@@ -59,6 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BACKLIGHT_DIM_Pin GPIO_PIN_4
 #define BACKLIGHT_DIM_GPIO_Port GPIOA
+#define M7_STATUS_Pin GPIO_PIN_6
+#define M7_STATUS_GPIO_Port GPIOH
+#define PWM_BUZZER_Pin GPIO_PIN_6
+#define PWM_BUZZER_GPIO_Port GPIOC
 #define FATFS_INPUT_Pin GPIO_PIN_13
 #define FATFS_INPUT_GPIO_Port GPIOH
 #define BACKLIGHT_ENABLE_Pin GPIO_PIN_5
