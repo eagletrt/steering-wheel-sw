@@ -89,6 +89,8 @@ void Error_Handler(void);
 #define M4_STATUS_GPIO_Port GPIOH
 #define BUTT_TS_INT_Pin GPIO_PIN_11
 #define BUTT_TS_INT_GPIO_Port GPIOH
+#define PTT_ENABLER_Pin GPIO_PIN_12
+#define PTT_ENABLER_GPIO_Port GPIOH
 #define PWM_BLUE_1_Pin GPIO_PIN_8
 #define PWM_BLUE_1_GPIO_Port GPIOA
 #define PWM_GREEN_1_Pin GPIO_PIN_9
