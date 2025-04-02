@@ -59,6 +59,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BACKLIGHT_DIM_Pin GPIO_PIN_4
 #define BACKLIGHT_DIM_GPIO_Port GPIOA
+#define LCD_DISPLAY_ENABLE_Pin GPIO_PIN_11
+#define LCD_DISPLAY_ENABLE_GPIO_Port GPIOB
 #define M7_STATUS_Pin GPIO_PIN_6
 #define M7_STATUS_GPIO_Port GPIOH
 #define PWM_BUZZER_Pin GPIO_PIN_6
