@@ -21,6 +21,7 @@
 #include "adc.h"
 #include "dma.h"
 #include "fdcan.h"
+#include "stm32h7xx_hal_hsem.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -40,6 +41,12 @@
 #ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 #endif
+
+typedef struct _SharedMem {
+    uint32_t num;
+} SharedMem_t;
+
+volatile SharedMem_t * const shared_data = (SharedMem_t *)0xc0400000;
 
 /* USER CODE END PD */
 
@@ -116,7 +123,13 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+    uint32_t a = 0;
     while (1) {
+        if (HAL_HSEM_FastTake(HSEM_ID_0) == HAL_OK) {
+            shared_data->num = a++;
+            HAL_Delay(200);
+            HAL_HSEM_Release(HSEM_ID_0, 0);
+        }
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
