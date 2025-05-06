@@ -46,7 +46,7 @@ typedef struct _SharedMem {
     uint32_t num;
 } SharedMem_t;
 
-volatile SharedMem_t * const shared_data = (SharedMem_t *)0xc0400000;
+volatile SharedMem_t *const shared_data = (SharedMem_t *)0xc0400000;
 
 /* USER CODE END PD */
 

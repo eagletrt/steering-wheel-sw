@@ -56,7 +56,7 @@ typedef struct _SharedMem {
     uint32_t num;
 } SharedMem_t;
 
-volatile SharedMem_t * const shared_data = (SharedMem_t *)0xc0400000;
+volatile SharedMem_t *const shared_data = (SharedMem_t *)0xc0400000;
 
 /* USER CODE END PD */
 
@@ -158,7 +158,7 @@ HSEM notification */
     while (1) {
         if (HAL_HSEM_FastTake(HSEM_ID_0) == HAL_OK) {
             uint32_t read = shared_data->num;
-            HAL_UART_Transmit_DMA(&hlpuart1, (uint8_t *) read, 4);
+            HAL_UART_Transmit_DMA(&hlpuart1, (uint8_t *)read, 4);
             HAL_Delay(200);
             HAL_HSEM_Release(HSEM_ID_0, 0);
         }
