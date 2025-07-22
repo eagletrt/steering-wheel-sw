@@ -63,8 +63,6 @@ void Error_Handler(void);
 #define LCD_DISPLAY_ENABLE_GPIO_Port GPIOB
 #define M7_STATUS_Pin GPIO_PIN_6
 #define M7_STATUS_GPIO_Port GPIOH
-#define PWM_BUZZER_Pin GPIO_PIN_6
-#define PWM_BUZZER_GPIO_Port GPIOC
 #define FATFS_INPUT_Pin GPIO_PIN_13
 #define FATFS_INPUT_GPIO_Port GPIOH
 #define BACKLIGHT_ENABLE_Pin GPIO_PIN_5

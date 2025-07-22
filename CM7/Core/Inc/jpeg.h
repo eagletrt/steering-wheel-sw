@@ -49,3 +49,4 @@ void MX_JPEG_Init(void);
 #endif
 
 #endif /* __JPEG_H__ */
+

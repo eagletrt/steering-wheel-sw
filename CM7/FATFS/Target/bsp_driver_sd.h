@@ -23,7 +23,7 @@
 #define __STM32H7_SD_H
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -40,19 +40,19 @@ extern "C" {
 /**
   * @brief  SD status structure definition
   */
-#define MSD_OK ((uint8_t)0x00)
-#define MSD_ERROR ((uint8_t)0x01)
-#define MSD_ERROR_SD_NOT_PRESENT ((uint8_t)0x02)
+#define   MSD_OK                        ((uint8_t)0x00)
+#define   MSD_ERROR                     ((uint8_t)0x01)
+#define   MSD_ERROR_SD_NOT_PRESENT      ((uint8_t)0x02)
 
 /**
   * @brief  SD transfer state definition
   */
-#define SD_TRANSFER_OK ((uint8_t)0x00)
-#define SD_TRANSFER_BUSY ((uint8_t)0x01)
+#define   SD_TRANSFER_OK                ((uint8_t)0x00)
+#define   SD_TRANSFER_BUSY              ((uint8_t)0x01)
 
-#define SD_PRESENT ((uint8_t)0x01)
-#define SD_NOT_PRESENT ((uint8_t)0x00)
-#define SD_DATATIMEOUT ((uint32_t)100000000)
+#define SD_PRESENT               ((uint8_t)0x01)
+#define SD_NOT_PRESENT           ((uint8_t)0x00)
+#define SD_DATATIMEOUT           ((uint32_t)100000000)
 
 /* USER CODE BEGIN BSP_H_CODE */
 #define SD_DetectIRQHandler() HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8)

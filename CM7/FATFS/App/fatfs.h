@@ -20,7 +20,7 @@
 #ifndef __fatfs_H
 #define __fatfs_H
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
 #include "ff.h"
@@ -31,10 +31,10 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern uint8_t retSD;  /* Return value for SD */
+extern uint8_t retSD; /* Return value for SD */
 extern char SDPath[4]; /* SD logical drive path */
-extern FATFS SDFatFS;  /* File system object for SD logical drive */
-extern FIL SDFile;     /* File object for SD */
+extern FATFS SDFatFS; /* File system object for SD logical drive */
+extern FIL SDFile; /* File object for SD */
 
 void MX_FATFS_Init(void);
 
