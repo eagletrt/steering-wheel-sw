@@ -58,6 +58,7 @@
 extern DMA2D_HandleTypeDef hdma2d;
 extern JPEG_HandleTypeDef hjpeg;
 extern UART_HandleTypeDef hlpuart1;
+extern LTDC_HandleTypeDef hltdc;
 extern SD_HandleTypeDef hsd1;
 /* USER CODE BEGIN EV */
 
@@ -198,6 +199,19 @@ void SDMMC1_IRQHandler(void) {
     /* USER CODE BEGIN SDMMC1_IRQn 1 */
 
     /* USER CODE END SDMMC1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles LTDC global interrupt.
+  */
+void LTDC_IRQHandler(void) {
+    /* USER CODE BEGIN LTDC_IRQn 0 */
+
+    /* USER CODE END LTDC_IRQn 0 */
+    HAL_LTDC_IRQHandler(&hltdc);
+    /* USER CODE BEGIN LTDC_IRQn 1 */
+
+    /* USER CODE END LTDC_IRQn 1 */
 }
 
 /**

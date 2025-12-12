@@ -383,6 +383,8 @@ CMakeUserPresets.json
 **/build/
 **/bin/
 **/target/
+!CM7/FATFS/Target
+!steering-wheel-bootloader-sw/CM7/FATFS/Target
 .DS_Store
 Thumbs.db
 
