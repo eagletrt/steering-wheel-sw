@@ -71,6 +71,16 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+static void VectorBase_Config(void) {
+    /* The constant array with vectors of the vector table is declared externally in the
+   * c-startup code.
+   */
+    extern const unsigned long g_pfnVectors[];
+
+    /* Remap the vector table to where the vector table is located for this program. */
+    SCB->VTOR = (unsigned long)&g_pfnVectors[0];
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -139,6 +149,8 @@ HSEM notification */
        /* USER CODE END Boot_Mode_Sequence_2 */
 
     /* USER CODE BEGIN SysInit */
+
+    VectorBase_Config();
 
     /* USER CODE END SysInit */
 
