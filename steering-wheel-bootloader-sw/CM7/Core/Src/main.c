@@ -32,6 +32,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "display.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,9 +66,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-uint32_t framebuffer[800 * 480]
-    __attribute__((section(".framebuffer"), aligned(32)));
 
 /* USER CODE END PV */
 
@@ -159,6 +158,8 @@ HSEM notification */
     /* USER CODE BEGIN 2 */
 
     BootInit();
+
+    draw_boot_screen();
 
     /* USER CODE END 2 */
 
