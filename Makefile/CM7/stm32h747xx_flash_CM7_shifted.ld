@@ -46,6 +46,7 @@ MEMORY
 FLASH (rx)      : ORIGIN = 0x08020000, LENGTH = 1024K
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+EXT_SDRAM (xrw) : ORIGIN = 0x60000000, LENGTH = 8M
 }
 
 /* Define output sections */
@@ -169,6 +170,13 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+
+  /* SDRAM to use for framebuffers */
+  .framebuffer (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.framebuffer*)
+  } >EXT_SDRAM
 
   
 

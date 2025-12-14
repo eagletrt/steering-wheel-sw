@@ -71,6 +71,16 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+static void VectorBase_Config(void) {
+    /* The constant array with vectors of the vector table is declared externally in the
+   * c-startup code.
+   */
+    extern const unsigned long g_pfnVectors[];
+
+    /* Remap the vector table to where the vector table is located for this program. */
+    SCB->VTOR = (unsigned long)&g_pfnVectors[0];
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -80,6 +90,8 @@ void SystemClock_Config(void);
 int main(void) {
 
     /* USER CODE BEGIN 1 */
+
+    VectorBase_Config();
 
     /* USER CODE END 1 */
     /* USER CODE BEGIN Boot_Mode_Sequence_0 */

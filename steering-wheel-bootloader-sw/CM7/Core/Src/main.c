@@ -45,7 +45,7 @@
 /*                             demonstration code based on hardware semaphore */
 /* This define is present in both CM7/CM4 projects                            */
 /* To comment when developping/debugging on a single core                     */
-#define DUAL_CORE_BOOT_SYNC_SEQUENCE
+// #define DUAL_CORE_BOOT_SYNC_SEQUENCE
 
 #if defined(DUAL_CORE_BOOT_SYNC_SEQUENCE)
 #ifndef HSEM_ID_0
@@ -64,22 +64,15 @@
 
 /* USER CODE BEGIN PV */
 
+uint32_t framebuffer[800 * 480]
+    __attribute__((section(".framebuffer"), aligned(32)));
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 /* USER CODE BEGIN PFP */
-
-static void VectorBase_Config(void) {
-    /* The constant array with vectors of the vector table is declared externally in the
-   * c-startup code.
-   */
-    extern const unsigned long g_pfnVectors[];
-
-    /* Remap the vector table to where the vector table is located for this program. */
-    SCB->VTOR = (unsigned long)&g_pfnVectors[0];
-}
 
 /* USER CODE END PFP */
 
@@ -149,8 +142,6 @@ HSEM notification */
        /* USER CODE END Boot_Mode_Sequence_2 */
 
     /* USER CODE BEGIN SysInit */
-
-    VectorBase_Config();
 
     /* USER CODE END SysInit */
 

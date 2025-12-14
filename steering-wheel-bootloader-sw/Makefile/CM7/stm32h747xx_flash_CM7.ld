@@ -41,6 +41,7 @@ MEMORY
 FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 128K
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+EXT_SDRAM (xrw) : ORIGIN = 0x60000000, LENGTH = 8M
 }
 /* Highest address of the user mode stack */
 _estack = 0x20020000;    /* end of RAM */
@@ -218,6 +219,13 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+
+  /* SDRAM to use for framebuffers */
+  .framebuffer (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.framebuffer*)
+  } >EXT_SDRAM
 
   
 
