@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "boot.h"
 #include "dac.h"
 #include "dma2d.h"
 #include "fatfs.h"
@@ -157,11 +158,14 @@ HSEM notification */
     MX_FATFS_Init();
     /* USER CODE BEGIN 2 */
 
+    BootInit();
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        BootTask();
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

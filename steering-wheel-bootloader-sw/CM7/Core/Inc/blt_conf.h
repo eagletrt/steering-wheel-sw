@@ -11,7 +11,7 @@
 #define BOOT_CPU_XTAL_SPEED_KHZ (25000)
 #define BOOT_CPU_SYSTEM_SPEED_KHZ (480000)
 #define BOOT_CPU_BYTE_ORDER_MOTOROLA (0)
-#define BOOT_CPU_USER_PROGRAM_START_HOOK (1)
+#define BOOT_CPU_USER_PROGRAM_START_HOOK (0)
 
 /****************************************************************************************
 *   C O M M U N I C A T I O N   I N T E R F A C E   C O N F I G U R A T I O N
@@ -72,7 +72,7 @@
 /****************************************************************************************
 *   W A T C H D O G   D R I V E R   C O N F I G U R A T I O N
 ****************************************************************************************/
-#define BOOT_COP_HOOKS_ENABLE (1)
+#define BOOT_COP_HOOKS_ENABLE (0)
 
 /****************************************************************************************
 *   S E E D   /   K E Y   S E C U R I T Y   C O N F I G U R A T I O N
