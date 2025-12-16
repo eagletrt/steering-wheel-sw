@@ -196,7 +196,7 @@ DRESULT SD_read(BYTE lun, BYTE *buff, DWORD sector, UINT count) {
     }
 
 #if defined(ENABLE_SCRATCH_BUFFER)
-    if (!((uint32_t)buff & 0x3)) {
+    if (!((uint32_t)buff & 0x1F)) {
 #endif
         if (BSP_SD_ReadBlocks_DMA((uint32_t *)buff,
                                   (uint32_t)(sector),
@@ -301,7 +301,7 @@ DRESULT SD_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count) {
     }
 
 #if defined(ENABLE_SCRATCH_BUFFER)
-    if (!((uint32_t)buff & 0x3)) {
+    if (!((uint32_t)buff & 0x1F)) {
 #endif
 #if (ENABLE_SD_DMA_CACHE_MAINTENANCE == 1)
 

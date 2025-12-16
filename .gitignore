@@ -383,6 +383,8 @@ CMakeUserPresets.json
 **/build/
 **/bin/
 **/target/
+!CM7/FATFS/Target
+!steering-wheel-bootloader-sw/CM7/FATFS/Target
 .DS_Store
 Thumbs.db
 
@@ -418,5 +420,7 @@ STM32Make.make
 ### LOCAL IGNORE ###
 #in case git exclude is not used
 .local_gitignore
+
+*.sha256
 
 ## ---------------- END MANUALLY ADDED ---------------- ##

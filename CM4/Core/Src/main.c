@@ -41,12 +41,6 @@
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 #endif
 
-typedef struct _SharedMem {
-    uint32_t num;
-} SharedMem_t;
-
-volatile SharedMem_t *const shared_data = (SharedMem_t *)0xc0400000;
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -125,13 +119,7 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    uint32_t a = 0;
     while (1) {
-        if (HAL_HSEM_FastTake(HSEM_ID_0) == HAL_OK) {
-            shared_data->num = a++;
-            HAL_Delay(200);
-            HAL_HSEM_Release(HSEM_ID_0, 0);
-        }
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -155,7 +143,6 @@ void Error_Handler(void) {
     }
     /* USER CODE END Error_Handler_Debug */
 }
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
