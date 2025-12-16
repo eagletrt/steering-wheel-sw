@@ -42,10 +42,10 @@ void MX_FDCAN1_Init(void) {
     hfdcan1.Init.AutoRetransmission = DISABLE;
     hfdcan1.Init.TransmitPause = DISABLE;
     hfdcan1.Init.ProtocolException = DISABLE;
-    hfdcan1.Init.NominalPrescaler = 1;
+    hfdcan1.Init.NominalPrescaler = 6;
     hfdcan1.Init.NominalSyncJumpWidth = 64;
-    hfdcan1.Init.NominalTimeSeg1 = 18;
-    hfdcan1.Init.NominalTimeSeg2 = 5;
+    hfdcan1.Init.NominalTimeSeg1 = 15;
+    hfdcan1.Init.NominalTimeSeg2 = 4;
     hfdcan1.Init.DataPrescaler = 1;
     hfdcan1.Init.DataSyncJumpWidth = 1;
     hfdcan1.Init.DataTimeSeg1 = 1;
@@ -75,10 +75,20 @@ void MX_FDCAN1_Init(void) {
 void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
     if (fdcanHandle->Instance == FDCAN1) {
         /* USER CODE BEGIN FDCAN1_MspInit 0 */
 
         /* USER CODE END FDCAN1_MspInit 0 */
+
+        /** Initializes the peripherals clock
+  */
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
+        PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL;
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+            Error_Handler();
+        }
+
         /* FDCAN1 clock enable */
         __HAL_RCC_FDCAN_CLK_ENABLE();
 

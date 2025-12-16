@@ -8,7 +8,7 @@
 /****************************************************************************************
 *   C P U   D R I V E R   C O N F I G U R A T I O N
 ****************************************************************************************/
-#define BOOT_CPU_XTAL_SPEED_KHZ (25000)
+#define BOOT_CPU_XTAL_SPEED_KHZ (16000)
 #define BOOT_CPU_SYSTEM_SPEED_KHZ (480000)
 #define BOOT_CPU_BYTE_ORDER_MOTOROLA (0)
 #define BOOT_CPU_USER_PROGRAM_START_HOOK (0)
@@ -43,8 +43,8 @@
 
 /* CAN enabled as the ONLY interface */
 #define BOOT_COM_CAN_ENABLE (1)
-#define BOOT_COM_CAN_BAUDRATE (500000)
-#define BOOT_COM_CAN_TX_MSG_ID (0x7E1)
+#define BOOT_COM_CAN_BAUDRATE (1000000)
+#define BOOT_COM_CAN_TX_MSG_ID (0x7E1) // TODO: verify correct ID
 #define BOOT_COM_CAN_TX_MAX_DATA (8)
 #define BOOT_COM_CAN_RX_MSG_ID (0x667) // TODO: verify correct ID
 #define BOOT_COM_CAN_RX_MAX_DATA (8)
