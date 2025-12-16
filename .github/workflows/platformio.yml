@@ -29,6 +29,9 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
+      - name: Install Generator Dependencies
+        run: pip install Pillow numpy scipy jinja2
+
       - name: Build
         run: pio run
 
