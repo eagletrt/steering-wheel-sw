@@ -32,6 +32,18 @@ jobs:
       - name: Build
         run: pio run
 
+      - name: Build bootloader
+        working-directory: steering-wheel-bootloader-sw
+        run: pio run
+
       - name: Static Code Analysis
         if: github.ref == 'refs/heads/dev'
-        run: pio check --src-filters="+<CM7/Core/Src/*>" --src-filters="+<CM7/Core/Inc/*>" --src-filters="+<CM4/Core/Src/*>" --src-filters="+<CM4/Core/Inc/*>" --src-filters="-<Drivers/**>" --src-filters="-<Common/**>" --src-filters="-<Middlewares/**>" || true
+        run: |
+          pio check \
+            --src-filters="+<CM7/Core/Src/*>" \
+            --src-filters="+<CM7/Core/Inc/*>" \
+            --src-filters="+<CM4/Core/Src/*>" \
+            --src-filters="+<CM4/Core/Inc/*>" \
+            --src-filters="-<Drivers/**>" \
+            --src-filters="-<Common/**>" \
+            --src-filters="-<Middlewares/**>" || true
