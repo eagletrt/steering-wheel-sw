@@ -32,6 +32,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "fsm.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,6 +116,8 @@ int main(void) {
 
     /* USER CODE BEGIN Init */
 
+    fsm_state_t current_state = FSM_STATE_INIT;
+
     /* USER CODE END Init */
 
     /* Configure the system clock */
@@ -158,6 +162,8 @@ HSEM notification */
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+
+        current_state = fsm_run_state(current_state, NULL);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
