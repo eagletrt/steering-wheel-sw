@@ -45,6 +45,7 @@ MEMORY
 {
 FLASH (rx)      : ORIGIN = 0x08120000, LENGTH = 896K
 RAM (xrw)      : ORIGIN = 0x10000000, LENGTH = 288K
+AXI_SRAM   (xrw) : ORIGIN = 0x24000000, LENGTH = 512K
 }
 
 /* Define output sections */
@@ -159,7 +160,15 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
+  /* AXI SRAM shared between cores */
+  .shared_axi (NOLOAD) :
+  {
+    . = ALIGN(32);
+    *(.shared_axi)
+    . = ALIGN(32);
+  } >AXI_SRAM
   
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

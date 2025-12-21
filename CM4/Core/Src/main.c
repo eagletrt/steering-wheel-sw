@@ -57,6 +57,7 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -75,6 +76,9 @@ int main(void) {
     /* USER CODE BEGIN 1 */
 
     /* USER CODE END 1 */
+
+    /* MPU Configuration--------------------------------------------------------*/
+    MPU_Config();
 
     /* USER CODE BEGIN Boot_Mode_Sequence_1 */
     /*HW semaphore Clock enable*/
@@ -136,6 +140,17 @@ int main(void) {
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* MPU Configuration */
+
+void MPU_Config(void) {
+
+    /* Disables the MPU */
+    HAL_MPU_Disable();
+
+    /* Enables the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
