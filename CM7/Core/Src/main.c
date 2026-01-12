@@ -32,6 +32,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "fsm.h"
+#include "shared.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,13 +60,20 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t framebuffer[800 * 480]
+uint32_t framebuffer1[800 * 480]
     __attribute__((section(".framebuffer"), aligned(32)));
+
+uint32_t framebuffer2[800 * 480]
+    __attribute__((section(".framebuffer"), aligned(32)));
+
+struct MockSharedData shared_data
+    __attribute__((section(".shared_axi"), aligned(32)));
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -98,6 +108,17 @@ int main(void) {
     int32_t timeout;
     /* USER CODE END Boot_Mode_Sequence_0 */
 
+    /* MPU Configuration--------------------------------------------------------*/
+    MPU_Config();
+
+    /* Enable the CPU Cache */
+
+    /* Enable I-Cache---------------------------------------------------------*/
+    SCB_EnableICache();
+
+    /* Enable D-Cache---------------------------------------------------------*/
+    SCB_EnableDCache();
+
     /* USER CODE BEGIN Boot_Mode_Sequence_1 */
     /* Wait until CPU2 boots and enters in stop mode or timeout*/
     timeout = 0xFFFF;
@@ -113,6 +134,8 @@ int main(void) {
     HAL_Init();
 
     /* USER CODE BEGIN Init */
+
+    fsm_state_t current_state = FSM_STATE_INIT;
 
     /* USER CODE END Init */
 
@@ -158,6 +181,8 @@ HSEM notification */
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+
+        current_state = fsm_run_state(current_state, NULL);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -222,6 +247,33 @@ void SystemClock_Config(void) {
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* MPU Configuration */
+
+void MPU_Config(void) {
+    MPU_Region_InitTypeDef MPU_InitStruct = { 0 };
+
+    /* Disables the MPU */
+    HAL_MPU_Disable();
+
+    /** Initializes and configures the Region and the memory to be protected
+  */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.BaseAddress = 0x24000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_512KB;
+    MPU_InitStruct.SubRegionDisable = 0x0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+    /* Enables the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

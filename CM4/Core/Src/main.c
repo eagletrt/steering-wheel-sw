@@ -27,6 +27,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "fsm.h"
+#include "shared.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,9 +55,13 @@
 
 /* USER CODE BEGIN PV */
 
+struct MockSharedData shared_data
+    __attribute__((section(".shared_axi"), aligned(32)));
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -73,6 +80,9 @@ int main(void) {
     /* USER CODE BEGIN 1 */
 
     /* USER CODE END 1 */
+
+    /* MPU Configuration--------------------------------------------------------*/
+    MPU_Config();
 
     /* USER CODE BEGIN Boot_Mode_Sequence_1 */
     /*HW semaphore Clock enable*/
@@ -95,6 +105,8 @@ int main(void) {
     HAL_Init();
 
     /* USER CODE BEGIN Init */
+
+    fsm_state_t current_state = FSM_STATE_INIT;
 
     /* USER CODE END Init */
 
@@ -120,6 +132,8 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+
+        current_state = fsm_run_state(current_state, NULL);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -130,6 +144,17 @@ int main(void) {
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/* MPU Configuration */
+
+void MPU_Config(void) {
+
+    /* Disables the MPU */
+    HAL_MPU_Disable();
+
+    /* Enables the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
