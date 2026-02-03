@@ -55,7 +55,7 @@
 
 /* USER CODE BEGIN PV */
 
-struct MockSharedData shared_data
+struct InputEvent shared_data
     __attribute__((section(".shared_axi"), aligned(32)));
 
 /* USER CODE END PV */
