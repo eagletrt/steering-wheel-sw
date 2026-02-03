@@ -27,7 +27,7 @@ enum InputEventType {
 /*!
  * \brief Enumeration of knob identifiers
  */
-enum KnobId {
+enum KnobID {
     KNOB_FRONT_LEFT,
     KNOB_FRONT_RIGHT,
     KNOB_SIDE_LEFT,
@@ -38,7 +38,7 @@ enum KnobId {
 /*!
  * \brief Enumeration of button identifiers
  */
-enum ButtonId {
+enum ButtonID {
     BUTTON_TS_ON,
     BUTTON_TOP_LEFT_1,
     BUTTON_TOP_LEFT_2,
@@ -66,11 +66,11 @@ struct InputEvent {
     enum InputEventType type; /*!< Type of the input event */
     union {
         struct {
-            enum KnobId knob_id; /*!< Identifier for the knob */
+            enum KnobID knob_id; /*!< Identifier for the knob */
             int8_t delta;        /*!< Change in knob position */
         } knob;
         struct {
-            enum ButtonId button_id; /*!< Identifier for the button */
+            enum ButtonID button_id; /*!< Identifier for the button */
         } button;
     };
 };
