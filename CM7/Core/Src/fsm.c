@@ -17,6 +17,8 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
+#include "input-events-driver.h"
+
 /*** USER CODE END MACROS ***/
 
 // GLOBALS
@@ -84,6 +86,14 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_STATE_IDLE;
 
     /*** USER CODE BEGIN DO_INIT ***/
+
+    if (input_events_init(&input_event_handler,
+                          mock_input_event_button_press_callback,
+                          mock_input_event_button_release_callback,
+                          mock_input_event_button_long_press_callback,
+                          mock_input_event_knob_rotation_callback) != INPUT_EVENT_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
 
     /*** USER CODE END DO_INIT ***/
 

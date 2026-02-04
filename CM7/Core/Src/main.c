@@ -66,9 +66,6 @@ uint32_t framebuffer1[800 * 480]
 uint32_t framebuffer2[800 * 480]
     __attribute__((section(".framebuffer"), aligned(32)));
 
-struct InputEvent shared_data
-    __attribute__((section(".shared_axi"), aligned(32)));
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
