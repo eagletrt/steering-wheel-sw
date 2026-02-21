@@ -9,15 +9,15 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include "shared.h"
+#include "inputs-shared.h"
 #include <stdint.h>
 
 /*!
  * \brief Return codes for input event callbacks.
  */
 enum InputEventReturnCode {
-    INPUT_EVENT_OK,    /*!< Event handled successfully. */
-    INPUT_EVENT_ERROR, /*!< An error occurred while handling the event. */
+    INPUT_EVENT_RC_OK,    /*!< Event handled successfully. */
+    INPUT_EVENT_RC_ERROR, /*!< An error occurred while handling the event. */
 };
 
 /*!

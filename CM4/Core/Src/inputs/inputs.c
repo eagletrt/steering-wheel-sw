@@ -12,43 +12,44 @@
 enum InputsReturnCode inputs_init(
     struct InputHandler *handler,
     input_event_notify_callback callback) {
-    if (!handler || !callback) {
-        return INPUTS_ERROR;
+    if (handler == NULL || callback == NULL) {
+        return INPUTS_RC_ERROR;
     }
 
-    memset(handler, 0, sizeof(struct InputHandler));
+    memset(handler, 0, sizeof(*handler));
 
     handler->notify_callback = callback;
 
-    for (uint8_t i = 0; i < BUTTON_COUNT; i++) {
+    for (size_t i = 0; i < BUTTON_ID_COUNT; i++) {
         handler->buttons[i].enabled = true;
         handler->buttons[i].state = BUTTON_STATE_IDLE;
     }
 
-    for (uint8_t i = 0; i < KNOB_COUNT; i++) {
+    for (size_t i = 0; i < KNOB_ID_COUNT; i++) {
         handler->knobs[i].enabled = true;
         handler->knobs[i].last_position = 0;
     }
 
-    return INPUTS_OK;
+    return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_on_button_interrupt(
+enum InputsReturnCode inputs_update_button(
     struct InputHandler *handler,
     enum ButtonID button_id,
     bool pressed,
     uint32_t current_tick_ms) {
-    if (!handler || button_id < 0 || button_id >= BUTTON_COUNT) {
-        return INPUTS_ERROR;
+    if (handler == NULL || button_id < 0 || button_id >= BUTTON_ID_COUNT) {
+        return INPUTS_RC_ERROR;
     }
 
-    struct ButtonTracker *btn = &handler->buttons[button_id];
+    struct ButtonHandler *btn = &handler->buttons[button_id];
     if (!btn->enabled) {
-        return INPUTS_OK;
+        return INPUTS_RC_OK;
     }
 
-    struct InputEvent event;
-    event.button.button_id = button_id;
+    struct InputEvent event = {
+        .button.button_id = button_id
+    };
 
     if (pressed) {
         if (btn->state == BUTTON_STATE_IDLE) {
@@ -65,20 +66,20 @@ enum InputsReturnCode inputs_on_button_interrupt(
         return handler->notify_callback(event);
     }
 
-    return INPUTS_OK;
+    return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_check_knobs(
+enum InputsReturnCode inputs_update_knob(
     struct InputHandler *handler,
     enum KnobID knob_id,
     int16_t current_position) {
-    if (!handler || knob_id < 0 || knob_id >= KNOB_COUNT) {
-        return INPUTS_ERROR;
+    if (handler == NULL || knob_id < 0 || knob_id >= KNOB_ID_COUNT) {
+        return INPUTS_RC_ERROR;
     }
 
-    struct KnobTracker *knob = &handler->knobs[knob_id];
+    struct KnobHandler *knob = &handler->knobs[knob_id];
     if (!knob->enabled) {
-        return INPUTS_OK;
+        return INPUTS_RC_OK;
     }
 
     int16_t delta = current_position - knob->last_position;
@@ -86,38 +87,40 @@ enum InputsReturnCode inputs_check_knobs(
     knob->last_position = current_position;
 
     if (delta != 0) {
-        struct InputEvent event;
-        event.type = INPUT_EVENT_TYPE_KNOB;
-        event.knob.knob_id = knob_id;
-        event.knob.delta = (int8_t)delta;
+        struct InputEvent event = {
+            .type = INPUT_EVENT_TYPE_KNOB,
+            .knob.knob_id = knob_id,
+            .knob.delta = (int8_t)delta
+        };
 
         return handler->notify_callback(event);
     }
 
-    return INPUTS_OK;
+    return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_update(struct InputHandler *handler, uint32_t current_tick_ms) {
-    if (!handler) {
-        return INPUTS_ERROR;
+enum InputsReturnCode inputs_poll_for_long_press(struct InputHandler *handler, uint32_t current_tick_ms) {
+    if (handler == NULL) {
+        return INPUTS_RC_ERROR;
     }
 
-    for (uint8_t i = 0; i < BUTTON_COUNT; i++) {
-        struct ButtonTracker *btn = &handler->buttons[i];
+    for (size_t i = 0; i < BUTTON_ID_COUNT; i++) {
+        struct ButtonHandler *btn = &handler->buttons[i];
 
         if (!btn->enabled) {
             continue;
         }
 
-        if (btn->state == BUTTON_STATE_PRESSED && current_tick_ms - btn->press_tick >= LONG_PRESS_THRESHOLD_MS) {
+        if (btn->state == BUTTON_STATE_PRESSED && current_tick_ms - btn->press_tick >= INPUTS_LONG_PRESS_THRESHOLD_MS) {
             btn->state = BUTTON_STATE_LONG_PRESSED;
 
-            struct InputEvent event;
-            event.type = INPUT_EVENT_TYPE_BUTTON_LONG_PRESS;
-            event.button.button_id = i;
+            struct InputEvent event = {
+                .type = INPUT_EVENT_TYPE_BUTTON_LONG_PRESS,
+                .button.button_id = i
+            };
 
             enum InputsReturnCode ret = handler->notify_callback(event);
-            if (ret != INPUTS_OK) {
+            if (ret != INPUTS_RC_OK) {
                 return ret;
             }
         }
@@ -127,5 +130,5 @@ enum InputsReturnCode inputs_update(struct InputHandler *handler, uint32_t curre
         }
     }
 
-    return INPUTS_OK;
+    return INPUTS_RC_OK;
 }

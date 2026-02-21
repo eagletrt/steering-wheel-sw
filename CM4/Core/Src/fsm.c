@@ -18,7 +18,7 @@ Functions and types have been generated with prefix "fsm_"
 /*** USER CODE BEGIN MACROS ***/
 
 #include "inputs-driver.h"
-#include "inputs/inputs.h"
+#include "inputs.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -88,7 +88,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    if (inputs_init(&input_handler, mock_notify_callback) != INPUTS_OK) {
+    if (inputs_init(&input_handler, mock_notify_callback) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 

@@ -33,7 +33,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
-#include "shared.h"
 
 /* USER CODE END Includes */
 

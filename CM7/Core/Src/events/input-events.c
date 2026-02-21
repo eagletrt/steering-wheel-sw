@@ -3,7 +3,7 @@
 
 enum InputEventReturnCode input_events_init(struct InputEventHandler *handler, input_event_button_press_callback press_cb, input_event_button_release_callback release_cb, input_event_button_long_press_callback long_press_cb, input_event_knob_rotation_callback rotation_cb) {
     if (handler == NULL) {
-        return INPUT_EVENT_ERROR;
+        return INPUT_EVENT_RC_ERROR;
     }
 
     handler->on_button_press = press_cb;
@@ -11,12 +11,12 @@ enum InputEventReturnCode input_events_init(struct InputEventHandler *handler, i
     handler->on_button_long_press = long_press_cb;
     handler->on_knob_rotation = rotation_cb;
 
-    return INPUT_EVENT_OK;
+    return INPUT_EVENT_RC_OK;
 }
 
 enum InputEventReturnCode input_events_handle_event(struct InputEventHandler *handler, struct InputEvent *event) {
     if (handler == NULL || event == NULL) {
-        return INPUT_EVENT_ERROR;
+        return INPUT_EVENT_RC_ERROR;
     }
 
     switch (event->type) {
@@ -41,8 +41,8 @@ enum InputEventReturnCode input_events_handle_event(struct InputEventHandler *ha
             }
             break;
         default:
-            return INPUT_EVENT_ERROR;
+            return INPUT_EVENT_RC_ERROR;
     }
 
-    return INPUT_EVENT_OK;
+    return INPUT_EVENT_RC_OK;
 }
