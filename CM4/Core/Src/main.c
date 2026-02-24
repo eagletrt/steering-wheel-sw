@@ -20,6 +20,7 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "eagletrt.h"
 #include "fdcan.h"
 #include "tim.h"
 #include "gpio.h"
@@ -28,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
+#include "inputs.h"
 
 /* USER CODE END Includes */
 
@@ -54,6 +56,9 @@
 
 /* USER CODE BEGIN PV */
 
+EAGLETRT_STATIC struct IPCInputQueue ipc_input
+    __attribute__((section(".shared_axi"), aligned(32)));
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,6 +69,27 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+enum InputsReturnCode ipc_input_push(struct InputEvent ev) {
+    uint32_t next = (ipc_input.write_idx + 1) % IPC_INPUT_QUEUE_SIZE;
+
+    if (next == ipc_input.read_idx) {
+        return INPUTS_RC_ERROR; /* queue full */
+    }
+
+    ipc_input.events[ipc_input.write_idx] = ev;
+
+    __DMB();
+
+    ipc_input.write_idx = next;
+
+    if (HAL_HSEM_FastTake(HSEM_INPUT_ID) != HAL_OK) {
+        return INPUTS_RC_NOTIFY_ERROR;
+    }
+    HAL_HSEM_Release(HSEM_INPUT_ID, 0);
+
+    return INPUTS_RC_OK;
+}
 
 /* USER CODE END 0 */
 

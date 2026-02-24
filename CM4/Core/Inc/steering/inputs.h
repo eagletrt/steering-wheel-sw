@@ -19,8 +19,9 @@
  * \brief Input event types
  */
 enum InputsReturnCode {
-    INPUTS_RC_OK,    /*!< Operation successful */
-    INPUTS_RC_ERROR, /*!< General error */
+    INPUTS_RC_OK,           /*!< Operation successful */
+    INPUTS_RC_NOTIFY_ERROR, /*!< Error while notifying */
+    INPUTS_RC_ERROR,        /*!< General error */
 };
 
 /*!

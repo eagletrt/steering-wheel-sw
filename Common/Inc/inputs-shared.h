@@ -1,5 +1,5 @@
 /*!
- * \file shared.h
+ * \file inputs-shared.h
  * \date 2025-12-21
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  *
@@ -13,6 +13,20 @@
 #define SHARED_H
 
 #include <stdint.h>
+
+/*!
+ * \brief HSEM ID used by CM4 to notify CM7 about input events.
+ *
+ * \details HSEM_ID_0 is reserved for boot synchronization.
+ *          This semaphore is used with the take+release pattern:
+ *          CM4 takes and releases it to trigger an interrupt on CM7.
+ */
+#define HSEM_INPUT_ID (1U)
+
+/*!
+ * \brief Size of the IPC input event ring buffer.
+ */
+#define IPC_INPUT_QUEUE_SIZE 64
 
 /*!
  * \brief Enumeration of input event types
@@ -59,7 +73,7 @@ enum ButtonID {
 
 /*!
  * \brief Structure representing an input event
- * 
+ *
  * \details This structure uses a union to store different types of input events.
  */
 struct InputEvent {
@@ -73,6 +87,15 @@ struct InputEvent {
             enum ButtonID button_id; /*!< Identifier for the button */
         } button;
     };
+};
+
+/*!
+ * \brief Lock-free single-producer single-consumer ring buffer for input events.
+ */
+struct IPCInputQueue {
+    uint32_t write_idx;                             /*!< Next slot to write (owned by CM4) */
+    uint32_t read_idx;                              /*!< Next slot to read  (owned by CM7) */
+    struct InputEvent events[IPC_INPUT_QUEUE_SIZE]; /*!< Ring buffer storage */
 };
 
 #endif // SHARED_H
