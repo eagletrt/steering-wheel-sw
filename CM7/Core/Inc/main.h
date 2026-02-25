@@ -61,20 +61,18 @@ struct InputEventHandler input_event_handler;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BACKLIGHT_DIM_Pin GPIO_PIN_4
-#define BACKLIGHT_DIM_GPIO_Port GPIOA
-#define LCD_DISPLAY_ENABLE_Pin GPIO_PIN_11
-#define LCD_DISPLAY_ENABLE_GPIO_Port GPIOB
+#define BL_DIM_Pin GPIO_PIN_4
+#define BL_DIM_GPIO_Port GPIOA
+#define LCD_DISP_EN_Pin GPIO_PIN_11
+#define LCD_DISP_EN_GPIO_Port GPIOB
 #define M7_STATUS_Pin GPIO_PIN_6
 #define M7_STATUS_GPIO_Port GPIOH
 #define M4_STATUS_Pin GPIO_PIN_7
 #define M4_STATUS_GPIO_Port GPIOH
-#define PTT_ENABLER_Pin GPIO_PIN_12
-#define PTT_ENABLER_GPIO_Port GPIOH
 #define FATFS_INPUT_Pin GPIO_PIN_13
 #define FATFS_INPUT_GPIO_Port GPIOH
-#define BACKLIGHT_ENABLE_Pin GPIO_PIN_5
-#define BACKLIGHT_ENABLE_GPIO_Port GPIOD
+#define BL_EN_Pin GPIO_PIN_5
+#define BL_EN_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 

@@ -121,15 +121,15 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
     PA6     ------> ADC1_INP3
     PC4     ------> ADC1_INP4
     */
-        GPIO_InitStruct.Pin = GPIO_PIN_6;
+        GPIO_InitStruct.Pin = SENS_TEMPS_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(SENS_TEMPS_GPIO_Port, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_4;
+        GPIO_InitStruct.Pin = SENS_TEMPL_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+        HAL_GPIO_Init(SENS_TEMPL_GPIO_Port, &GPIO_InitStruct);
 
         /* ADC1 DMA Init */
         /* ADC1 Init */
@@ -168,9 +168,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
     PA6     ------> ADC1_INP3
     PC4     ------> ADC1_INP4
     */
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_6);
+        HAL_GPIO_DeInit(SENS_TEMPS_GPIO_Port, SENS_TEMPS_Pin);
 
-        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_4);
+        HAL_GPIO_DeInit(SENS_TEMPL_GPIO_Port, SENS_TEMPL_Pin);
 
         /* ADC1 DMA DeInit */
         HAL_DMA_DeInit(adcHandle->DMA_Handle);

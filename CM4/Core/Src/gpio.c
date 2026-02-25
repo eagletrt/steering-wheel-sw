@@ -48,44 +48,44 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOG_CLK_ENABLE();
 
-    /*Configure GPIO pin : ENC_FL_CLICK_Pin */
-    GPIO_InitStruct.Pin = ENC_FL_CLICK_Pin;
+    /*Configure GPIO pin : ENC_FL_SW_Pin */
+    GPIO_InitStruct.Pin = ENC_FL_SW_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(ENC_FL_CLICK_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(ENC_FL_SW_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : ENC_SL_CLICK_Pin BUTT_BR1_INT_Pin ENC_FR_CLICK_Pin ENC_SR_CLUCK_Pin */
-    GPIO_InitStruct.Pin = ENC_SL_CLICK_Pin | BUTT_BR1_INT_Pin | ENC_FR_CLICK_Pin | ENC_SR_CLUCK_Pin;
+    /*Configure GPIO pins : ENC_SL_SW_Pin BUTT_BR1_Pin ENC_FR_SW_Pin ENC_SR_SW_Pin */
+    GPIO_InitStruct.Pin = ENC_SL_SW_Pin | BUTT_BR1_Pin | ENC_FR_SW_Pin | ENC_SR_SW_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : BUTT_BR2_INT_Pin */
-    GPIO_InitStruct.Pin = BUTT_BR2_INT_Pin;
+    /*Configure GPIO pin : BUTT_BR2_Pin */
+    GPIO_InitStruct.Pin = BUTT_BR2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(BUTT_BR2_INT_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(BUTT_BR2_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : BUTT_TS_INT_Pin */
-    GPIO_InitStruct.Pin = BUTT_TS_INT_Pin;
+    /*Configure GPIO pin : BUTT_TS_Pin */
+    GPIO_InitStruct.Pin = BUTT_TS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(BUTT_TS_INT_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(BUTT_TS_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : BUTT_BL2_INT_Pin */
-    GPIO_InitStruct.Pin = BUTT_BL2_INT_Pin;
+    /*Configure GPIO pin : BUTT_BL2_Pin */
+    GPIO_InitStruct.Pin = BUTT_BL2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(BUTT_BL2_INT_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(BUTT_BL2_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : BUTT_BL1_INT_Pin BUTT_FR3_INT_Pin BUTT_FR2_INT_Pin */
-    GPIO_InitStruct.Pin = BUTT_BL1_INT_Pin | BUTT_FR3_INT_Pin | BUTT_FR2_INT_Pin;
+    /*Configure GPIO pins : BUTT_BL1_Pin BUTT_FR3_Pin BUTT_FR2_Pin */
+    GPIO_InitStruct.Pin = BUTT_BL1_Pin | BUTT_FR3_Pin | BUTT_FR2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : BUTT_FR1_INT_Pin BUTT_FL3_INT_Pin BUTT_FL2_INT_Pin BUTT_FL1_INT_Pin */
-    GPIO_InitStruct.Pin = BUTT_FR1_INT_Pin | BUTT_FL3_INT_Pin | BUTT_FL2_INT_Pin | BUTT_FL1_INT_Pin;
+    /*Configure GPIO pins : BUTT_FR1_Pin BUTT_FL3_Pin BUTT_FL2_Pin BUTT_FL1_Pin */
+    GPIO_InitStruct.Pin = BUTT_FR1_Pin | BUTT_FL3_Pin | BUTT_FL2_Pin | BUTT_FL1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);

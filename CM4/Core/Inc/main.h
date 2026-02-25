@@ -70,20 +70,24 @@ enum InputsReturnCode ipc_input_push(struct InputEvent ev);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define ENC_FL_CLICK_Pin GPIO_PIN_2
-#define ENC_FL_CLICK_GPIO_Port GPIOE
-#define ENC_SL_CLICK_Pin GPIO_PIN_8
-#define ENC_SL_CLICK_GPIO_Port GPIOI
-#define BUTT_BR2_INT_Pin GPIO_PIN_1
-#define BUTT_BR2_INT_GPIO_Port GPIOC
+#define ENC_FL_SW_Pin GPIO_PIN_2
+#define ENC_FL_SW_GPIO_Port GPIOE
+#define ENC_SL_SW_Pin GPIO_PIN_8
+#define ENC_SL_SW_GPIO_Port GPIOI
+#define BUTT_BR2_Pin GPIO_PIN_1
+#define BUTT_BR2_GPIO_Port GPIOC
 #define ENC_SR_A_Pin GPIO_PIN_0
 #define ENC_SR_A_GPIO_Port GPIOA
 #define ENC_FL_B_Pin GPIO_PIN_1
 #define ENC_FL_B_GPIO_Port GPIOA
+#define SENS_TEMPS_Pin GPIO_PIN_6
+#define SENS_TEMPS_GPIO_Port GPIOA
+#define SENS_TEMPL_Pin GPIO_PIN_4
+#define SENS_TEMPL_GPIO_Port GPIOC
 #define ENC_FL_A_Pin GPIO_PIN_10
 #define ENC_FL_A_GPIO_Port GPIOH
-#define BUTT_TS_INT_Pin GPIO_PIN_11
-#define BUTT_TS_INT_GPIO_Port GPIOH
+#define BUTT_TS_Pin GPIO_PIN_11
+#define BUTT_TS_GPIO_Port GPIOH
 #define ENC_FR_B_Pin GPIO_PIN_12
 #define ENC_FR_B_GPIO_Port GPIOD
 #define ENC_FR_A_Pin GPIO_PIN_13
@@ -94,30 +98,30 @@ enum InputsReturnCode ipc_input_push(struct InputEvent ev);
 #define ENC_SL_B_GPIO_Port GPIOA
 #define ENC_SL_A_Pin GPIO_PIN_9
 #define ENC_SL_A_GPIO_Port GPIOA
-#define BUTT_BR1_INT_Pin GPIO_PIN_0
-#define BUTT_BR1_INT_GPIO_Port GPIOI
-#define BUTT_BL2_INT_Pin GPIO_PIN_15
-#define BUTT_BL2_INT_GPIO_Port GPIOA
-#define BUTT_BL1_INT_Pin GPIO_PIN_3
-#define BUTT_BL1_INT_GPIO_Port GPIOD
-#define BUTT_FR3_INT_Pin GPIO_PIN_4
-#define BUTT_FR3_INT_GPIO_Port GPIOD
-#define BUTT_FR2_INT_Pin GPIO_PIN_7
-#define BUTT_FR2_INT_GPIO_Port GPIOD
-#define BUTT_FR1_INT_Pin GPIO_PIN_9
-#define BUTT_FR1_INT_GPIO_Port GPIOG
-#define BUTT_FL3_INT_Pin GPIO_PIN_10
-#define BUTT_FL3_INT_GPIO_Port GPIOG
-#define BUTT_FL2_INT_Pin GPIO_PIN_13
-#define BUTT_FL2_INT_GPIO_Port GPIOG
-#define BUTT_FL1_INT_Pin GPIO_PIN_14
-#define BUTT_FL1_INT_GPIO_Port GPIOG
+#define BUTT_BR1_Pin GPIO_PIN_0
+#define BUTT_BR1_GPIO_Port GPIOI
+#define BUTT_BL2_Pin GPIO_PIN_15
+#define BUTT_BL2_GPIO_Port GPIOA
+#define BUTT_BL1_Pin GPIO_PIN_3
+#define BUTT_BL1_GPIO_Port GPIOD
+#define BUTT_FR3_Pin GPIO_PIN_4
+#define BUTT_FR3_GPIO_Port GPIOD
+#define BUTT_FR2_Pin GPIO_PIN_7
+#define BUTT_FR2_GPIO_Port GPIOD
+#define BUTT_FR1_Pin GPIO_PIN_9
+#define BUTT_FR1_GPIO_Port GPIOG
+#define BUTT_FL3_Pin GPIO_PIN_10
+#define BUTT_FL3_GPIO_Port GPIOG
+#define BUTT_FL2_Pin GPIO_PIN_13
+#define BUTT_FL2_GPIO_Port GPIOG
+#define BUTT_FL1_Pin GPIO_PIN_14
+#define BUTT_FL1_GPIO_Port GPIOG
 #define ENC_SR_B_Pin GPIO_PIN_3
 #define ENC_SR_B_GPIO_Port GPIOB
-#define ENC_FR_CLICK_Pin GPIO_PIN_5
-#define ENC_FR_CLICK_GPIO_Port GPIOI
-#define ENC_SR_CLUCK_Pin GPIO_PIN_6
-#define ENC_SR_CLUCK_GPIO_Port GPIOI
+#define ENC_FR_SW_Pin GPIO_PIN_5
+#define ENC_FR_SW_GPIO_Port GPIOI
+#define ENC_SR_SW_Pin GPIO_PIN_6
+#define ENC_SR_SW_GPIO_Port GPIOI
 
 /* USER CODE BEGIN Private defines */
 
