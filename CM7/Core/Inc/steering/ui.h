@@ -3,9 +3,6 @@
 
 #include "input-events.h"
 
-extern struct InputEventHandler input_event_handler;
-extern struct InputEvent shared_data;
-
 enum InputEventReturnCode mock_input_event_button_press_callback(enum ButtonID button_id);
 enum InputEventReturnCode mock_input_event_button_release_callback(enum ButtonID button_id);
 enum InputEventReturnCode mock_input_event_button_long_press_callback(enum ButtonID button_id);

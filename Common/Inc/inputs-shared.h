@@ -16,10 +16,6 @@
 
 /*!
  * \brief HSEM ID used by CM4 to notify CM7 about input events.
- *
- * \details HSEM_ID_0 is reserved for boot synchronization.
- *          This semaphore is used with the take+release pattern:
- *          CM4 takes and releases it to trigger an interrupt on CM7.
  */
 #define HSEM_INPUT_ID (1U)
 

@@ -33,6 +33,8 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
+#include "inputs-shared.h"
+#include "eagletrt.h"
 
 /* USER CODE END Includes */
 
@@ -59,11 +61,8 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t framebuffer1[800 * 480]
-    __attribute__((section(".framebuffer"), aligned(32)));
-
-uint32_t framebuffer2[800 * 480]
-    __attribute__((section(".framebuffer"), aligned(32)));
+EAGLETRT_STATIC struct IPCInputQueue ipc_input
+    __attribute__((section(".shared_axi"), aligned(32)));
 
 /* USER CODE END PV */
 
@@ -71,6 +70,21 @@ uint32_t framebuffer2[800 * 480]
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+
+void HAL_HSEM_FreeCallback(uint32_t SemMask) {
+    if (SemMask & (1 << HSEM_INPUT_ID)) {
+        while (ipc_input.read_idx != ipc_input.write_idx) {
+            struct InputEvent ev =
+                ipc_input.events[ipc_input.read_idx];
+
+            ipc_input.read_idx =
+                (ipc_input.read_idx + 1) % IPC_INPUT_QUEUE_SIZE;
+
+            input_events_handle_event(&input_event_handler, &ev);
+        }
+        HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
+    }
+}
 
 /* USER CODE END PFP */
 
