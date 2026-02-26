@@ -6,19 +6,42 @@
  * \brief Hardware-agnostic input handling implementation for the steering wheel.
  */
 
-#include "inputs.h"
+// needs it just because of memset
 #include <string.h>
+
+#include "inputs.h"
+#include "eagletrt.h"
+
+/*!
+ * \brief Dispatch an event to both the notify and action callbacks.
+ *
+ * The notify callback is always called first.
+ * If either fails the first non-OK code is returned, but both
+ * are always attempted.
+ */
+EAGLETRT_STATIC enum InputsReturnCode inputs_dispatch(
+    const struct InputHandler *handler,
+    struct InputEvent event) {
+    enum InputsReturnCode notify_rc = handler->notify_callback(event);
+    enum InputsReturnCode action_rc = handler->action_callback(event);
+    if (notify_rc == INPUTS_RC_OK && action_rc != INPUTS_RC_OK) {
+        return action_rc;
+    }
+    return notify_rc;
+}
 
 enum InputsReturnCode inputs_init(
     struct InputHandler *handler,
-    input_event_notify_callback callback) {
-    if (handler == NULL || callback == NULL) {
+    input_event_notify_callback notify_callback,
+    input_event_notify_callback action_callback) {
+    if (handler == NULL || notify_callback == NULL || action_callback == NULL) {
         return INPUTS_RC_ERROR;
     }
 
     memset(handler, 0, sizeof(*handler));
 
-    handler->notify_callback = callback;
+    handler->notify_callback = notify_callback;
+    handler->action_callback = action_callback;
 
     for (size_t i = 0; i < BUTTON_ID_COUNT; i++) {
         handler->buttons[i].enabled = true;
@@ -57,13 +80,13 @@ enum InputsReturnCode inputs_update_button(
             btn->press_tick = current_tick_ms;
 
             event.type = INPUT_EVENT_TYPE_BUTTON_PRESS;
-            return handler->notify_callback(event);
+            return inputs_dispatch(handler, event);
         }
     } else if (btn->state == BUTTON_STATE_PRESSED || btn->state == BUTTON_STATE_LONG_PRESSED) {
         btn->state = BUTTON_STATE_IDLE;
 
         event.type = INPUT_EVENT_TYPE_BUTTON_RELEASE;
-        return handler->notify_callback(event);
+        return inputs_dispatch(handler, event);
     }
 
     return INPUTS_RC_OK;
@@ -93,7 +116,7 @@ enum InputsReturnCode inputs_update_knob(
             .knob.delta = (int8_t)delta
         };
 
-        return handler->notify_callback(event);
+        return inputs_dispatch(handler, event);
     }
 
     return INPUTS_RC_OK;
@@ -119,7 +142,7 @@ enum InputsReturnCode inputs_poll_for_long_press(struct InputHandler *handler, u
                 .button.button_id = i
             };
 
-            enum InputsReturnCode ret = handler->notify_callback(event);
+            enum InputsReturnCode ret = inputs_dispatch(handler, event);
             if (ret != INPUTS_RC_OK) {
                 return ret;
             }

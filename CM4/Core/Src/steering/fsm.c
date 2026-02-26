@@ -18,6 +18,7 @@ Functions and types have been generated with prefix "fsm_"
 /*** USER CODE BEGIN MACROS ***/
 
 #include "eagletrt.h"
+#include "eagletrt-api.h"
 #include "main.h"
 #include "inputs.h"
 
@@ -57,6 +58,11 @@ fsm_event_data_t *fsm_fired_event = NULL;
 
 EAGLETRT_STATIC struct InputHandler input_handler;
 
+EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputEvent ev) {
+    EAGLETRT_API_UNUSED(ev);
+    return INPUTS_RC_OK;
+}
+
 /*** USER CODE END GLOBALS ***/
 
 // Function to check if an event has fired
@@ -91,7 +97,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    if (inputs_init(&input_handler, ipc_input_push) != INPUTS_RC_OK) {
+    if (inputs_init(&input_handler, ipc_input_push, input_action_noop) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
