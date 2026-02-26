@@ -29,6 +29,7 @@
 
 #include "fsm.h"
 #include "inputs.h"
+#include "eagletrt.h"
 
 /* USER CODE END Includes */
 
