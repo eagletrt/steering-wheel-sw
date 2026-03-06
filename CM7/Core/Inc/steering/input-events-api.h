@@ -1,3 +1,11 @@
+/*!
+ * \file input-events-api.h
+ * \date 2025-12-24
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Hardware-agnostic API to handle input events.
+ */
+
 #ifndef INPUT_EVENTS_API_H
 #define INPUT_EVENTS_API_H
 

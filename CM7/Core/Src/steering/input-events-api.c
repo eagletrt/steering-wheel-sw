@@ -1,3 +1,11 @@
+/*!
+ * \file input-events-api.c
+ * \date 2025-12-24
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Hardware-agnostic API to handle input events.
+ */
+
 #include "input-events-api.h"
 #include "eagletrt.h"
 #include <stddef.h>
