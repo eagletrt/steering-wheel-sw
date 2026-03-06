@@ -67,36 +67,4 @@ struct InputEventHandler {
     input_event_knob_rotation_callback on_knob_rotation;         /*!< Callback for knob rotation events */
 };
 
-/*!
- * \brief Initialize the input event handler with provided callbacks.
- *
- * \param handler Pointer to the InputEventHandler structure to initialize.
- * \param press_cb Callback for button press events.
- * \param release_cb Callback for button release events.
- * \param long_press_cb Callback for button long press events.
- * \param rotation_cb Callback for knob rotation events.
- *
- * \retval INPUT_EVENT_OK if initialization was successful.
- * \retval INPUT_EVENT_ERROR if there was an error during initialization.
- */
-enum InputEventReturnCode input_events_init(
-    struct InputEventHandler *handler,
-    input_event_button_press_callback press_cb,
-    input_event_button_release_callback release_cb,
-    input_event_button_long_press_callback long_press_cb,
-    input_event_knob_rotation_callback rotation_cb);
-
-/*!
- * \brief Handle an input event by invoking the appropriate callback.
- *
- * \param handler Pointer to the InputEventHandler structure.
- * \param event The input event to handle.
- *
- * \retval INPUT_EVENT_OK if the event was handled successfully.
- * \retval INPUT_EVENT_ERROR if there was an error handling the event.
- */
-enum InputEventReturnCode input_events_handle_event(
-    struct InputEventHandler *handler,
-    struct InputEvent *event);
-
 #endif // EVENTS_H

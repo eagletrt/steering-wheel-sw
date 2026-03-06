@@ -56,8 +56,6 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
-struct InputEventHandler input_event_handler;
-
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
