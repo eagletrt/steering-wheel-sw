@@ -11,3 +11,19 @@ void inputs_shared_api_read_and_process_all(struct IPCInputQueue *queue, void (*
         callback(&ev);
     }
 }
+
+bool inputs_shared_api_push_event(struct IPCInputQueue *queue, struct InputEvent *ev, void (*dbm_callback)(void)) {
+    uint32_t next = (queue->write_idx + 1) % IPC_INPUT_QUEUE_SIZE;
+
+    if (next == queue->read_idx) {
+        return false; /* queue full */
+    }
+
+    queue->events[queue->write_idx] = *ev;
+
+    dbm_callback();
+
+    queue->write_idx = next;
+
+    return true;
+}

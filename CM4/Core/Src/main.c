@@ -30,6 +30,7 @@
 #include "fsm.h"
 #include "inputs.h"
 #include "eagletrt.h"
+#include "inputs-shared-api.h"
 
 /* USER CODE END Includes */
 
@@ -71,17 +72,7 @@ static void MPU_Config(void);
 /* USER CODE BEGIN 0 */
 
 enum InputsReturnCode ipc_input_push(struct InputEvent ev) {
-    uint32_t next = (ipc_input.write_idx + 1) % IPC_INPUT_QUEUE_SIZE;
-
-    if (next == ipc_input.read_idx) {
-        return INPUTS_RC_ERROR; /* queue full */
-    }
-
-    ipc_input.events[ipc_input.write_idx] = ev;
-
-    __DMB();
-
-    ipc_input.write_idx = next;
+    inputs_shared_api_push_event(&ipc_input, &ev, __DMB);
 
     if (HAL_HSEM_FastTake(HSEM_INPUT_ID) != HAL_OK) {
         return INPUTS_RC_NOTIFY_ERROR;

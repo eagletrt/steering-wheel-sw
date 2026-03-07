@@ -9,8 +9,8 @@
  *     that are shared between the 2 cores.
  */
 
-#ifndef SHARED_H
-#define SHARED_H
+#ifndef INPUTS_SHARED_H
+#define INPUTS_SHARED_H
 
 #include <stdint.h>
 
@@ -94,4 +94,4 @@ struct IPCInputQueue {
     struct InputEvent events[IPC_INPUT_QUEUE_SIZE]; /*!< Ring buffer storage */
 };
 
-#endif // SHARED_H
+#endif // INPUTS_SHARED_H
