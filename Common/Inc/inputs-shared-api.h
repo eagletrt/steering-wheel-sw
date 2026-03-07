@@ -17,10 +17,10 @@ void inputs_shared_api_read_and_process_all(struct IPCInputQueue *queue, void (*
  *
  * \param queue IPC input queue to push to.
  * \param ev Input event to push.
- * \param dbm_callback Callback function to ensure data memory ensure
+ * \param dmb_callback Callback function to ensure data memory ensure
  *
  * \return true if the event was successfully pushed, false otherwise.
  */
-bool inputs_shared_api_push_event(struct IPCInputQueue *queue, struct InputEvent *ev, void (*dbm_callback)(void));
+bool inputs_shared_api_push_event(struct IPCInputQueue *queue, struct InputEvent *ev, void (*dmb_callback)(void));
 
 #endif // INPUTS_SHARED_API_H
