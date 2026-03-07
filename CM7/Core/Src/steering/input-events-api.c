@@ -12,13 +12,13 @@
 
 EAGLETRT_STATIC struct InputEventHandler handler;
 
-enum InputEventReturnCode input_events_api_init(input_event_button_press_callback press_cb, input_event_button_release_callback release_cb, input_event_button_long_press_callback long_press_cb, input_event_knob_rotation_callback rotation_cb) {
+enum InputEventsReturnCode input_events_api_init(input_events_button_press_callback press_cb, input_events_button_release_callback release_cb, input_events_button_long_press_callback long_press_cb, input_events_knob_rotation_callback rotation_cb) {
     handler.on_button_press = press_cb;
     handler.on_button_release = release_cb;
     handler.on_button_long_press = long_press_cb;
     handler.on_knob_rotation = rotation_cb;
 
-    return INPUT_EVENT_RC_OK;
+    return INPUT_EVENTS_RC_OK;
 }
 
 void input_events_api_handle_event(struct InputEvent *event) {
