@@ -22,11 +22,12 @@
 
 /* USER CODE BEGIN 0 */
 #include "eagletrt-api.h"
+#include "screen.h"
 
-EAGLETRT_STATIC uint32_t framebuffer1[800 * 480]
+EAGLETRT_STATIC uint32_t framebuffer1[SCREEN_WIDTH * SCREEN_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));
 
-EAGLETRT_STATIC uint32_t framebuffer2[800 * 480]
+EAGLETRT_STATIC uint32_t framebuffer2[SCREEN_WIDTH * SCREEN_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));
 
 /* USER CODE END 0 */

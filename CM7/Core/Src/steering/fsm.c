@@ -17,7 +17,7 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
-#include "ui-api.h"
+#include "screen-api.h"
 #include "input-events-api.h"
 
 /*** USER CODE END MACROS ***/

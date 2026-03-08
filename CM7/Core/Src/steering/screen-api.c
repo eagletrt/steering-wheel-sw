@@ -1,4 +1,4 @@
-#include "ui-api.h"
+#include "screen-api.h"
 #include "inputs-shared.h"
 
 enum InputEventsReturnCode mock_input_event_button_press_callback(enum ButtonID button_id) {

@@ -30,7 +30,8 @@
 #include "fsm.h"
 #include "inputs.h"
 #include "eagletrt.h"
-#include "inputs-shared-api.h"
+#include "ipc-api.h"
+#include "shared.h"
 
 /* USER CODE END Includes */
 
@@ -72,7 +73,7 @@ static void MPU_Config(void);
 /* USER CODE BEGIN 0 */
 
 enum InputsReturnCode ipc_input_push(struct InputEvent ev) {
-    inputs_shared_api_push_event(&ipc_input, &ev, __DMB);
+    ipc_api_push_event(&ipc_input, &ev, __DMB);
 
     if (HAL_HSEM_FastTake(HSEM_INPUT_ID) != HAL_OK) {
         return INPUTS_RC_NOTIFY_ERROR;
