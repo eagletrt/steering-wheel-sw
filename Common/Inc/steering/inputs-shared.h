@@ -18,7 +18,7 @@
  * \brief Enumeration of input event types
  */
 enum InputEventType {
-    INPUT_EVENT_TYPE_KNOB,
+    INPUT_EVENT_TYPE_KNOB_ROTATION,
     INPUT_EVENT_TYPE_BUTTON_PRESS,
     INPUT_EVENT_TYPE_BUTTON_RELEASE,
     INPUT_EVENT_TYPE_BUTTON_LONG_PRESS,

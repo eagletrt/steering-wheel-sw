@@ -42,7 +42,7 @@ void input_events_api_handle_event(struct InputEvent *event) {
                 handler.on_button_long_press(event->button.button_id);
             }
             break;
-        case INPUT_EVENT_TYPE_KNOB:
+        case INPUT_EVENT_TYPE_KNOB_ROTATION:
             if (handler.on_knob_rotation) {
                 handler.on_knob_rotation(event->knob.knob_id, event->knob.delta);
             }

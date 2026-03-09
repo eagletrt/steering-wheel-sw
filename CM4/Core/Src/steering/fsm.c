@@ -20,7 +20,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "eagletrt.h"
 #include "eagletrt-api.h"
 #include "main.h"
-#include "inputs.h"
+#include "inputs-api.h"
 
 /*** USER CODE END MACROS ***/
 

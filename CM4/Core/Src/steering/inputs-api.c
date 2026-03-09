@@ -1,5 +1,5 @@
 /*!
- * \file inputs.c
+ * \file inputs-api.c
  * \date 2025-12-24
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  *
@@ -9,7 +9,7 @@
 // needs it just because of memset
 #include <string.h>
 
-#include "inputs.h"
+#include "inputs-api.h"
 #include "eagletrt.h"
 
 /*!
@@ -19,7 +19,7 @@
  * If either fails the first non-OK code is returned, but both
  * are always attempted.
  */
-EAGLETRT_STATIC enum InputsReturnCode inputs_dispatch(
+EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
     const struct InputHandler *handler,
     struct InputEvent event) {
     enum InputsReturnCode notify_rc = handler->notify_callback(event);
@@ -80,13 +80,13 @@ enum InputsReturnCode inputs_update_button(
             btn->press_tick = current_tick_ms;
 
             event.type = INPUT_EVENT_TYPE_BUTTON_PRESS;
-            return inputs_dispatch(handler, event);
+            return prv_inputs_dispatch(handler, event);
         }
     } else if (btn->state == BUTTON_STATE_PRESSED || btn->state == BUTTON_STATE_LONG_PRESSED) {
         btn->state = BUTTON_STATE_IDLE;
 
         event.type = INPUT_EVENT_TYPE_BUTTON_RELEASE;
-        return inputs_dispatch(handler, event);
+        return prv_inputs_dispatch(handler, event);
     }
 
     return INPUTS_RC_OK;
@@ -111,12 +111,12 @@ enum InputsReturnCode inputs_update_knob(
 
     if (delta != 0) {
         struct InputEvent event = {
-            .type = INPUT_EVENT_TYPE_KNOB,
+            .type = INPUT_EVENT_TYPE_KNOB_ROTATION,
             .knob.knob_id = knob_id,
             .knob.delta = (int8_t)delta
         };
 
-        return inputs_dispatch(handler, event);
+        return prv_inputs_dispatch(handler, event);
     }
 
     return INPUTS_RC_OK;
@@ -142,7 +142,7 @@ enum InputsReturnCode inputs_poll_for_long_press(struct InputHandler *handler, u
                 .button.button_id = i
             };
 
-            enum InputsReturnCode ret = inputs_dispatch(handler, event);
+            enum InputsReturnCode ret = prv_inputs_dispatch(handler, event);
             if (ret != INPUTS_RC_OK) {
                 return ret;
             }
