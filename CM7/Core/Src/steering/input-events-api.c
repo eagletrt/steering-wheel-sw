@@ -28,22 +28,22 @@ void input_events_api_handle_event(struct InputEvent *event) {
 
     switch (event->type) {
         case INPUT_EVENT_TYPE_BUTTON_PRESS:
-            if (handler.on_button_press) {
+            if (handler.on_button_press != NULL) {
                 handler.on_button_press(event->button.button_id);
             }
             break;
         case INPUT_EVENT_TYPE_BUTTON_RELEASE:
-            if (handler.on_button_release) {
+            if (handler.on_button_release != NULL) {
                 handler.on_button_release(event->button.button_id);
             }
             break;
         case INPUT_EVENT_TYPE_BUTTON_LONG_PRESS:
-            if (handler.on_button_long_press) {
+            if (handler.on_button_long_press != NULL) {
                 handler.on_button_long_press(event->button.button_id);
             }
             break;
         case INPUT_EVENT_TYPE_KNOB_ROTATION:
-            if (handler.on_knob_rotation) {
+            if (handler.on_knob_rotation != NULL) {
                 handler.on_knob_rotation(event->knob.knob_id, event->knob.delta);
             }
             break;
