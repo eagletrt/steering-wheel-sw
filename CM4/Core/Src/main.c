@@ -28,10 +28,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
-#include "inputs.h"
-#include "eagletrt.h"
-#include "ipc-api.h"
-#include "shared.h"
 
 /* USER CODE END Includes */
 
@@ -58,9 +54,6 @@
 
 /* USER CODE BEGIN PV */
 
-EAGLETRT_STATIC struct IPCInputQueue ipc_input
-    __attribute__((section(".shared_axi"), aligned(32)));
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,17 +64,6 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-enum InputsReturnCode ipc_input_push(struct InputEvent ev) {
-    ipc_api_push_event(&ipc_input, &ev, __DMB);
-
-    if (HAL_HSEM_FastTake(HSEM_INPUT_ID) != HAL_OK) {
-        return INPUTS_RC_NOTIFY_ERROR;
-    }
-    HAL_HSEM_Release(HSEM_INPUT_ID, 0);
-
-    return INPUTS_RC_OK;
-}
 
 /* USER CODE END 0 */
 

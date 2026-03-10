@@ -32,7 +32,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "inputs-shared.h"
+#include "eagletrt.h"
+#include "ipc.h"
 
 /* USER CODE END Includes */
 
@@ -55,17 +56,6 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
-/*!
- * \brief Push an input event to the IPC input queue.
- *
- * \param ev Input event to push.
- *
- * \retval INPUTS_RC_OK if the event was successfully pushed.
- * \retval INPUTS_RC_ERROR if the IPC input queue is full.
- * \retval INPUTS_RC_NOTIFY_ERROR if the HSEM is already taken.
- */
-enum InputsReturnCode ipc_input_push(struct InputEvent ev);
 
 /* USER CODE END EFP */
 

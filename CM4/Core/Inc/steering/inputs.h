@@ -10,6 +10,7 @@
 #define INPUTS_H
 
 #include "inputs-shared.h"
+#include "ipc.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -27,25 +28,25 @@ enum InputsReturnCode {
 /*!
  * \brief Button states for tracking long presses
  */
-enum ButtonState {
-    BUTTON_STATE_IDLE,         /*!< Button is not pressed */
-    BUTTON_STATE_PRESSED,      /*!< Button is currently pressed */
-    BUTTON_STATE_LONG_PRESSED, /*!< Button has been held long enough to be considered a long press */
+enum InputsButtonState {
+    INPUTS_BUTTON_STATE_IDLE,         /*!< Button is not pressed */
+    INPUTS_BUTTON_STATE_PRESSED,      /*!< Button is currently pressed */
+    INPUTS_BUTTON_STATE_LONG_PRESSED, /*!< Button has been held long enough to be considered a long press */
 };
 
 /*!
  * \brief Button tracking structure
  */
-struct ButtonHandler {
-    enum ButtonState state; /*!< Current state of the button */
-    uint32_t press_tick;    /*!< Tick count when the button was pressed */
-    bool enabled;           /*!< Whether this button is enabled for tracking */
+struct InputsButtonHandler {
+    enum InputsButtonState state; /*!< Current state of the button */
+    uint32_t press_tick;          /*!< Tick count when the button was pressed */
+    bool enabled;                 /*!< Whether this button is enabled for tracking */
 };
 
 /*!
  * \brief Knob (encoder) tracking structure
  */
-struct KnobHandler {
+struct InputsKnobHandler {
     int16_t last_position; /*!< Last known position of the encoder */
     bool enabled;          /*!< Whether this encoder is enabled for tracking */
 };
@@ -55,21 +56,32 @@ struct KnobHandler {
  *
  * \param event The input event to handle
  *
- * \retval INPUTS_RC_OK if the event was handled successfully
- * \retval INPUTS_RC_NOTIFY_ERROR if there was an error notifying the event
- * \retval INPUTS_RC_ERROR if there was an error handling the event
+ * \retval true if the event was handled successfully
+ * \retval false if there was an error notifying the event
  */
-typedef enum InputsReturnCode (*input_event_notify_callback)(struct InputEvent event);
+typedef bool (*inputs_notify_callback)(struct InputsSharedEvent *ev, void (*dmb_callback)(void));
+
+/*!
+ * \brief Callback definition for input actions
+ *
+ * \param ev The input event to handle
+ *
+ * \retval INPUTS_RC_OK if the action was performed successfully
+ * \retval INPUTS_RC_ERROR if there was an error handling the action
+ */
+typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent *ev);
 
 /*!
  * \brief Main input handler structure
  */
-struct InputHandler {
-    input_event_notify_callback notify_callback; /*!< Callback to notify CM7 about input events */
-    input_event_notify_callback action_callback; /*!< Callback to perform local actions on input */
+struct InputsHandler {
+    void (*dmb_callback)(void); /*!< Callback to perform DMB after notifying CM7 */
 
-    struct ButtonHandler buttons[BUTTON_ID_COUNT]; /*!< Tracking state for each button */
-    struct KnobHandler knobs[KNOB_ID_COUNT];       /*!< Tracking state for each encoder */
+    inputs_notify_callback notify_callback; /*!< Callback to notify CM7 about input events */
+    inputs_action_callback action_callback; /*!< Callback to perform local actions on input */
+
+    struct InputsButtonHandler buttons[INPUTS_SHARED_BUTTON_ID_COUNT]; /*!< Tracking state for each button */
+    struct InputsKnobHandler knobs[INPUTS_SHARED_KNOB_ID_COUNT];       /*!< Tracking state for each encoder */
 };
 
 #endif // INPUTS_H

@@ -17,44 +17,44 @@
 /*!
  * \brief Enumeration of input event types
  */
-enum InputEventType {
-    INPUT_EVENT_TYPE_KNOB_ROTATION,
-    INPUT_EVENT_TYPE_BUTTON_PRESS,
-    INPUT_EVENT_TYPE_BUTTON_RELEASE,
-    INPUT_EVENT_TYPE_BUTTON_LONG_PRESS,
+enum InputsSharedEventType {
+    INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION,
+    INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS,
+    INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE,
+    INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS,
 };
 
 /*!
  * \brief Enumeration of knob identifiers
  */
-enum KnobID {
-    KNOB_ID_FRONT_LEFT,
-    KNOB_ID_FRONT_RIGHT,
-    KNOB_ID_SIDE_LEFT,
-    KNOB_ID_SIDE_RIGHT,
-    KNOB_ID_COUNT,
+enum InputsSharedKnobID {
+    INPUTS_SHARED_KNOB_ID_FRONT_LEFT,
+    INPUTS_SHARED_KNOB_ID_FRONT_RIGHT,
+    INPUTS_SHARED_KNOB_ID_SIDE_LEFT,
+    INPUTS_SHARED_KNOB_ID_SIDE_RIGHT,
+    INPUTS_SHARED_KNOB_ID_COUNT,
 };
 
 /*!
  * \brief Enumeration of button identifiers
  */
-enum ButtonID {
-    BUTTON_ID_TS_ON,
-    BUTTON_ID_TOP_LEFT_1,
-    BUTTON_ID_TOP_LEFT_2,
-    BUTTON_ID_BOTTOM_LEFT,
-    BUTTON_ID_TOP_RIGHT_1,
-    BUTTON_ID_TOP_RIGHT_2,
-    BUTTON_ID_BOTTOM_RIGHT,
-    BUTTON_ID_PADDLE_TOP_LEFT,
-    BUTTON_ID_PADDLE_BOTTOM_LEFT,
-    BUTTON_ID_PADDLE_TOP_RIGHT,
-    BUTTON_ID_PADDLE_BOTTOM_RIGHT,
-    BUTTON_ID_KNOB_PUSH_FRONT_LEFT,
-    BUTTON_ID_KNOB_PUSH_FRONT_RIGHT,
-    BUTTON_ID_KNOB_PUSH_SIDE_LEFT,
-    BUTTON_ID_KNOB_PUSH_SIDE_RIGHT,
-    BUTTON_ID_COUNT,
+enum InputsSharedButtonID {
+    INPUTS_SHARED_BUTTON_ID_TS_ON,
+    INPUTS_SHARED_BUTTON_ID_TOP_LEFT_1,
+    INPUTS_SHARED_BUTTON_ID_TOP_LEFT_2,
+    INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT,
+    INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_1,
+    INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_2,
+    INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT,
+    INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT,
+    INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT,
+    INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT,
+    INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT,
+    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_FRONT_LEFT,
+    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_FRONT_RIGHT,
+    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_SIDE_LEFT,
+    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_SIDE_RIGHT,
+    INPUTS_SHARED_BUTTON_ID_COUNT,
 };
 
 /*!
@@ -62,15 +62,15 @@ enum ButtonID {
  *
  * \details This structure uses a union to store different types of input events.
  */
-struct InputEvent {
-    enum InputEventType type; /*!< Type of the input event */
+struct InputsSharedEvent {
+    enum InputsSharedEventType type; /*!< Type of the input event */
     union {
         struct {
-            enum KnobID knob_id; /*!< Identifier for the knob */
-            int8_t delta;        /*!< Change in knob position */
+            enum InputsSharedKnobID knob_id; /*!< Identifier for the knob */
+            int8_t delta;                    /*!< Change in knob position */
         } knob;
         struct {
-            enum ButtonID button_id; /*!< Identifier for the button */
+            enum InputsSharedButtonID button_id; /*!< Identifier for the button */
         } button;
     };
 };

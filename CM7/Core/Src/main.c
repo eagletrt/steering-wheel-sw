@@ -33,7 +33,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
-#include "eagletrt.h"
 #include "input-events-api.h"
 #include "ipc-api.h"
 #include "shared.h"
@@ -63,9 +62,6 @@
 
 /* USER CODE BEGIN PV */
 
-EAGLETRT_STATIC struct IPCInputQueue ipc_input
-    __attribute__((section(".shared_axi"), aligned(32)));
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +71,7 @@ static void MPU_Config(void);
 
 void HAL_HSEM_FreeCallback(uint32_t SemMask) {
     if (SemMask & (1 << HSEM_INPUT_ID)) {
-        ipc_api_read_and_process_all(&ipc_input, input_events_api_handle_event);
+        ipc_api_read_and_process_all(input_events_api_handle_event);
         HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
     }
 }

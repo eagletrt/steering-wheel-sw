@@ -27,7 +27,7 @@ enum InputEventsReturnCode {
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_button_press_callback)(enum ButtonID button_id);
+typedef enum InputEventsReturnCode (*input_events_button_press_callback)(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Callback type for button release events.
@@ -36,7 +36,7 @@ typedef enum InputEventsReturnCode (*input_events_button_press_callback)(enum Bu
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_button_release_callback)(enum ButtonID button_id);
+typedef enum InputEventsReturnCode (*input_events_button_release_callback)(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Callback type for button long press events.
@@ -45,7 +45,7 @@ typedef enum InputEventsReturnCode (*input_events_button_release_callback)(enum 
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_button_long_press_callback)(enum ButtonID button_id);
+typedef enum InputEventsReturnCode (*input_events_button_long_press_callback)(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Callback type for knob rotation events.
@@ -55,7 +55,7 @@ typedef enum InputEventsReturnCode (*input_events_button_long_press_callback)(en
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum KnobID knob_id, int8_t delta);
+typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum InputsSharedKnobID knob_id, int8_t delta);
 
 /*!
  * \brief Structure holding all input event callbacks.
