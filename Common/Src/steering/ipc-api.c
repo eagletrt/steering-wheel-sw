@@ -1,5 +1,5 @@
 #include "ipc-api.h"
-#include "shared.h"
+#include "shared-ipc.h"
 
 void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)) {
     while (ipc_input.read_idx != ipc_input.write_idx) {
