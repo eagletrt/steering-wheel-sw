@@ -22,7 +22,7 @@
 EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
     const struct InputsHandler *handler,
     struct InputsSharedEvent event) {
-    enum InputsReturnCode notify_rc = handler->notify_callback(&event, handler->dmb_callback);
+    enum InputsReturnCode notify_rc = handler->notify_callback(&event, handler->critical_section_callback);
     enum InputsReturnCode action_rc = handler->action_callback(&event);
     if (notify_rc == INPUTS_RC_OK && action_rc != INPUTS_RC_OK) {
         return action_rc;
@@ -32,7 +32,7 @@ EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
 
 enum InputsReturnCode inputs_init(
     struct InputsHandler *handler,
-    void (*dmb_callback)(void),
+    void (*critical_section_callback)(void),
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback) {
     if (handler == NULL || notify_callback == NULL || action_callback == NULL) {
@@ -43,7 +43,7 @@ enum InputsReturnCode inputs_init(
 
     handler->notify_callback = notify_callback;
     handler->action_callback = action_callback;
-    handler->dmb_callback = dmb_callback;
+    handler->critical_section_callback = critical_section_callback;
 
     for (size_t i = 0; i < INPUTS_SHARED_BUTTON_ID_COUNT; i++) {
         handler->buttons[i].enabled = true;

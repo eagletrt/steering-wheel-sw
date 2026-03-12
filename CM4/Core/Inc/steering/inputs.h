@@ -75,7 +75,7 @@ typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent
  * \brief Main input handler structure
  */
 struct InputsHandler {
-    void (*dmb_callback)(void); /*!< Callback to perform DMB after notifying CM7 */
+    void (*critical_section_callback)(void); /*!< Callback to perform DMB after notifying CM7 */
 
     inputs_notify_callback notify_callback; /*!< Callback to notify CM7 about input events */
     inputs_action_callback action_callback; /*!< Callback to perform local actions on input */

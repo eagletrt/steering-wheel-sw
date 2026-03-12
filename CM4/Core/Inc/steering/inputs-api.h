@@ -15,7 +15,7 @@
  * \brief Initialize the input handler
  *
  * \param handler Pointer to the input handler structure to initialize
- * \param dmb_callback Callback to perform in critical section
+ * \param critical_section_callback Callback to perform in critical section
  * \param notify_callback Callback function to notify CM7 about input events
  * \param action_callback Callback for local actions on input
  *
@@ -24,7 +24,7 @@
  */
 enum InputsReturnCode inputs_init(
     struct InputsHandler *handler,
-    void (*dmb_callback)(void),
+    void (*critical_section_callback)(void),
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback);
 

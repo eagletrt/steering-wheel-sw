@@ -36,6 +36,7 @@
 #include "input-events-api.h"
 #include "ipc-api.h"
 #include "shared.h"
+#include "eagletrt-api.h"
 
 /* USER CODE END Includes */
 
@@ -70,7 +71,7 @@ static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 void HAL_HSEM_FreeCallback(uint32_t SemMask) {
-    if (SemMask & (1 << HSEM_INPUT_ID)) {
+    if (EAGLETRT_API_BIT_GET(SemMask, HSEM_INPUT_ID)) {
         ipc_api_read_and_process_all(input_events_api_handle_event);
         HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
     }
