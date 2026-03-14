@@ -2,6 +2,10 @@
 #include "shared-ipc.h"
 #include <stdio.h>
 
+void ipc_api_reset(void) {
+    ipc_input = (struct IPCInputQueue){ 0 };
+}
+
 void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)) {
     while (ipc_input.read_idx != ipc_input.write_idx) {
         struct InputsSharedEvent ev =

@@ -5,6 +5,11 @@
 #include "inputs-shared.h"
 
 /*!
+ * \brief Empties the IPC input queue by resetting the whole memory to 0s.
+ */
+void ipc_api_reset(void);
+
+/*!
  * \brief Read and process all input events in the IPC input queue.
  *
  * \param callback Callback function to handle each input event.

@@ -9,7 +9,6 @@
 #include "inputs-shared.h"
 #include "ipc-api.h"
 #include "ipc.h"
-#include "shared-ipc.h"
 #include "unity.h"
 
 int called_count = 0;
@@ -18,8 +17,7 @@ static struct InputsSharedEvent last_event;
 void setUp() {
     called_count = 0;
     last_event = (struct InputsSharedEvent){ 0 };
-    ipc_input.read_idx = 0;
-    ipc_input.write_idx = 0;
+    ipc_api_reset();
 }
 
 void read_and_process_callback(struct InputsSharedEvent *ev) {
