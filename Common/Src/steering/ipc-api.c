@@ -1,5 +1,6 @@
 #include "ipc-api.h"
 #include "shared-ipc.h"
+#include <stdio.h>
 
 void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)) {
     while (ipc_input.read_idx != ipc_input.write_idx) {
@@ -22,7 +23,9 @@ bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*dmb_callback)(void)
 
     ipc_input.events[ipc_input.write_idx] = *ev;
 
-    dmb_callback();
+    if (dmb_callback != NULL) {
+        dmb_callback();
+    }
 
     ipc_input.write_idx = next;
 
