@@ -30,7 +30,7 @@ EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
     return notify_rc;
 }
 
-enum InputsReturnCode inputs_init(
+enum InputsReturnCode inputs_api_init(
     struct InputsHandler *handler,
     void (*critical_section_callback)(void),
     inputs_notify_callback notify_callback,
@@ -58,7 +58,7 @@ enum InputsReturnCode inputs_init(
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_update_button(
+enum InputsReturnCode inputs_api_update_button(
     struct InputsHandler *handler,
     enum InputsSharedButtonID button_id,
     bool pressed,
@@ -94,7 +94,7 @@ enum InputsReturnCode inputs_update_button(
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_update_knob(
+enum InputsReturnCode inputs_api_update_knob(
     struct InputsHandler *handler,
     enum InputsSharedKnobID knob_id,
     int16_t current_position) {
@@ -124,7 +124,7 @@ enum InputsReturnCode inputs_update_knob(
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_poll_for_long_press(struct InputsHandler *handler, uint32_t current_tick_ms) {
+enum InputsReturnCode inputs_api_poll_for_long_press(struct InputsHandler *handler, uint32_t current_tick_ms) {
     if (handler == NULL) {
         return INPUTS_RC_ERROR;
     }

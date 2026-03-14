@@ -10,7 +10,6 @@
 #define INPUTS_H
 
 #include "inputs-shared.h"
-#include "ipc.h"
 #include <stdint.h>
 #include <stdbool.h>
 

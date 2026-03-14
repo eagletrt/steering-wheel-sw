@@ -22,7 +22,7 @@
  * \retval INPUTS_RC_OK if initialization was successful
  * \retval INPUTS_RC_ERROR if there was an error during initialization
  */
-enum InputsReturnCode inputs_init(
+enum InputsReturnCode inputs_api_init(
     struct InputsHandler *handler,
     void (*critical_section_callback)(void),
     inputs_notify_callback notify_callback,
@@ -39,7 +39,7 @@ enum InputsReturnCode inputs_init(
  * \retval INPUTS_OK if the button state was updated successfully
  * \retval INPUTS_ERROR if there was an error updating the button state
  */
-enum InputsReturnCode inputs_update_button(
+enum InputsReturnCode inputs_api_update_button(
     struct InputsHandler *handler,
     enum InputsSharedButtonID button_id,
     bool pressed,
@@ -55,7 +55,7 @@ enum InputsReturnCode inputs_update_button(
  * \retval INPUTS_OK if the knob state was updated successfully
  * \retval INPUTS_ERROR if there was an error updating the knob state
  */
-enum InputsReturnCode inputs_update_knob(
+enum InputsReturnCode inputs_api_update_knob(
     struct InputsHandler *handler,
     enum InputsSharedKnobID knob_id,
     int16_t current_position);
@@ -69,7 +69,7 @@ enum InputsReturnCode inputs_update_knob(
  * \retval INPUTS_OK if the update was successful
  * \retval INPUTS_ERROR if there was an error during the update
  */
-enum InputsReturnCode inputs_poll_for_long_press(
+enum InputsReturnCode inputs_api_poll_for_long_press(
     struct InputsHandler *handler,
     uint32_t current_tick_ms);
 

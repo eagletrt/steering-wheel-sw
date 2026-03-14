@@ -98,7 +98,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    if (inputs_init(&input_handler, __DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
+    if (inputs_api_init(&input_handler, __DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
