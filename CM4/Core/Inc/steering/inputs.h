@@ -53,12 +53,13 @@ struct InputsKnobHandler {
 /*!
  * \brief Callback definition for input event notifications
  *
- * \param event The input event to handle
+ * \param ev The input event to handle
+ * \param critical_section_callback Callback to perform DMB before writing input index to shared memory
  *
  * \retval true if the event was handled successfully
  * \retval false if there was an error notifying the event
  */
-typedef bool (*inputs_notify_callback)(struct InputsSharedEvent *ev, void (*dmb_callback)(void));
+typedef bool (*inputs_notify_callback)(struct InputsSharedEvent *ev, void (*critical_section_callback)(void));
 
 /*!
  * \brief Callback definition for input actions
