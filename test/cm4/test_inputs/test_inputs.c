@@ -8,13 +8,13 @@ int action_callback_call_count = 0;
 void critical_section_callback(void) {
 }
 
-bool notify_callback(struct InputsSharedEvent *ev, void (*critical_section_callback)(void)) {
+bool notify_callback(struct InputsSharedEvent ev, void (*critical_section_callback)(void)) {
     notify_callback_call_count++;
 
     return true;
 }
 
-enum InputsReturnCode action_callback(struct InputsSharedEvent *ev) {
+enum InputsReturnCode action_callback(struct InputsSharedEvent ev) {
     action_callback_call_count++;
     return INPUTS_RC_OK;
 }

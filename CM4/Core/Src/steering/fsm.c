@@ -59,7 +59,7 @@ fsm_event_data_t *fsm_fired_event = NULL;
 
 EAGLETRT_STATIC struct InputsHandler input_handler;
 
-EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent *ev) {
+EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent ev) {
     EAGLETRT_API_UNUSED(ev);
     return INPUTS_RC_OK;
 }

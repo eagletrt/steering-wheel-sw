@@ -21,30 +21,26 @@ enum InputEventsReturnCode input_events_api_init(input_events_button_press_callb
     return INPUT_EVENTS_RC_OK;
 }
 
-void input_events_api_handle_event(struct InputsSharedEvent *event) {
-    if (event == NULL) {
-        return;
-    }
-
-    switch (event->type) {
+void input_events_api_handle_event(struct InputsSharedEvent event) {
+    switch (event.type) {
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS:
             if (handler.on_button_press != NULL) {
-                handler.on_button_press(event->button.button_id);
+                handler.on_button_press(event.button.button_id);
             }
             break;
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE:
             if (handler.on_button_release != NULL) {
-                handler.on_button_release(event->button.button_id);
+                handler.on_button_release(event.button.button_id);
             }
             break;
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS:
             if (handler.on_button_long_press != NULL) {
-                handler.on_button_long_press(event->button.button_id);
+                handler.on_button_long_press(event.button.button_id);
             }
             break;
         case INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION:
             if (handler.on_knob_rotation != NULL) {
-                handler.on_knob_rotation(event->knob.knob_id, event->knob.delta);
+                handler.on_knob_rotation(event.knob.knob_id, event.knob.delta);
             }
             break;
     }

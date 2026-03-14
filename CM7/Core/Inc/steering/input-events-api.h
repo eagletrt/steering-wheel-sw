@@ -38,6 +38,6 @@ enum InputEventsReturnCode input_events_api_init(
  * \retval INPUT_EVENTS_ERROR if there was an error handling the event.
  */
 void input_events_api_handle_event(
-    struct InputsSharedEvent *event);
+    struct InputsSharedEvent event);
 
 #endif // INPUT_EVENTS_API_H

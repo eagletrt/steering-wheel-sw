@@ -14,7 +14,7 @@ void ipc_api_reset(void);
  *
  * \param callback Callback function to handle each input event.
  */
-void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev));
+void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent ev));
 
 /*!
  * \brief Push an input event to the IPC input queue.
@@ -26,6 +26,6 @@ void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)
  *
  * \return true if the event was successfully pushed, false otherwise.
  */
-bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*critical_section_callback)(void));
+bool ipc_api_push_event(struct InputsSharedEvent ev, void (*critical_section_callback)(void));
 
 #endif // IPC_API_H

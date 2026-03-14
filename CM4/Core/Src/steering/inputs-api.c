@@ -22,11 +22,11 @@
 EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
     const struct InputsHandler *handler,
     struct InputsSharedEvent event) {
-    bool notify_rc = handler->notify_callback(&event, handler->critical_section_callback);
+    bool notify_rc = handler->notify_callback(event, handler->critical_section_callback);
     if (!notify_rc) {
         return INPUTS_RC_NOTIFY_ERROR;
     }
-    return handler->action_callback(&event);
+    return handler->action_callback(event);
 }
 
 enum InputsReturnCode inputs_api_init(

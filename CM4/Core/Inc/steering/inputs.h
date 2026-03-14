@@ -59,7 +59,7 @@ struct InputsKnobHandler {
  * \retval true if the event was handled successfully
  * \retval false if there was an error notifying the event
  */
-typedef bool (*inputs_notify_callback)(struct InputsSharedEvent *ev, void (*critical_section_callback)(void));
+typedef bool (*inputs_notify_callback)(struct InputsSharedEvent ev, void (*critical_section_callback)(void));
 
 /*!
  * \brief Callback definition for input actions
@@ -69,7 +69,7 @@ typedef bool (*inputs_notify_callback)(struct InputsSharedEvent *ev, void (*crit
  * \retval INPUTS_RC_OK if the action was performed successfully
  * \retval INPUTS_RC_ERROR if there was an error handling the action
  */
-typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent *ev);
+typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent ev);
 
 /*!
  * \brief Main input handler structure
