@@ -15,6 +15,10 @@ void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)
 }
 
 bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*dmb_callback)(void)) {
+    if (ev == NULL) {
+        return false;
+    }
+
     uint32_t next = (ipc_input.write_idx + 1) % IPC_INPUT_QUEUE_SIZE;
 
     if (next == ipc_input.read_idx) {
