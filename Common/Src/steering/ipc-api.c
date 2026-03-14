@@ -14,7 +14,7 @@ void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent *ev)
     }
 }
 
-bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*dmb_callback)(void)) {
+bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*critical_section_callback)(void)) {
     if (ev == NULL) {
         return false;
     }
@@ -27,8 +27,8 @@ bool ipc_api_push_event(struct InputsSharedEvent *ev, void (*dmb_callback)(void)
 
     ipc_input.events[ipc_input.write_idx] = *ev;
 
-    if (dmb_callback != NULL) {
-        dmb_callback();
+    if (critical_section_callback != NULL) {
+        critical_section_callback();
     }
 
     ipc_input.write_idx = next;
