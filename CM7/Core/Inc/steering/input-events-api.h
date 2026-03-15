@@ -14,18 +14,14 @@
 /*!
  * \brief Initialize the input event handler with provided callbacks.
  *
- * \param press_cb Callback for button press events.
- * \param release_cb Callback for button release events.
- * \param long_press_cb Callback for button long press events.
+ * \param button_cb Callback for button events.
  * \param rotation_cb Callback for knob rotation events.
  *
  * \retval INPUT_EVENTS_OK if initialization was successful.
  * \retval INPUT_EVENTS_ERROR if there was an error during initialization.
  */
 enum InputEventsReturnCode input_events_api_init(
-    input_events_button_press_callback press_cb,
-    input_events_button_release_callback release_cb,
-    input_events_button_long_press_callback long_press_cb,
+    input_events_button_event_callback button_cb,
     input_events_knob_rotation_callback rotation_cb);
 
 /*!

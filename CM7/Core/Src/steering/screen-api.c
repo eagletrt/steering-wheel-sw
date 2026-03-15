@@ -1,15 +1,7 @@
 #include "screen-api.h"
 #include "inputs-shared.h"
 
-enum InputEventsReturnCode mock_input_event_button_press_callback(enum InputsSharedButtonID button_id) {
-    return INPUT_EVENTS_RC_OK;
-}
-
-enum InputEventsReturnCode mock_input_event_button_release_callback(enum InputsSharedButtonID button_id) {
-    return INPUT_EVENTS_RC_OK;
-}
-
-enum InputEventsReturnCode mock_input_event_button_long_press_callback(enum InputsSharedButtonID button_id) {
+enum InputEventsReturnCode mock_input_event_button_event_callback(enum InputsSharedButtonID button_id) {
     return INPUT_EVENTS_RC_OK;
 }
 

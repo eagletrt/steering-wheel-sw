@@ -27,25 +27,7 @@ enum InputEventsReturnCode {
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_button_press_callback)(enum InputsSharedButtonID button_id);
-
-/*!
- * \brief Callback type for button release events.
- *
- * \param button_id The ID of the button that was released.
- *
- * \return An InputEventsReturnCode indicating success or failure.
- */
-typedef enum InputEventsReturnCode (*input_events_button_release_callback)(enum InputsSharedButtonID button_id);
-
-/*!
- * \brief Callback type for button long press events.
- *
- * \param button_id The ID of the button that was long pressed.
- *
- * \return An InputEventsReturnCode indicating success or failure.
- */
-typedef enum InputEventsReturnCode (*input_events_button_long_press_callback)(enum InputsSharedButtonID button_id);
+typedef enum InputEventsReturnCode (*input_events_button_event_callback)(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Callback type for knob rotation events.
@@ -61,10 +43,8 @@ typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum I
  * \brief Structure holding all input event callbacks.
  */
 struct InputEventHandler {
-    input_events_button_press_callback on_button_press;           /*!< Callback for button press events */
-    input_events_button_release_callback on_button_release;       /*!< Callback for button release events */
-    input_events_button_long_press_callback on_button_long_press; /*!< Callback for button long press events */
-    input_events_knob_rotation_callback on_knob_rotation;         /*!< Callback for knob rotation events */
+    input_events_button_event_callback on_button_event;   /*!< Callback for button press events */
+    input_events_knob_rotation_callback on_knob_rotation; /*!< Callback for knob rotation events */
 };
 
 #endif // INPUT_EVENTS_H

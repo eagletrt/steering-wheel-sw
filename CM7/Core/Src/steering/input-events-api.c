@@ -12,10 +12,11 @@
 
 EAGLETRT_STATIC struct InputEventHandler handler;
 
-enum InputEventsReturnCode input_events_api_init(input_events_button_press_callback press_cb, input_events_button_release_callback release_cb, input_events_button_long_press_callback long_press_cb, input_events_knob_rotation_callback rotation_cb) {
-    handler.on_button_press = press_cb;
-    handler.on_button_release = release_cb;
-    handler.on_button_long_press = long_press_cb;
+enum InputEventsReturnCode input_events_api_init(input_events_button_event_callback button_cb, input_events_knob_rotation_callback rotation_cb) {
+    if (button_cb == NULL || rotation_cb == NULL) {
+        return INPUT_EVENTS_RC_ERROR;
+    }
+    handler.on_button_event = button_cb;
     handler.on_knob_rotation = rotation_cb;
 
     return INPUT_EVENTS_RC_OK;
@@ -24,18 +25,10 @@ enum InputEventsReturnCode input_events_api_init(input_events_button_press_callb
 void input_events_api_handle_event(struct InputsSharedEvent event) {
     switch (event.type) {
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS:
-            if (handler.on_button_press != NULL) {
-                handler.on_button_press(event.button.button_id);
-            }
-            break;
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE:
-            if (handler.on_button_release != NULL) {
-                handler.on_button_release(event.button.button_id);
-            }
-            break;
         case INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS:
-            if (handler.on_button_long_press != NULL) {
-                handler.on_button_long_press(event.button.button_id);
+            if (handler.on_button_event != NULL) {
+                handler.on_button_event(event.button.button_id);
             }
             break;
         case INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION:
