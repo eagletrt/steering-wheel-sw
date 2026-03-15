@@ -28,7 +28,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
-#include "shared.h"
 
 /* USER CODE END Includes */
 
@@ -54,9 +53,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-struct MockSharedData shared_data
-    __attribute__((section(".shared_axi"), aligned(32)));
 
 /* USER CODE END PV */
 

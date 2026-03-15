@@ -33,7 +33,10 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
+#include "input-events-api.h"
+#include "ipc-api.h"
 #include "shared.h"
+#include "eagletrt-api.h"
 
 /* USER CODE END Includes */
 
@@ -60,21 +63,19 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t framebuffer1[800 * 480]
-    __attribute__((section(".framebuffer"), aligned(32)));
-
-uint32_t framebuffer2[800 * 480]
-    __attribute__((section(".framebuffer"), aligned(32)));
-
-struct MockSharedData shared_data
-    __attribute__((section(".shared_axi"), aligned(32)));
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+
+void HAL_HSEM_FreeCallback(uint32_t SemMask) {
+    if (EAGLETRT_API_BIT_GET(SemMask, HSEM_INPUT_ID)) {
+        ipc_api_read_and_process_all(input_events_api_handle_event);
+        HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
+    }
+}
 
 /* USER CODE END PFP */
 

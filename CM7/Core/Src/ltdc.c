@@ -21,6 +21,14 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
+#include "eagletrt-api.h"
+#include "screen.h"
+
+EAGLETRT_STATIC uint32_t framebuffer1[SCREEN_WIDTH * SCREEN_HEIGHT]
+    __attribute__((section(".framebuffer"), aligned(32)));
+
+EAGLETRT_STATIC uint32_t framebuffer2[SCREEN_WIDTH * SCREEN_HEIGHT]
+    __attribute__((section(".framebuffer"), aligned(32)));
 
 /* USER CODE END 0 */
 
@@ -30,6 +38,9 @@ LTDC_HandleTypeDef hltdc;
 void MX_LTDC_Init(void) {
 
     /* USER CODE BEGIN LTDC_Init 0 */
+
+    EAGLETRT_API_UNUSED(framebuffer1);
+    EAGLETRT_API_UNUSED(framebuffer2);
 
     /* USER CODE END LTDC_Init 0 */
 

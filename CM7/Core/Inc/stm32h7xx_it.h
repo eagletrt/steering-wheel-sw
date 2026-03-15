@@ -59,6 +59,7 @@ void SDMMC1_IRQHandler(void);
 void LTDC_IRQHandler(void);
 void DMA2D_IRQHandler(void);
 void JPEG_IRQHandler(void);
+void HSEM1_IRQHandler(void);
 void LPUART1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
