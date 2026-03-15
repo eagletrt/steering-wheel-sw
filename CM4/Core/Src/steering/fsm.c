@@ -21,6 +21,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "eagletrt-api.h"
 #include "inputs-api.h"
 #include "ipc-api.h"
+#include "gpio.h"
 #include "main.h"
 
 /*** USER CODE END MACROS ***/
@@ -56,8 +57,6 @@ transition_func_t *const fsm_transition_table[FSM_NUM_STATES][FSM_NUM_STATES] = 
 fsm_event_data_t *fsm_fired_event = NULL;
 
 /*** USER CODE BEGIN GLOBALS ***/
-
-EAGLETRT_STATIC struct InputsHandler input_handler;
 
 EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent ev) {
     EAGLETRT_API_UNUSED(ev);
@@ -121,6 +120,10 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_IDLE ***/
+
+    if (inputs_api_poll_for_long_press(&input_handler, HAL_GetTick()) != INPUTS_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
 
     /*** USER CODE END DO_IDLE ***/
 
