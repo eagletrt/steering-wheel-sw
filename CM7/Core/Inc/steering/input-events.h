@@ -43,8 +43,10 @@ typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum I
  * \brief Structure holding all input event callbacks.
  */
 struct InputEventHandler {
-    input_events_button_event_callback on_button_event;   /*!< Callback for button press events */
-    input_events_knob_rotation_callback on_knob_rotation; /*!< Callback for knob rotation events */
+    input_events_button_event_callback on_button_press;      /*!< Callback for button press events */
+    input_events_button_event_callback on_button_long_press; /*!< Callback for button long press events */
+    input_events_button_event_callback on_button_release;    /*!< Callback for button release events */
+    input_events_knob_rotation_callback on_knob_rotation;    /*!< Callback for knob rotation events */
 };
 
 #endif // INPUT_EVENTS_H

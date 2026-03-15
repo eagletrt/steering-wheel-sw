@@ -90,6 +90,8 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     if (input_events_api_init(
             mock_input_event_button_event_callback,
+            mock_input_event_button_long_press_callback,
+            mock_input_event_button_release_callback,
             mock_input_event_knob_rotation_callback) != INPUT_EVENTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
