@@ -21,7 +21,6 @@ Functions and types have been generated with prefix "fsm_"
 #include "eagletrt-api.h"
 #include "inputs-api.h"
 #include "ipc-api.h"
-#include "gpio.h"
 #include "main.h"
 
 /*** USER CODE END MACROS ***/
@@ -97,7 +96,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    if (inputs_api_init(&input_handler, __DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
+    if (inputs_api_init(__DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
@@ -121,7 +120,7 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_IDLE ***/
 
-    if (inputs_api_poll_for_long_press(&input_handler, HAL_GetTick()) != INPUTS_RC_OK) {
+    if (inputs_api_poll_for_long_press(HAL_GetTick()) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 

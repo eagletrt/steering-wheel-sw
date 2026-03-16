@@ -7,10 +7,9 @@
  */
 
 #include "input-events-api.h"
-#include "eagletrt.h"
 #include <stddef.h>
 
-EAGLETRT_STATIC struct InputEventHandler handler;
+struct InputEventHandler handler;
 
 enum InputEventsReturnCode input_events_api_init(input_events_button_event_callback button_press_cb, input_events_button_event_callback button_long_press_cb, input_events_button_event_callback button_release_cb, input_events_knob_rotation_callback rotation_cb) {
     if (button_press_cb == NULL || button_long_press_cb == NULL || button_release_cb == NULL || rotation_cb == NULL) {

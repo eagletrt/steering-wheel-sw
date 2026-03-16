@@ -9,6 +9,8 @@ FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_button_long_press_callback, enu
 FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_button_release_callback, enum InputsSharedButtonID);
 FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_knob_rotation_callback, enum InputsSharedKnobID, int8_t);
 
+extern struct InputEventHandler handler;
+
 void setUp(void) {
     RESET_FAKE(test_button_press_callback);
     RESET_FAKE(test_button_long_press_callback);
@@ -24,7 +26,11 @@ void setUp(void) {
 
 void test_input_events_api_init_should_store_callbacks(void) {
     enum InputEventsReturnCode rc = input_events_api_init(test_button_press_callback, test_button_long_press_callback, test_button_release_callback, test_knob_rotation_callback);
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, rc);
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_press_callback, handler.on_button_press, "Button press callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_long_press_callback, handler.on_button_long_press, "Button long press callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_release_callback, handler.on_button_release, "Button release callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_knob_rotation_callback, handler.on_knob_rotation, "Knob rotation callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(INPUT_EVENTS_RC_OK, rc, "Initialization failed");
 }
 
 void test_input_events_api_init_should_fail_null_button_callback(void) {
