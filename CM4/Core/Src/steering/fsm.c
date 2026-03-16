@@ -21,6 +21,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "eagletrt-api.h"
 #include "inputs-api.h"
 #include "ipc-api.h"
+#include "leds-api.h"
 #include "main.h"
 
 /*** USER CODE END MACROS ***/
@@ -97,6 +98,10 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
     /*** USER CODE BEGIN DO_INIT ***/
 
     if (inputs_api_init(__DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
+
+    if (leds_api_init() != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
