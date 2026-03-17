@@ -133,7 +133,7 @@ void test_leds_api_show_success(void) {
     fake_transmit_fake.return_val = LEDS_RC_OK;
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_show should return LEDS_RC_OK when transmission is successful");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit function exactly once");
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit function exactly once");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(leds_handler.pwm_buffer, fake_transmit_fake.arg0_val, "leds_api_show should call the transmit function with the correct PWM buffer");
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_PWM_BUFFER_SIZE, fake_transmit_fake.arg1_val, "leds_api_show should call the transmit function with the correct buffer size");
 }
