@@ -46,6 +46,10 @@ enum LedsReturnCode leds_api_show(void) {
         return LEDS_RC_TRANSMISSION_ERROR;
     }
 
+    if (leds_handler.transmit == NULL) {
+        return LEDS_RC_NULL_POINTER;
+    }
+
     enum LedsReturnCode transmit_rc = leds_handler.transmit(
         leds_handler.pwm_buffer,
         LEDS_PWM_BUFFER_SIZE);

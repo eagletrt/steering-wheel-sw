@@ -40,6 +40,7 @@ void leds_api_clear(void);
  * \brief Transmits the current LED color data to the LED strip, updating the displayed colors.
  *
  * \retval LEDS_RC_OK Data transmitted successfully.
+ * \retval LEDS_RC_NULL_POINTER The transmit callback function is not set.
  * \retval LEDS_RC_TRANSMISSION_ERROR An error occurred during data transmission.
  */
 enum LedsReturnCode leds_api_show(void);
