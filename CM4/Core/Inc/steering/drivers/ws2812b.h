@@ -12,10 +12,8 @@
  * \brief Return codes for WS2812B functions.
  */
 enum WS2812BReturnCode {
-    WS2812B_RC_OK,                 /*!< Operation successful. */
-    WS2812B_RC_NULL_POINTER,       /*!< A null pointer was passed to a function. */
-    WS2812B_RC_INVALID_LED,        /*!< The specified LED index is out of range. */
-    WS2812B_RC_TRANSMISSION_ERROR, /*!< An error occurred during data transmission. */
+    WS2812B_RC_OK,           /*!< Operation successful. */
+    WS2812B_RC_NULL_POINTER, /*!< A null pointer was passed to a function. */
 };
 
 #endif // WS2812B_H
