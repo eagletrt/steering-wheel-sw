@@ -500,4 +500,24 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
 /* USER CODE BEGIN 1 */
 
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+    HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
+}
+
+enum LedsReturnCode tim_transmit_leds_pwm(const uint16_t *buffer, size_t size) {
+    if (buffer == NULL) {
+        return LEDS_RC_NULL_POINTER;
+    }
+
+    if (HAL_TIM_PWM_Start_DMA(
+            &htim3,
+            TIM_CHANNEL_1,
+            (uint32_t *)buffer,
+            size) != HAL_OK) {
+        return LEDS_RC_TRANSMISSION_ERROR;
+    }
+
+    return LEDS_RC_OK;
+}
+
 /* USER CODE END 1 */

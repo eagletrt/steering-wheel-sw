@@ -21,6 +21,7 @@
 #ifndef __TIM_H__
 #define __TIM_H__
 
+#include "leds.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -55,6 +56,8 @@ void MX_TIM5_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
+
+enum LedsReturnCode tim_transmit_leds_pwm(const uint16_t *buffer, size_t size);
 
 /* USER CODE END Prototypes */
 

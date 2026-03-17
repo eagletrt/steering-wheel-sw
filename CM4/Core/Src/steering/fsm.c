@@ -22,6 +22,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "inputs-api.h"
 #include "ipc-api.h"
 #include "leds-api.h"
+#include "tim.h"
 #include "main.h"
 
 /*** USER CODE END MACROS ***/
@@ -101,7 +102,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
         next_state = FSM_STATE_ERROR;
     }
 
-    if (leds_api_init() != LEDS_RC_OK) {
+    if (leds_api_init(tim_transmit_leds_pwm) != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
