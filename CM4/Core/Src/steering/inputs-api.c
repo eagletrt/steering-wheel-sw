@@ -12,7 +12,7 @@
 #include "inputs-api.h"
 #include "eagletrt.h"
 
-struct InputsHandler handler;
+EAGLETRT_STATIC struct InputsHandler handler;
 
 /*!
  * \brief Dispatch an event to both the notify and action callbacks.

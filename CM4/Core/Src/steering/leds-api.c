@@ -8,9 +8,10 @@
 
 #include "leds-api.h"
 #include "ws2812b-api.h"
+#include "eagletrt.h"
 #include <string.h>
 
-struct LedsHandler leds_handler;
+EAGLETRT_STATIC struct LedsHandler leds_handler;
 
 enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
     if (transmit == NULL) {
