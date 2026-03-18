@@ -1,3 +1,11 @@
+/*!
+ * \file test_inputs.c
+ * \date 2026-03-18
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Unit tests for the Inputs API functionality.
+ */
+
 #include "inputs-api.h"
 #include "inputs-shared.h"
 #include "fff.h"
@@ -23,7 +31,7 @@ void setUp(void) {
 
 /*!
  * \defgroup inputs_api_init Tests for inputs_api_init function
- * @{
+ * \{
  */
 
 void test_inputs_init_success(void) {
@@ -43,11 +51,11 @@ void test_inputs_init_fail_notify_callback(void) {
     TEST_ASSERT_EQUAL(INPUTS_RC_ERROR, rc);
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup inputs_api_update_button Tests for inputs_api_update_button function
- * @{
+ * \{
  */
 
 void test_inputs_update_button_success(void) {
@@ -102,11 +110,11 @@ void test_inputs_update_button_release(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(2, action_callback_fake.call_count, "Action callback should be called twice (press and release)");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup inputs_api_update_knob Tests for inputs_api_update_knob function
- * @{
+ * \{
  */
 
 void test_inputs_update_knob_success(void) {
@@ -171,11 +179,11 @@ void test_inputs_update_knob_movement(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(1, action_callback_fake.call_count, "Action callback should be called once for knob movement");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup inputs_api_poll_for_long_press Tests for inputs_api_poll_for_long_press function
- * @{
+ * \{
  */
 
 void test_inputs_poll_for_long_press(void) {
@@ -224,7 +232,7 @@ void test_inputs_poll_for_long_press_no_long_press(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(1, action_callback_fake.call_count, "Action callback should only be called once for button press");
 }
 
-/*! @} */
+/*! \} */
 
 int main() {
     UNITY_BEGIN();

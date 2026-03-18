@@ -1,3 +1,11 @@
+/*!
+ * \file test_leds.c
+ * \date 2026-03-18
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Unit tests for the LEDs API functionality.
+ */
+
 #include "unity.h"
 #include "fff.h"
 #include "leds-api.h"
@@ -17,7 +25,7 @@ void setUp(void) {
 
 /*!
  * \defgroup leds_api_init Test cases for leds_api_init function
- * @{
+ * \{
  */
 
 void test_leds_api_init_success(void) {
@@ -53,11 +61,11 @@ void test_leds_api_init_clears_leds(void) {
     }
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup leds_api_set_led Test cases for leds_api_set_led function
- * @{
+ * \{
  */
 
 void test_leds_api_set_led_valid_index(void) {
@@ -81,11 +89,11 @@ void test_leds_api_set_led_negative_index(void) {
     TEST_ASSERT_EQUAL(LEDS_RC_INVALID_LED, rc);
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup leds_api_fill Test cases for leds_api_fill function
- * @{
+ * \{
  */
 
 void test_leds_api_fill(void) {
@@ -98,11 +106,11 @@ void test_leds_api_fill(void) {
     }
 }
 
-/*! @} */
+/*! \} */
 
 /*! 
  * \defgroup leds_api_clear Test cases for leds_api_clear function
- * @{
+ * \{
  */
 
 void test_leds_api_clear(void) {
@@ -120,18 +128,18 @@ void test_leds_api_clear(void) {
     }
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup leds_api_show Test cases for leds_api_show function
- * @{
+ * \{
  */
 
 void test_leds_api_show_success(void) {
     enum LedsReturnCode rc_init = leds_api_init(fake_transmit);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc_init, "leds_api_init should return LEDS_RC_OK on successful initialization");
     fake_transmit_fake.return_val = LEDS_RC_OK;
-    enum LedsReturnCode rc = leds_api_show();
+    enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_show should return LEDS_RC_OK when transmission is successful");
     TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit function exactly once");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(leds_handler.pwm_buffer, fake_transmit_fake.arg0_val, "leds_api_show should call the transmit function with the correct PWM buffer");
@@ -139,7 +147,7 @@ void test_leds_api_show_success(void) {
 }
 
 void test_leds_api_show_null_transmit(void) {
-    enum LedsReturnCode rc = leds_api_show();
+    enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
@@ -147,11 +155,72 @@ void test_leds_api_show_transmission_error(void) {
     enum LedsReturnCode rc_init = leds_api_init(fake_transmit);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc_init, "leds_api_init should return LEDS_RC_OK on successful initialization");
     fake_transmit_fake.return_val = LEDS_RC_TRANSMISSION_ERROR;
-    enum LedsReturnCode rc = leds_api_show();
+    enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL(LEDS_RC_TRANSMISSION_ERROR, rc);
 }
 
-/*! @} */
+/*! \} */
+
+/*!
+ * \defgroup Steering wheel specific LED patterns
+ * \{
+ */
+
+void test_leds_api_ptt(void) {
+    leds_api_ptt();
+    for (size_t i = 0; i < 5; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for PTT indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for PTT indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 255 for PTT indication");
+    }
+}
+
+void test_leds_api_target_lap(void) {
+    leds_api_target_lap();
+    for (size_t i = 5; i < 9; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for target lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for target lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for target lap indication");
+    }
+}
+
+void test_leds_api_fast_lap(void) {
+    leds_api_fast_lap();
+    for (size_t i = 5; i < 9; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for fast lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for fast lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for fast lap indication");
+    }
+}
+
+void test_leds_api_slow_lap(void) {
+    leds_api_slow_lap();
+    for (size_t i = 5; i < 9; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for slow lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 255 for slow lap indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for slow lap indication");
+    }
+}
+
+void test_leds_api_error(void) {
+    leds_api_error();
+    for (size_t i = 0; i < 5; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for error indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for error indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for error indication");
+    }
+}
+
+void test_leds_api_ok(void) {
+    leds_api_ok();
+    for (size_t i = 0; i < 5; i++) {
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for OK indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 255 for OK indication");
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for OK indication");
+    }
+}
+
+/*! \} */
 
 int main(void) {
     UNITY_BEGIN();
@@ -171,6 +240,13 @@ int main(void) {
     RUN_TEST(test_leds_api_show_success);
     RUN_TEST(test_leds_api_show_null_transmit);
     RUN_TEST(test_leds_api_show_transmission_error);
+
+    RUN_TEST(test_leds_api_ptt);
+    RUN_TEST(test_leds_api_target_lap);
+    RUN_TEST(test_leds_api_fast_lap);
+    RUN_TEST(test_leds_api_slow_lap);
+    RUN_TEST(test_leds_api_error);
+    RUN_TEST(test_leds_api_ok);
 
     return UNITY_END();
 }

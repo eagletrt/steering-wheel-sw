@@ -130,6 +130,10 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
         next_state = FSM_STATE_ERROR;
     }
 
+    if (leds_api_show(255) != LEDS_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
+
     /*** USER CODE END DO_IDLE ***/
 
     switch (next_state) {

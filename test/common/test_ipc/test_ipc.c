@@ -25,7 +25,7 @@ void setUp() {
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
 void test_ipc_input_queue_read_and_process_all_empty(void) {
@@ -63,11 +63,11 @@ void test_ipc_input_queue_read_and_process_read_event(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(ev.button.button_id, last_event.button.button_id, "Button ID mismatch");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
 void test_ipc_input_queue_push_event_success(void) {
@@ -86,11 +86,11 @@ void test_ipc_input_queue_push_event_full(void) {
     TEST_ASSERT_EQUAL_MESSAGE(false, rc, "Expected queue to be full, but push succeeded");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
 void test_ipc_input_queue_write_all_read_all(void) {
@@ -115,7 +115,7 @@ void test_ipc_input_queue_write_100_read_100(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(100, read_and_process_callback_fake.call_count, "Expected to process all events in the queue across multiple wraps");
 }
 
-/*! @} */
+/*! \} */
 
 
 int main() {

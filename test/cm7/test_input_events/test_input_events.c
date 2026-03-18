@@ -1,3 +1,11 @@
+/*!
+ * \file test_input_events.c
+ * \date 2026-03-14
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Test Input Events API functionality.
+ */
+
 #include "unity.h"
 #include "fff.h"
 #include "input-events-api.h"
@@ -21,7 +29,7 @@ void setUp(void) {
 
 /*!
  * \defgroup input_events_api_init Input Events API Initialization Tests
- * @{
+ * \{
  */
 
 void test_input_events_api_init_should_store_callbacks(void) {
@@ -53,11 +61,11 @@ void test_input_events_api_init_should_fail_null_rotation_callback(void) {
     TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_ERROR, rc);
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup input_events_api_handle_event Input Events API Event Handling Tests
- * @{
+ * \{
  */
 
 void test_input_events_api_handle_event_should_invoke_button_press_callback(void) {
@@ -114,7 +122,7 @@ void test_input_events_api_handle_event_should_invoke_knob_rotation_callback(voi
     TEST_ASSERT_EQUAL_MESSAGE(5, test_knob_rotation_callback_fake.arg1_val, "Wrong delta passed to knob rotation callback");
 }
 
-/*! @} */
+/*! \} */
 
 int main() {
     UNITY_BEGIN();
