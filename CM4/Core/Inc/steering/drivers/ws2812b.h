@@ -1,3 +1,11 @@
+/*!
+ * \file ws2812b.h
+ * \date 2026-03-18
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief This file defines constants and return codes for WS2812B LED control, including duty cycle values for representing binary 0 and 1, as well as the number of reset slots required after transmitting data to the LEDs.
+ */
+
 #ifndef WS2812B_H
 #define WS2812B_H
 
