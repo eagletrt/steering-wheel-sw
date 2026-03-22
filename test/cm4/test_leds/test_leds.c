@@ -17,10 +17,12 @@ DEFINE_FFF_GLOBALS;
 
 FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const uint16_t *, size_t);
 
+enum LedsReturnCode init_rc;
+
 void setUp(void) {
     RESET_FAKE(fake_transmit);
     FFF_RESET_HISTORY();
-    memset(&leds_handler, 0, sizeof(leds_handler));
+    init_rc = leds_api_init(fake_transmit);
 }
 
 /*!
@@ -29,28 +31,7 @@ void setUp(void) {
  */
 
 void test_leds_api_init_success(void) {
-    enum LedsReturnCode rc = leds_api_init(fake_transmit);
-    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, leds_handler.transmit, "leds_handler.transmit should be set to the provided transmit function");
-}
-
-void test_leds_api_init_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(NULL);
-    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
-}
-
-void test_leds_api_init_clears_leds(void) {
-    for (size_t i = 0; i < LEDS_COUNT; i++) {
-        leds_handler.leds[i].r = 255;
-        leds_handler.leds[i].g = 255;
-        leds_handler.leds[i].b = 255;
-    }
-    for (size_t i = 0; i < LEDS_PWM_BUFFER_SIZE; i++) {
-        leds_handler.pwm_buffer[i] = 0xFFFF;
-    }
-
-    enum LedsReturnCode rc = leds_api_init(fake_transmit);
-    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     for (size_t i = 0; i < LEDS_COUNT; i++) {
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds should be cleared to 0 on initialization");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds should be cleared to 0 on initialization");
@@ -59,6 +40,12 @@ void test_leds_api_init_clears_leds(void) {
     for (size_t i = 0; i < LEDS_PWM_BUFFER_SIZE; i++) {
         TEST_ASSERT_EQUAL_UINT16_MESSAGE(0, leds_handler.pwm_buffer[i], "leds_handler.pwm_buffer should be cleared to 0 on initialization");
     }
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
+}
+
+void test_leds_api_init_null_pointer(void) {
+    enum LedsReturnCode rc = leds_api_init(NULL);
+    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
 /*! \} */
@@ -136,8 +123,7 @@ void test_leds_api_clear(void) {
  */
 
 void test_leds_api_show_success(void) {
-    enum LedsReturnCode rc_init = leds_api_init(fake_transmit);
-    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc_init, "leds_api_init should return LEDS_RC_OK on successful initialization");
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     fake_transmit_fake.return_val = LEDS_RC_OK;
     enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_show should return LEDS_RC_OK when transmission is successful");
@@ -147,13 +133,13 @@ void test_leds_api_show_success(void) {
 }
 
 void test_leds_api_show_null_transmit(void) {
+    memset(&leds_handler, 0, sizeof(leds_handler));
     enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
 void test_leds_api_show_transmission_error(void) {
-    enum LedsReturnCode rc_init = leds_api_init(fake_transmit);
-    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc_init, "leds_api_init should return LEDS_RC_OK on successful initialization");
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     fake_transmit_fake.return_val = LEDS_RC_TRANSMISSION_ERROR;
     enum LedsReturnCode rc = leds_api_show(128);
     TEST_ASSERT_EQUAL(LEDS_RC_TRANSMISSION_ERROR, rc);
@@ -227,7 +213,6 @@ int main(void) {
 
     RUN_TEST(test_leds_api_init_success);
     RUN_TEST(test_leds_api_init_null_pointer);
-    RUN_TEST(test_leds_api_init_clears_leds);
 
     RUN_TEST(test_leds_api_set_led_valid_index);
     RUN_TEST(test_leds_api_set_led_invalid_index);

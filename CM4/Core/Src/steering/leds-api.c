@@ -18,10 +18,8 @@ enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
         return LEDS_RC_NULL_POINTER;
     }
 
+    memset(&leds_handler, 0, sizeof(leds_handler));
     leds_handler.transmit = transmit;
-    memset(leds_handler.leds, 0, sizeof(leds_handler.leds));
-    memset(leds_handler.pwm_buffer, 0, sizeof(leds_handler.pwm_buffer));
-
     return LEDS_RC_OK;
 }
 
