@@ -14,10 +14,10 @@
 #define ONE_LED_INPUT_SIZE 3
 #define ONE_LED_OUTPUT_SIZE (ONE_LED_INPUT_SIZE * 8 + WS2812B_RESET_SLOTS)
 
-extern const uint8_t GAMMA[256];
+extern const uint8_t WS2812BGammaCorrectionTable[256];
 
 static void encode_byte(uint8_t value, uint16_t *out, uint8_t brightness) {
-    uint8_t scaled_value = ((uint16_t)GAMMA[value] * brightness) / 255;
+    uint8_t scaled_value = ((uint16_t)WS2812BGammaCorrectionTable[value] * brightness) / 255;
     for (int i = 7; i >= 0; i--) {
         out[7 - i] = (scaled_value & (1 << i)) ? WS2812B_DUTY_1 : WS2812B_DUTY_0;
     }
@@ -131,9 +131,6 @@ void test_ws2812b_encode_msb_first(void) {
         0x01, /* 00000001 => gamma corrected => 00000000 */
         0x00
     };
-
-    printf("GAMMA[0x80] = %u\n", GAMMA[0x80]);
-    printf("GAMMA[0x01] = %u\n", GAMMA[0x01]);
 
     uint8_t brightness = 255;
 

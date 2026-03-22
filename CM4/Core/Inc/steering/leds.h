@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define LEDS_COUNT 9
+#define LEDS_COUNT (9U)
 #define LEDS_PWM_BUFFER_SIZE (LEDS_COUNT * 24 + WS2812B_RESET_SLOTS)
 
 /*!

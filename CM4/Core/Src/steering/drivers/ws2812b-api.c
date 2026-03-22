@@ -7,14 +7,14 @@
  */
 
 #include "ws2812b-api.h"
-#include "eagletrt.h"
+#include "eagletrt-api.h"
 
 // clang-format off
 
 /*!
  * \brief Gamma correction table for 8-bit color values.
  */
-EAGLETRT_STATIC const uint8_t GAMMA[256] = {
+EAGLETRT_STATIC const uint8_t WS2812BGammaCorrectionTable[256] = {
     0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6,
     7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14,
     15, 16, 16, 17, 17, 18, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22,
@@ -42,7 +42,7 @@ enum WS2812BReturnCode ws2812b_encode(
     uint16_t *output,
     size_t num_leds) {
 
-    if (!input || !output)
+    if (input == NULL || output == NULL)
         return WS2812B_RC_NULL_POINTER;
 
     size_t out_idx = 0;
@@ -51,18 +51,21 @@ enum WS2812BReturnCode ws2812b_encode(
     for (size_t led = 0; led < num_leds; led++) {
         /* 3 bytes per LED: G, R, B */
         for (int byte = 0; byte < 3; byte++) {
-            uint8_t value = ((uint16_t)GAMMA[input[in_idx++]] * brightness) / 255;
+            uint8_t value = ((uint16_t)WS2812BGammaCorrectionTable[input[in_idx]] * brightness) / 255;
+            in_idx++;
             /* MSB first */
             for (int bit = 7; bit >= 0; bit--) {
-                output[out_idx++] =
-                    (value & (1 << bit)) ? WS2812B_DUTY_1 : WS2812B_DUTY_0;
+                output[out_idx] =
+                    EAGLETRT_API_BIT_GET(value, bit) ? WS2812B_DUTY_1 : WS2812B_DUTY_0;
+                out_idx++;
             }
         }
     }
 
     /* reset (low for >50µs) */
     for (size_t i = 0; i < WS2812B_RESET_SLOTS; i++) {
-        output[out_idx++] = 0;
+        output[out_idx] = 0;
+        out_idx++;
     }
 
     return WS2812B_RC_OK;

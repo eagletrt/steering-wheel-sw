@@ -12,9 +12,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define WS2812B_DUTY_0 35
-#define WS2812B_DUTY_1 70
-#define WS2812B_RESET_SLOTS 50
+#define WS2812B_DUTY_0 (35U)
+#define WS2812B_DUTY_1 (70U)
+#define WS2812B_RESET_SLOTS (50U)
 
 /*!
  * \brief Return codes for WS2812B functions.
