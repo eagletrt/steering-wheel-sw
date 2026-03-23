@@ -68,7 +68,7 @@ enum LedsReturnCode leds_api_show();
  *
  * \details The middle 5 LEDs (indices 0-4) will be set to blue
  */
-void leds_api_ptt();
+void leds_api_set_ptt_pattern();
 
 /*!
  * \brief Sets the LEDs to indicate the current lap status.
@@ -77,7 +77,7 @@ void leds_api_ptt();
  *
  * \details The top left and right LEDs (indices 5-8) will be set to off (TODO: ask if green is better)
  */
-void leds_api_target_lap(void);
+void leds_api_set_target_lap_pattern(void);
 
 /*!
  * \brief Sets the LEDs to indicate the current lap status.
@@ -86,7 +86,7 @@ void leds_api_target_lap(void);
  *
  * \details The top left and right LEDs (indices 5-8) will be set to green (TODO: ask if green or purple)
  */
-void leds_api_fast_lap(void);
+void leds_api_set_fast_lap_pattern(void);
 
 /*!
  * \brief Sets the LEDs to indicate the current lap status.
@@ -95,7 +95,7 @@ void leds_api_fast_lap(void);
  *
  * \details The top left and right LEDs (indices 5-8) will be set to yellow
  */
-void leds_api_slow_lap(void);
+void leds_api_set_slow_lap_pattern(void);
 
 /*!
  * \brief Sets the LEDs to indicate an error state.
@@ -104,7 +104,7 @@ void leds_api_slow_lap(void);
  *
  * \details The middle 5 LEDs (indices 0-4) will be set to red
  */
-void leds_api_error(void);
+void leds_api_set_error_pattern(void);
 
 /*!
  * \brief Sets the LEDs to indicate an OK state.
@@ -113,6 +113,6 @@ void leds_api_error(void);
  *
  * \details The middle 5 LEDs (indices 0-4) will be set to off (TODO: ask if green is better)
  */
-void leds_api_ok(void);
+void leds_api_set_ok_pattern(void);
 
 #endif // LEDS_API_H

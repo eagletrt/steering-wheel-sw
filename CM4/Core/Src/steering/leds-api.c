@@ -71,42 +71,42 @@ enum LedsReturnCode leds_api_show() {
     return LEDS_RC_OK;
 }
 
-void leds_api_ptt(void) {
+void leds_api_set_ptt_pattern(void) {
     struct LedColor blue = { .g = 0, .r = 0, .b = 255 };
     for (size_t i = LEDS_CENTER_0; i < LEDS_CENTER_4 + 1; i++) {
         leds_handler.leds[i] = blue;
     }
 }
 
-void leds_api_target_lap(void) {
+void leds_api_set_target_lap_pattern(void) {
     struct LedColor off = { 0, 0, 0 };
     for (size_t i = LEDS_TOP_LEFT_1; i < LEDS_TOP_RIGHT_1 + 1; i++) {
         leds_handler.leds[i] = off;
     }
 }
 
-void leds_api_fast_lap(void) {
+void leds_api_set_fast_lap_pattern(void) {
     struct LedColor green = { .g = 255, .r = 0, .b = 0 };
     for (size_t i = LEDS_TOP_LEFT_1; i < LEDS_TOP_RIGHT_1 + 1; i++) {
         leds_handler.leds[i] = green;
     }
 }
 
-void leds_api_slow_lap(void) {
+void leds_api_set_slow_lap_pattern(void) {
     struct LedColor yellow = { .g = 255, .r = 255, .b = 0 };
     for (size_t i = LEDS_TOP_LEFT_1; i < LEDS_TOP_RIGHT_1 + 1; i++) {
         leds_handler.leds[i] = yellow;
     }
 }
 
-void leds_api_error(void) {
+void leds_api_set_error_pattern(void) {
     struct LedColor red = { .g = 0, .r = 255, .b = 0 };
     for (size_t i = LEDS_CENTER_0; i < LEDS_CENTER_4 + 1; i++) {
         leds_handler.leds[i] = red;
     }
 }
 
-void leds_api_ok(void) {
+void leds_api_set_ok_pattern(void) {
     struct LedColor off = { 0, 0, 0 };
     for (size_t i = LEDS_CENTER_0; i < LEDS_CENTER_4 + 1; i++) {
         leds_handler.leds[i] = off;
