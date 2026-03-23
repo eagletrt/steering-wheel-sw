@@ -15,7 +15,6 @@
 
 #define WS2812B_FREQUENCY_HZ (800000U) /*!< Frequency in Hz for WS2812B LED data transmission. */
 #define WS2812B_RESET_SLOTS (50U)      /*!< Number of time slots required to reset the WS2812B LEDs after data transmission. */
-#define WS2812B_SLOT_NS (1250U)        /*!< Duration of each time slot in nanoseconds for WS2812B data transmission. */
 #define WS2812B_DUTY_0_RATIO (35U)     /*!< Duty cycle ratio for representing binary 0 (35% of the time slot). */
 #define WS2812B_DUTY_1_RATIO (70U)     /*!< Duty cycle ratio for representing binary 1 (70% of the time slot). */
 
