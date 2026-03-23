@@ -59,13 +59,20 @@ enum LedsReturnCode leds_api_show() {
         LEDS_COUNT);
 
     if (encode_rc != WS2812B_RC_OK) {
-        return LEDS_RC_TRANSMISSION_ERROR;
+        return LEDS_RC_NULL_POINTER;
     }
 
     enum WS2812BReturnCode transmit_rc = ws2812b_transmit(&leds_handler.ws2812b_handler, leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_COUNT));
 
-    if (transmit_rc != WS2812B_RC_OK) {
-        return LEDS_RC_TRANSMISSION_ERROR;
+    switch (transmit_rc) {
+        case WS2812B_RC_OK:
+            break;
+        case WS2812B_RC_NULL_POINTER:
+            return LEDS_RC_NULL_POINTER;
+        case WS2812B_RC_TRANSMISSION_ERROR:
+            return LEDS_RC_TRANSMISSION_ERROR;
+        default:
+            return LEDS_RC_NULL_POINTER;
     }
 
     return LEDS_RC_OK;

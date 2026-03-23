@@ -89,15 +89,14 @@ enum WS2812BReturnCode ws2812b_encode(
 }
 
 enum WS2812BReturnCode ws2812b_transmit(struct WS2812BHandler *handler, uint16_t *pwm_buffer, size_t length) {
-    if (handler == NULL || pwm_buffer == NULL) {
+    if (handler == NULL || handler->transmit_callback == NULL || pwm_buffer == NULL) {
         return WS2812B_RC_NULL_POINTER;
     }
     if (handler->busy) {
         return WS2812B_RC_BUSY;
     }
     ws2812b_set_busy(handler, true);
-    handler->transmit_callback(handler, (uint32_t *)pwm_buffer, length);
-    return WS2812B_RC_OK;
+    return handler->transmit_callback(handler, (uint32_t *)pwm_buffer, length);
 }
 
 enum WS2812BReturnCode ws2812b_set_busy(struct WS2812BHandler *handler, bool busy) {
