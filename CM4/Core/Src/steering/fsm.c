@@ -17,13 +17,10 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
-#include "eagletrt.h"
 #include "eagletrt-api.h"
 #include "inputs-api.h"
 #include "ipc-api.h"
 #include "leds-api.h"
-#include "tim.h"
-#include "main.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -98,11 +95,13 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    if (inputs_api_init(__DMB, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (inputs_api_init(fsm_data->critical_section_callback, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
-    if (leds_api_init(tim_ws2812b_transmit_pwm, tim_ws2812b_get_timer_hz) != LEDS_RC_OK) {
+    if (leds_api_init(fsm_data->ws2812b_transmit, fsm_data->ws2812b_get_tick_hz) != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
@@ -126,11 +125,13 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_IDLE ***/
 
-    if (inputs_api_poll_for_long_press(HAL_GetTick()) != INPUTS_RC_OK) {
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (inputs_api_poll_for_long_press(fsm_data->get_tick()) != INPUTS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
-    if (leds_api_show(255) != LEDS_RC_OK) {
+    if (leds_api_show() != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 

@@ -19,6 +19,8 @@ Functions and types have been generated with prefix "fsm_"
 #include <stdbool.h>
 
 /*** USER CODE BEGIN MACROS ***/
+#include "ipc.h"
+#include "ws2812b.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -62,6 +64,21 @@ typedef fsm_state_t fsm_state_func_t(fsm_state_data_t *data);
 typedef void transition_func_t(fsm_state_data_t *data);
 
 /*** USER CODE BEGIN TYPES ***/
+
+/*!
+ * \brief Callback definition for to retrieve the currect system time.
+ *
+ * \retval current system tick
+ */
+typedef uint32_t (*get_system_tick)(void);
+
+// TODO: this is temporary, until POST is properly implemented
+struct FsmData {
+    void (*critical_section_callback)(void);
+    ws2812b_pwm_transmit_callback ws2812b_transmit;
+    ws2812b_get_tick_hz_callback ws2812b_get_tick_hz;
+    get_system_tick get_tick;
+};
 
 /*** USER CODE END TYPES ***/
 

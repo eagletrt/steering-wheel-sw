@@ -123,13 +123,20 @@ int main(void) {
     MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
 
+    struct FsmData data = {
+        .critical_section_callback = __DMB,
+        .get_tick = HAL_GetTick,
+        .ws2812b_transmit = tim_ws2812b_transmit_pwm,
+        .ws2812b_get_tick_hz = tim_ws2812b_get_timer_hz,
+    };
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
 
-        current_state = fsm_run_state(current_state, NULL);
+        current_state = fsm_run_state(current_state, &data);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
