@@ -30,6 +30,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "ws2812b.h"
 
 /* USER CODE END Includes */
 
@@ -57,7 +58,26 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
 
-enum LedsReturnCode tim_transmit_leds_pwm(const uint16_t *buffer, size_t size);
+/*!
+ * \brief Transmits a buffer of duty cicles to the WS2812B LEDs using PWM on TIM3.
+ *
+ * \param buffer Pointer to the buffer containing the duty cycles to be transmitted. Each duty cycle should be a 32-bit value.
+ * \param size The number of duty cycles in the buffer.
+ *
+ * \retval WS2812B_RC_OK if the transmission was successful.
+ * \retval WS2812B_RC_NULL_POINTER if the buffer pointer is NULL.
+ * \retval WS2812B_RC_TRANSMISSION_ERROR if there was an error during transmission.
+ */
+enum WS2812BReturnCode tim_ws2812b_transmit_pwm(struct WS2812BHandler *handler, const uint32_t *buffer, uint16_t size);
+
+/*!
+ * \brief Gets the timer frequency in Hz for the WS2812B LED transmission.
+ *
+ * This function calculates the timer frequency based on the configuration of TIM3, which is used for transmitting data to the WS2812B LEDs. The frequency is determined by the timer's clock source and prescaler settings.
+ *
+ * \return The timer frequency in Hz.
+ */
+uint32_t tim_ws2812b_get_timer_hz();
 
 /* USER CODE END Prototypes */
 

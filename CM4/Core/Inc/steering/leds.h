@@ -9,12 +9,9 @@
 #ifndef LEDS_H
 #define LEDS_H
 
-#include "ws2812b.h"
+#include "ws2812b-api.h"
 #include <stdint.h>
 #include <stddef.h>
-
-#define LEDS_COUNT (9U)
-#define LEDS_PWM_BUFFER_SIZE (LEDS_COUNT * 24 + WS2812B_RESET_SLOTS)
 
 /*!
  * \brief Return codes for LED operations.
@@ -50,29 +47,17 @@ enum LedsIndex {
     LEDS_TOP_LEFT_0 = 6,  /*!< Top left LED 0 (index 6). */
     LEDS_TOP_RIGHT_0 = 7, /*!< Top right LED 0 (index 7). */
     LEDS_TOP_RIGHT_1 = 8, /*!< Top right LED 1 (index 8). */
+    LEDS_COUNT = 9        /*!< Total number of LEDs in the strip. */
 };
-
-/*!
- * \brief Function pointer type for transmitting data to the WS2812B LEDs.
- *
- * This callback function is responsible for sending the PWM data to the LED strip.
- *
- * \param buffer Pointer to the buffer containing the PWM data to be transmitted.
- * \param size Size of the buffer in bytes.
- *
- * \retval LEDS_RC_OK if the transmission was successful, or an appropriate error code if it failed.
- * \retval LEDS_RC_NULL_POINTER if a null pointer was passed to the function.
- * \retval LEDS_RC_TRANSMISSION_ERROR if an error occurred during data transmission.
- */
-typedef enum LedsReturnCode (*leds_transmit_callback)(const uint16_t *buffer, size_t size);
 
 /*!
  * \brief Handler structure for managing the LED system.
  */
 struct LedsHandler {
-    struct LedColor leds[LEDS_COUNT];          /*!< Array of LedColor structures representing the colors of each LED. */
-    uint16_t pwm_buffer[LEDS_PWM_BUFFER_SIZE]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
-    leds_transmit_callback transmit;           /*!< Function pointer for transmitting data to the LEDs. */
+    struct LedColor leds[LEDS_COUNT];                     /*!< Array of LedColor structures representing the colors of each LED. */
+    uint8_t brightness;                                   /*!< Brightness level for the LEDs (0-255), where 0 is off and 255 is full brightness. (default: 255) */
+    uint32_t buffer[WS2812B_API_BUFFER_SIZE(LEDS_COUNT)]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
+    struct WS2812BHandler ws2812b_handler;                /*!< Handler for managing the WS2812B LED strip. */
 };
 
 #endif // LEDS_H

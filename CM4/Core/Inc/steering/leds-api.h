@@ -14,12 +14,13 @@
 /*!
  * \brief Initializes the LED system, clearing all LEDs and preparing the driver for operation.
  *
- * \param transmit Function pointer for transmitting data to the LEDs.
+ * \param transmit A callback function that will be called to transmit the PWM data to the WS2812B LEDs. This function should handle the actual transmission of the PWM buffer to the LEDs.
+ * \param get_tick_hz A callback function that returns the frequency of the timer ticks in Hz, which is used to calculate the duty cycle values for WS2812B data transmission.
  *
  * \retval LEDS_RC_OK Initialization successful.
  * \retval LEDS_RC_NULL_POINTER A null pointer was passed for the transmit callback.
  */
-enum LedsReturnCode leds_api_init(leds_transmit_callback transmit);
+enum LedsReturnCode leds_api_init(ws2812b_pwm_transmit_callback transmit, ws2812b_get_tick_hz_callback get_tick_hz);
 
 /*!
  * \brief Sets the color of a specific LED in the strip.
@@ -30,14 +31,14 @@ enum LedsReturnCode leds_api_init(leds_transmit_callback transmit);
  * \retval LEDS_RC_OK Color set successfully.
  * \retval LEDS_RC_INVALID_LED The specified LED index is out of range.
  */
-enum LedsReturnCode leds_api_set_led(enum LedsIndex index, struct LedColor color);
+enum LedsReturnCode leds_api_set_led_color(enum LedsIndex index, struct LedColor color);
 
 /*!
  * \brief Fills the entire LED strip with a specific color.
  *
  * \param color LedColor structure representing the desired color for all LEDs.
  */
-void leds_api_fill(struct LedColor color);
+void leds_api_set_led_color_all(struct LedColor color);
 
 /*!
  * \brief Clears the LED strip by setting all LEDs to off (black).
@@ -45,15 +46,20 @@ void leds_api_fill(struct LedColor color);
 void leds_api_clear(void);
 
 /*!
- * \brief Transmits the current LED color data to the LED strip, updating the displayed colors.
+ * \brief Sets the brightness level for the LEDs.
  *
- * \param brightness Brightness level for the LEDs (0-255), where 0 is off and 255 is full brightness (scaling is internal)
+ * \param brightness Brightness level (0-255), where 0 is off and 255 is full brightness.
+ */
+void leds_api_set_brightness(uint8_t brightness);
+
+/*!
+ * \brief Transmits the current LED color data to the LED strip, updating the displayed colors.
  *
  * \retval LEDS_RC_OK Data transmitted successfully.
  * \retval LEDS_RC_NULL_POINTER The transmit callback function is not set.
  * \retval LEDS_RC_TRANSMISSION_ERROR An error occurred during data transmission.
  */
-enum LedsReturnCode leds_api_show(uint8_t brightness);
+enum LedsReturnCode leds_api_show();
 
 /*!
  * \brief Sets the LEDs to indicate the PTT (Push-To-Talk) status.

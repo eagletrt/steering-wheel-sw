@@ -8,6 +8,8 @@
 
 #include "ws2812b-api.h"
 #include "eagletrt-api.h"
+#include "ws2812b.h"
+#include <string.h>
 
 // clang-format off
 
@@ -36,13 +38,28 @@ EAGLETRT_STATIC const uint8_t WS2812BGammaCorrectionTable[256] = {
 };
 // clang-format on
 
+enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_pwm_transmit_callback transmit_callback, ws2812b_get_tick_hz_callback get_tick_hz_callback) {
+    if (handler == NULL || transmit_callback == NULL || get_tick_hz_callback == NULL) {
+        return WS2812B_RC_NULL_POINTER;
+    }
+
+    memset(handler, 0, sizeof(*handler));
+    handler->transmit_callback = transmit_callback;
+    uint32_t arr = (get_tick_hz_callback() / WS2812B_FREQUENCY_HZ) - 1;
+    handler->duty_0 = ((arr + 1) * WS2812B_DUTY_0_RATIO) / WS2812B_SLOT_DUR;
+    handler->duty_1 = ((arr + 1) * WS2812B_DUTY_1_RATIO) / WS2812B_SLOT_DUR;
+
+    return WS2812B_RC_OK;
+}
+
 enum WS2812BReturnCode ws2812b_encode(
+    struct WS2812BHandler *handler,
     uint8_t brightness,
-    const uint8_t *input,
-    uint16_t *output,
+    const uint8_t *grb_color_buffer,
+    uint32_t *pwm_duty_out,
     size_t num_leds) {
 
-    if (input == NULL || output == NULL)
+    if (handler == NULL || grb_color_buffer == NULL || pwm_duty_out == NULL)
         return WS2812B_RC_NULL_POINTER;
 
     size_t out_idx = 0;
@@ -51,12 +68,12 @@ enum WS2812BReturnCode ws2812b_encode(
     for (size_t led = 0; led < num_leds; led++) {
         /* 3 bytes per LED: G, R, B */
         for (int byte = 0; byte < 3; byte++) {
-            uint8_t value = ((uint16_t)WS2812BGammaCorrectionTable[input[in_idx]] * brightness) / 255;
+            uint8_t value = ((uint16_t)WS2812BGammaCorrectionTable[grb_color_buffer[in_idx]] * brightness) / 255;
             in_idx++;
             /* MSB first */
             for (int bit = 7; bit >= 0; bit--) {
-                output[out_idx] =
-                    EAGLETRT_API_BIT_GET(value, bit) ? WS2812B_DUTY_1 : WS2812B_DUTY_0;
+                pwm_duty_out[out_idx] =
+                    EAGLETRT_API_BIT_GET(value, bit) ? handler->duty_1 : handler->duty_0;
                 out_idx++;
             }
         }
@@ -64,9 +81,29 @@ enum WS2812BReturnCode ws2812b_encode(
 
     /* reset (low for >50µs) */
     for (size_t i = 0; i < WS2812B_RESET_SLOTS; i++) {
-        output[out_idx] = 0;
+        pwm_duty_out[out_idx] = 0U;
         out_idx++;
     }
 
+    return WS2812B_RC_OK;
+}
+
+enum WS2812BReturnCode ws2812b_transmit(struct WS2812BHandler *handler, uint32_t *pwm_buffer, size_t length) {
+    if (handler == NULL || pwm_buffer == NULL) {
+        return WS2812B_RC_NULL_POINTER;
+    }
+    if (handler->busy) {
+        return WS2812B_RC_BUSY;
+    }
+    ws2812b_set_busy(handler, true);
+    handler->transmit_callback(handler, pwm_buffer, length);
+    return WS2812B_RC_OK;
+}
+
+enum WS2812BReturnCode ws2812b_set_busy(struct WS2812BHandler *handler, bool busy) {
+    if (handler == NULL) {
+        return WS2812B_RC_NULL_POINTER;
+    }
+    handler->busy = busy;
     return WS2812B_RC_OK;
 }

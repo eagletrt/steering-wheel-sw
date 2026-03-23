@@ -102,7 +102,7 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
         next_state = FSM_STATE_ERROR;
     }
 
-    if (leds_api_init(tim_transmit_leds_pwm) != LEDS_RC_OK) {
+    if (leds_api_init(tim_ws2812b_transmit_pwm, tim_ws2812b_get_timer_hz) != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
