@@ -44,7 +44,7 @@ enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_
  * \retval WS2812B_RC_OK Encoding successful.
  * \retval WS2812B_RC_NULL_POINTER A null pointer was passed for either the input color buffer or the output PWM buffer.
  */
-enum WS2812BReturnCode ws2812b_encode(struct WS2812BHandler *handler, uint8_t brightness, const uint8_t *grb_color_buffer, uint32_t *pwm_duty_out, size_t num_leds);
+enum WS2812BReturnCode ws2812b_encode(struct WS2812BHandler *handler, uint8_t brightness, const uint8_t *grb_color_buffer, uint16_t *pwm_duty_out, size_t num_leds);
 
 /*!
  * \brief Transmits the encoded PWM buffer to the WS2812B LEDs using the handler's transmit callback.
@@ -58,7 +58,7 @@ enum WS2812BReturnCode ws2812b_encode(struct WS2812BHandler *handler, uint8_t br
  * \retval WS2812B_RC_OK Transmission successful.
  * \retval WS2812B_RC_NULL_POINTER A null pointer was passed for either the handler or the PWM buffer.
  */
-enum WS2812BReturnCode ws2812b_transmit(struct WS2812BHandler *handler, uint32_t *pwm_buffer, size_t length);
+enum WS2812BReturnCode ws2812b_transmit(struct WS2812BHandler *handler, uint16_t *pwm_buffer, size_t length);
 
 /*!
  * \brief Sets the busy flag in the handler to indicate whether it is currently transmitting data.

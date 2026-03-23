@@ -57,8 +57,8 @@ enum WS2812BReturnCode {
  * This structure contains the duty cycle values for representing binary 0 and 1, as well as the number of reset slots required after transmitting data to the LEDs.
  */
 struct WS2812BHandler {
-    uint32_t duty_0;                                 /*!< Duty cycle value representing binary 0. */
-    uint32_t duty_1;                                 /*!< Duty cycle value representing binary 1. */
+    uint16_t duty_0;                                 /*!< Duty cycle value representing binary 0. */
+    uint16_t duty_1;                                 /*!< Duty cycle value representing binary 1. */
     ws2812b_pwm_transmit_callback transmit_callback; /*!< Callback function for transmitting PWM data to the LEDs. */
     volatile bool busy;                              /*!< Flag indicating whether the handler is currently busy transmitting data. */
 };

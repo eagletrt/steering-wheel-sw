@@ -56,7 +56,7 @@ enum LedsIndex {
 struct LedsHandler {
     struct LedColor leds[LEDS_COUNT];                     /*!< Array of LedColor structures representing the colors of each LED. */
     uint8_t brightness;                                   /*!< Brightness level for the LEDs (0-255), where 0 is off and 255 is full brightness. (default: 255) */
-    uint32_t buffer[WS2812B_API_BUFFER_SIZE(LEDS_COUNT)]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
+    uint16_t buffer[WS2812B_API_BUFFER_SIZE(LEDS_COUNT)]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
     struct WS2812BHandler ws2812b_handler;                /*!< Handler for managing the WS2812B LED strip. */
 };
 
