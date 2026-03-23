@@ -15,14 +15,16 @@ extern struct LedsHandler leds_handler;
 
 DEFINE_FFF_GLOBALS;
 
-FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const uint16_t *, size_t);
+FAKE_VALUE_FUNC(enum WS2812BReturnCode, fake_transmit, struct WS2812BHandler *, const uint32_t *, uint16_t);
+FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
 
 enum LedsReturnCode init_rc;
 
 void setUp(void) {
     RESET_FAKE(fake_transmit);
+    RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
-    init_rc = leds_api_init(fake_transmit);
+    init_rc = leds_api_init(fake_transmit, fake_get_tick_hz);
 }
 
 /*!
@@ -37,8 +39,8 @@ void test_leds_api_init_success(void) {
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds should be cleared to 0 on initialization");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds should be cleared to 0 on initialization");
     }
-    for (size_t i = 0; i < LEDS_PWM_BUFFER_SIZE; i++) {
-        TEST_ASSERT_EQUAL_UINT16_MESSAGE(0, leds_handler.pwm_buffer[i], "leds_handler.pwm_buffer should be cleared to 0 on initialization");
+    for (size_t i = 0; i < WS2812B_API_BUFFER_SIZE(LEDS_COUNT); i++) {
+        TEST_ASSERT_EQUAL_UINT32_MESSAGE(0, leds_handler.buffer[i], "leds_handler.pwm_buffer should be cleared to 0 on initialization");
     }
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
 }

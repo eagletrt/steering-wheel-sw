@@ -46,8 +46,8 @@ enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_
     memset(handler, 0, sizeof(*handler));
     handler->transmit_callback = transmit_callback;
     uint32_t arr = (get_tick_hz_callback() / WS2812B_FREQUENCY_HZ) - 1;
-    handler->duty_0 = ((arr + 1) * WS2812B_DUTY_0_RATIO) / WS2812B_SLOT_DUR;
-    handler->duty_1 = ((arr + 1) * WS2812B_DUTY_1_RATIO) / WS2812B_SLOT_DUR;
+    handler->duty_0 = ((arr + 1) * WS2812B_DUTY_0_RATIO) / (WS2812B_SLOT_NS / 10);
+    handler->duty_1 = ((arr + 1) * WS2812B_DUTY_1_RATIO) / (WS2812B_SLOT_NS / 10);
 
     return WS2812B_RC_OK;
 }

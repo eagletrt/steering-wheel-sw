@@ -21,7 +21,6 @@
 #ifndef __TIM_H__
 #define __TIM_H__
 
-#include "leds.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

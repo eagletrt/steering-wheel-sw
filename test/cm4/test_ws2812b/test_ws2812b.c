@@ -10,11 +10,27 @@
 #include "ws2812b-api.h"
 #include <string.h>
 #include <stdio.h>
+#include "fff.h"
 
 #define ONE_LED_INPUT_SIZE 3
 #define ONE_LED_OUTPUT_SIZE (ONE_LED_INPUT_SIZE * 8 + WS2812B_RESET_SLOTS)
 
 extern const uint8_t WS2812BGammaCorrectionTable[256];
+struct WS2812BHandler handler;
+enum WS2812BReturnCode init_rc;
+
+DEFINE_FFF_GLOBALS;
+
+FAKE_VALUE_FUNC(enum WS2812BReturnCode, fake_transmit, struct WS2812BHandler *, const uint32_t *, uint16_t);
+FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
+
+void setUp(void) {
+    RESET_FAKE(fake_transmit);
+    RESET_FAKE(fake_get_tick_hz);
+    FFF_RESET_HISTORY();
+    fake_get_tick_hz_fake.return_val = 160000;
+    init_rc = ws2812b_api_init(&handler, fake_transmit, fake_get_tick_hz);
+}
 
 static void encode_byte(uint8_t value, uint16_t *out, uint8_t brightness) {
     uint8_t scaled_value = ((uint16_t)WS2812BGammaCorrectionTable[value] * brightness) / 255;
@@ -22,6 +38,18 @@ static void encode_byte(uint8_t value, uint16_t *out, uint8_t brightness) {
         out[7 - i] = (scaled_value & (1 << i)) ? WS2812B_DUTY_1 : WS2812B_DUTY_0;
     }
 }
+
+/*!
+ * \defgroup ws2812b_api_init ws2812b_api_init tests
+ * \{
+ */
+
+void test_ws2812b_api_init_success(void) {
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, handler.transmit_callback, "handler.transmit_callback should be set to the provided transmit function");
+    TEST_ASSERT_EQUAL_MESSAGE(, handler.duty_0, "handler.duty_0 should be calculated based on the tick frequency");
+    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, init_rc, "ws2812b_api_init should return WS2812B_RC_OK on successful initialization");
+
+/*! \} */
 
 /*!
  * \defgroup ws2812b_encode ws2812b_encode tests
