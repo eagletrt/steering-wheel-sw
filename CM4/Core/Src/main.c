@@ -126,7 +126,8 @@ int main(void) {
     struct FsmData data = {
         .critical_section_callback = __DMB,
         .get_tick = HAL_GetTick,
-        .ws2812b_transmit = tim_ws2812b_transmit_pwm,
+        .leds_transmit = tim_leds_transmit,
+        .leds_get_busy = tim_leds_get_busy,
         .ws2812b_get_tick_hz = tim_ws2812b_get_timer_hz,
     };
 

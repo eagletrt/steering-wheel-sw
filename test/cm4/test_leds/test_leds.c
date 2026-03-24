@@ -16,16 +16,18 @@ extern struct LedsHandler leds_handler;
 
 DEFINE_FFF_GLOBALS;
 
-FAKE_VALUE_FUNC(enum WS2812BReturnCode, fake_transmit, struct WS2812BHandler *, const uint32_t *, uint16_t);
+FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const uint32_t *, uint16_t);
+FAKE_VALUE_FUNC(bool, fake_get_busy);
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
 
 enum LedsReturnCode init_rc;
 
 void setUp(void) {
     RESET_FAKE(fake_transmit);
+    RESET_FAKE(fake_get_busy);
     RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
-    init_rc = leds_api_init(fake_transmit, fake_get_tick_hz);
+    init_rc = leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
 }
 
 /*!
@@ -35,16 +37,23 @@ void setUp(void) {
 
 void test_leds_api_init_success(void) {
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, leds_handler.ws2812b_handler.transmit_callback, "leds_handler.ws2812b_handler.transmit_callback should be set to the provided transmit function");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, leds_handler.transmit_callback, "leds_api_init should set the transmit callback correctly");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_get_busy, leds_handler.get_busy_callback, "leds_api_init should set the get_busy callback correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(255, leds_handler.brightness, "leds_api_init should set the default brightness to 255");
 }
 
 void test_leds_api_init_transmit_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(NULL, fake_get_tick_hz);
+    enum LedsReturnCode rc = leds_api_init(NULL, fake_get_busy, fake_get_tick_hz);
+    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
+}
+
+void test_leds_api_init_get_busy_null_pointer(void) {
+    enum LedsReturnCode rc = leds_api_init(fake_transmit, NULL, fake_get_tick_hz);
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
 void test_leds_api_init_get_tick_hz_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(fake_transmit, NULL);
+    enum LedsReturnCode rc = leds_api_init(fake_transmit, fake_get_busy, NULL);
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
@@ -119,25 +128,42 @@ void test_leds_api_clear(void) {
  */
 
 void test_leds_api_show_success(void) {
-    fake_transmit_fake.return_val = WS2812B_RC_OK;
+    fake_get_busy_fake.return_val = false; // Not busy
+    fake_transmit_fake.return_val = LEDS_RC_OK;
+
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_show should return LEDS_RC_OK when transmission is successful");
-    TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit function exactly once");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(&leds_handler.ws2812b_handler, fake_transmit_fake.arg0_val, "leds_api_show should call the transmit function with the correct handler pointer");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(leds_handler.buffer, fake_transmit_fake.arg1_val, "leds_api_show should call the transmit function with the correct PWM buffer");
-    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_API_BUFFER_SIZE(LEDS_COUNT), fake_transmit_fake.arg2_val, "leds_api_show should call the transmit function with the correct buffer size");
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_get_busy_fake.call_count, "leds_api_show should call the get_busy callback once");
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit callback once");
 }
 
 void test_leds_api_show_null_transmit(void) {
-    memset(&leds_handler, 0, sizeof(leds_handler));
+    leds_handler.transmit_callback = NULL; // Simulate null transmit callback
+
+    enum LedsReturnCode rc = leds_api_show();
+    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
+}
+
+void test_leds_api_show_null_get_busy(void) {
+    leds_handler.get_busy_callback = NULL; // Simulate null get_busy callback
+
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
 void test_leds_api_show_transmission_error(void) {
-    fake_transmit_fake.return_val = WS2812B_RC_TRANSMISSION_ERROR;
+    fake_get_busy_fake.return_val = false; // Not busy
+    fake_transmit_fake.return_val = LEDS_RC_TRANSMISSION_ERROR;
+
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL(LEDS_RC_TRANSMISSION_ERROR, rc);
+}
+
+void test_leds_api_show_busy(void) {
+    fake_get_busy_fake.return_val = true; // Simulate busy state
+
+    enum LedsReturnCode rc = leds_api_show();
+    TEST_ASSERT_EQUAL(LEDS_RC_BUSY, rc);
 }
 
 /*! \} */
@@ -220,6 +246,7 @@ int main(void) {
 
     RUN_TEST(test_leds_api_init_success);
     RUN_TEST(test_leds_api_init_transmit_null_pointer);
+    RUN_TEST(test_leds_api_init_get_busy_null_pointer);
     RUN_TEST(test_leds_api_init_get_tick_hz_null_pointer);
 
     RUN_TEST(test_leds_api_set_led_color_valid_index);
@@ -232,7 +259,9 @@ int main(void) {
 
     RUN_TEST(test_leds_api_show_success);
     RUN_TEST(test_leds_api_show_null_transmit);
+    RUN_TEST(test_leds_api_show_null_get_busy);
     RUN_TEST(test_leds_api_show_transmission_error);
+    RUN_TEST(test_leds_api_show_busy);
 
     RUN_TEST(test_leds_api_set_brightness);
 

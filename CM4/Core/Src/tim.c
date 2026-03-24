@@ -23,7 +23,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "eagletrt.h"
-#include "ws2812b-api.h"
+#include "leds.h"
 
 /* USER CODE END 0 */
 
@@ -503,7 +503,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
 /* USER CODE BEGIN 1 */
 
-EAGLETRT_STATIC struct WS2812BHandler *last_handler = NULL;
+EAGLETRT_STATIC volatile bool leds_busy = false;
 
 EAGLETRT_STATIC uint32_t prv_timer_get_tick_hz(TIM_HandleTypeDef *htim) {
     uint32_t pclk;
@@ -521,32 +521,37 @@ EAGLETRT_STATIC uint32_t prv_timer_get_tick_hz(TIM_HandleTypeDef *htim) {
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+    leds_busy = false;
     HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
-    if (last_handler != NULL) {
-        ws2812b_set_busy(last_handler, false);
-    }
 }
 
-enum WS2812BReturnCode tim_ws2812b_transmit_pwm(struct WS2812BHandler *handler, const uint32_t *buffer, uint16_t size) {
-    if (handler == NULL || buffer == NULL) {
-        return WS2812B_RC_NULL_POINTER;
+enum LedsReturnCode tim_leds_transmit(const uint32_t *buffer, uint16_t size) {
+    if (buffer == NULL) {
+        return LEDS_RC_NULL_POINTER;
     }
 
-    last_handler = handler;
+    if (leds_busy) {
+        return LEDS_RC_BUSY;
+    }
 
     if (HAL_TIM_PWM_Start_DMA(
             &htim3,
             TIM_CHANNEL_1,
             buffer,
             size) != HAL_OK) {
-        return WS2812B_RC_TRANSMISSION_ERROR;
+        return LEDS_RC_TRANSMISSION_ERROR;
     }
 
-    return WS2812B_RC_OK;
+    leds_busy = true;
+    return LEDS_RC_OK;
 }
 
 uint32_t tim_ws2812b_get_timer_hz() {
     return prv_timer_get_tick_hz(&htim3);
+}
+
+bool tim_leds_get_busy() {
+    return leds_busy;
 }
 
 /* USER CODE END 1 */

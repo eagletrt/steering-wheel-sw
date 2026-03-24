@@ -14,6 +14,31 @@
 #include <stddef.h>
 
 /*!
+ * \brief Callback function type for transmitting LED data.
+ *
+ * This function should be implemented by the user to handle the actual transmission of the LED data to the hardware. The buffer will contain the encoded values for the LEDs, and the length will indicate how many values are in the buffer.
+ *
+ * \param buffer Pointer to the buffer containing the values to be transmitted to the LEDs.
+ * \param length The number of values in the buffer.
+ *
+ * \retval LEDS_RC_OK Transmission successful.
+ * \retval LEDS_RC_TRANSMISSION_ERROR An error occurred during data transmission.
+ * \retval LEDS_RC_NULL_POINTER A null pointer was passed for the buffer.
+ * \retval LEDS_RC_BUSY The handler is currently busy transmitting data.
+ */
+typedef enum LedsReturnCode (*leds_transmit_callback)(const uint32_t *buffer, uint16_t length);
+
+/*!
+ * \brief Callback function type for checking if the LED handler is currently busy.
+ *
+ * This function should return true if the handler is currently busy transmitting data to the LEDs, and false otherwise. This allows the system to avoid attempting to transmit or encode new data while a previous transmission is still in progress.
+ *
+ * \retval true The handler is currently busy transmitting data.
+ * \retval false The handler is not busy and can accept new data for transmission.
+ */
+typedef bool (*leds_get_busy_callback)(void);
+
+/*!
  * \brief Return codes for LED operations.
  */
 enum LedsReturnCode {
@@ -21,6 +46,7 @@ enum LedsReturnCode {
     LEDS_RC_INVALID_LED,        /*!< The specified LED index is out of range. */
     LEDS_RC_NULL_POINTER,       /*!< A null pointer was passed */
     LEDS_RC_TRANSMISSION_ERROR, /*!< An error ocurred during data transmission */
+    LEDS_RC_BUSY,               /*!< The handler is currently busy transmitting data. */
 };
 
 /*!
@@ -58,6 +84,8 @@ struct LedsHandler {
     uint8_t brightness;                                   /*!< Brightness level for the LEDs (0-255), where 0 is off and 255 is full brightness. (default: 255) */
     uint16_t buffer[WS2812B_API_BUFFER_SIZE(LEDS_COUNT)]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
     struct WS2812BHandler ws2812b_handler;                /*!< Handler for managing the WS2812B LED strip. */
+    leds_transmit_callback transmit_callback;             /*!< Callback function for transmitting the LED data to the hardware. */
+    leds_get_busy_callback get_busy_callback;             /*!< Callback function for checking if the handler is currently busy transmitting data. */
 };
 
 #endif // LEDS_H

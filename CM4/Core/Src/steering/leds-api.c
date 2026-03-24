@@ -13,14 +13,16 @@
 
 EAGLETRT_STATIC struct LedsHandler leds_handler;
 
-enum LedsReturnCode leds_api_init(ws2812b_pwm_transmit_callback transmit, ws2812b_get_tick_hz_callback get_tick_hz) {
-    if (transmit == NULL) {
+enum LedsReturnCode leds_api_init(leds_transmit_callback transmit, leds_get_busy_callback get_busy, ws2812b_get_tick_hz_callback get_tick_hz) {
+    if (transmit == NULL || get_busy == NULL || get_tick_hz == NULL) {
         return LEDS_RC_NULL_POINTER;
     }
 
     memset(&leds_handler, 0, sizeof(leds_handler));
     leds_handler.brightness = 255;
-    if (ws2812b_api_init(&leds_handler.ws2812b_handler, transmit, get_tick_hz) != WS2812B_RC_OK) {
+    leds_handler.transmit_callback = transmit;
+    leds_handler.get_busy_callback = get_busy;
+    if (ws2812b_api_init(&leds_handler.ws2812b_handler, get_tick_hz) != WS2812B_RC_OK) {
         return LEDS_RC_NULL_POINTER;
     }
     return LEDS_RC_OK;
@@ -51,6 +53,14 @@ void leds_api_set_brightness(uint8_t brightness) {
 }
 
 enum LedsReturnCode leds_api_show() {
+    if (leds_handler.transmit_callback == NULL || leds_handler.get_busy_callback == NULL) {
+        return LEDS_RC_NULL_POINTER;
+    }
+
+    if (leds_handler.get_busy_callback()) {
+        return LEDS_RC_BUSY;
+    }
+
     enum WS2812BReturnCode encode_rc = ws2812b_encode(
         &leds_handler.ws2812b_handler,
         leds_handler.brightness,
@@ -62,20 +72,7 @@ enum LedsReturnCode leds_api_show() {
         return LEDS_RC_NULL_POINTER;
     }
 
-    enum WS2812BReturnCode transmit_rc = ws2812b_transmit(&leds_handler.ws2812b_handler, leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_COUNT));
-
-    switch (transmit_rc) {
-        case WS2812B_RC_OK:
-            break;
-        case WS2812B_RC_NULL_POINTER:
-            return LEDS_RC_NULL_POINTER;
-        case WS2812B_RC_TRANSMISSION_ERROR:
-            return LEDS_RC_TRANSMISSION_ERROR;
-        default:
-            return LEDS_RC_NULL_POINTER;
-    }
-
-    return LEDS_RC_OK;
+    return leds_handler.transmit_callback((uint32_t *)leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_COUNT));
 }
 
 void leds_api_set_ptt_pattern(void) {

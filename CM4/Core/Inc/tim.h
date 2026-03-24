@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "ws2812b.h"
+#include "leds.h"
 
 /* USER CODE END Includes */
 
@@ -66,8 +66,9 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
  * \retval WS2812B_RC_OK if the transmission was successful.
  * \retval WS2812B_RC_NULL_POINTER if the buffer pointer is NULL.
  * \retval WS2812B_RC_TRANSMISSION_ERROR if there was an error during transmission.
+ * \retval WS2812B_RC_BUSY if the LEDs are currently busy with another transmission.
  */
-enum WS2812BReturnCode tim_ws2812b_transmit_pwm(struct WS2812BHandler *handler, const uint32_t *buffer, uint16_t size);
+enum LedsReturnCode tim_leds_transmit(const uint32_t *buffer, uint16_t size);
 
 /*!
  * \brief Gets the timer frequency in Hz for the WS2812B LED transmission.
@@ -77,6 +78,16 @@ enum WS2812BReturnCode tim_ws2812b_transmit_pwm(struct WS2812BHandler *handler, 
  * \return The timer frequency in Hz.
  */
 uint32_t tim_ws2812b_get_timer_hz();
+
+/*!
+ * \brief Checks if the WS2812B LEDs are currently busy transmitting data.
+ *
+ * This function returns a boolean value indicating whether the LEDs are currently busy with a transmission. It can be used to determine if it is safe to initiate a new transmission or if the previous one is still in progress.
+ *
+ * \retval true if the LEDs are busy.
+ * \retval false if the LEDs are not busy.
+ */
+bool tim_leds_get_busy();
 
 /* USER CODE END Prototypes */
 

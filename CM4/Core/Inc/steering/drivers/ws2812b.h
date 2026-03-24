@@ -19,19 +19,6 @@
 #define WS2812B_DUTY_1_RATIO (70U)     /*!< Duty cycle ratio for representing binary 1 (70% of the time slot). */
 
 /*!
- * Forward declaration of the WS2812BHandler structure, which is used in the callback function type definition.
- */
-struct WS2812BHandler;
-
-/*!
- * \brief Callback function type for transmitting PWM data to WS2812B LEDs.
- *
- * \param pwm_buffer Pointer to the buffer containing the PWM duty cycle values to be transmitted to the LEDs.
- * \param length The number of PWM duty cycle values in the buffer.
- */
-typedef enum WS2812BReturnCode (*ws2812b_pwm_transmit_callback)(struct WS2812BHandler *handler, const uint32_t *pwm_buffer, uint16_t length);
-
-/*!
  * \brief Callback function type for retrieving the timer tick frequency in Hz.
  *
  * This function should return the frequency of the timer ticks in Hz, which is used to calculate the duty cycle values and reset slots for WS2812B data transmission.
@@ -56,10 +43,8 @@ enum WS2812BReturnCode {
  * This structure contains the duty cycle values for representing binary 0 and 1, as well as the number of reset slots required after transmitting data to the LEDs.
  */
 struct WS2812BHandler {
-    uint16_t duty_0;                                 /*!< Duty cycle value representing binary 0. */
-    uint16_t duty_1;                                 /*!< Duty cycle value representing binary 1. */
-    ws2812b_pwm_transmit_callback transmit_callback; /*!< Callback function for transmitting PWM data to the LEDs. */
-    volatile bool busy;                              /*!< Flag indicating whether the handler is currently busy transmitting data. */
+    uint16_t duty_0; /*!< Duty cycle value representing binary 0. */
+    uint16_t duty_1; /*!< Duty cycle value representing binary 1. */
 };
 
 #endif // WS2812B_H

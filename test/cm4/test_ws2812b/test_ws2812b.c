@@ -22,15 +22,13 @@ enum WS2812BReturnCode init_rc;
 
 DEFINE_FFF_GLOBALS;
 
-FAKE_VALUE_FUNC(enum WS2812BReturnCode, fake_transmit, struct WS2812BHandler *, const uint32_t *, uint16_t);
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
 
 void setUp(void) {
-    RESET_FAKE(fake_transmit);
     RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
     fake_get_tick_hz_fake.return_val = TEST_FREQUENCY_HZ;
-    init_rc = ws2812b_api_init(&ws2812b_handler, fake_transmit, fake_get_tick_hz);
+    init_rc = ws2812b_api_init(&ws2812b_handler, fake_get_tick_hz);
 }
 
 static void encode_byte(uint8_t value, uint16_t *out, uint8_t brightness) {
@@ -51,29 +49,20 @@ EAGLETRT_STATIC uint16_t calculate_expected_duty(uint32_t duty_ratio) {
  */
 
 void test_ws2812b_api_init_success(void) {
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, ws2812b_handler.transmit_callback, "handler.transmit_callback should be set to the provided transmit function");
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_get_tick_hz_fake.call_count, "ws2812b_api_init should call get_tick_hz exactly once");
     TEST_ASSERT_EQUAL_MESSAGE(calculate_expected_duty(WS2812B_DUTY_0_RATIO), ws2812b_handler.duty_0, "handler.duty_0 should be calculated based on the tick frequency");
     TEST_ASSERT_EQUAL_MESSAGE(calculate_expected_duty(WS2812B_DUTY_1_RATIO), ws2812b_handler.duty_1, "handler.duty_1 should be calculated based on the tick frequency");
     TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, init_rc, "ws2812b_api_init should return WS2812B_RC_OK on successful initialization");
 }
 
 void test_ws2812b_api_init_null_handler(void) {
-    enum WS2812BReturnCode rc = ws2812b_api_init(NULL, fake_transmit, fake_get_tick_hz);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
-}
-
-void test_ws2812b_api_init_null_transmit(void) {
-    enum WS2812BReturnCode rc = ws2812b_api_init(&ws2812b_handler, NULL, fake_get_tick_hz);
+    enum WS2812BReturnCode rc = ws2812b_api_init(NULL, fake_get_tick_hz);
     TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
 }
 
 void test_ws2812b_api_init_null_get_tick_hz(void) {
-    enum WS2812BReturnCode rc = ws2812b_api_init(&ws2812b_handler, fake_transmit, NULL);
+    enum WS2812BReturnCode rc = ws2812b_api_init(&ws2812b_handler, NULL);
     TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
-}
-
-void test_ws2812b_api_init_get_tick_hz_called(void) {
-    TEST_ASSERT_EQUAL(1, fake_get_tick_hz_fake.call_count);
 }
 
 /*! \} */
@@ -211,74 +200,12 @@ void test_ws2812b_encode_brightness_scaling(void) {
 
 /*! \} */
 
-/*!
- * \defgroup ws2812b_transmit ws2812b_transmit tests
- * \{
- */
-
-void test_ws2812b_transmit_null_handler(void) {
-    uint16_t pwm_buffer[10] = { 0 };
-    enum WS2812BReturnCode rc = ws2812b_transmit(NULL, pwm_buffer, 10);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
-}
-
-void test_ws2812b_transmit_null_pwm_buffer(void) {
-    enum WS2812BReturnCode rc = ws2812b_transmit(&ws2812b_handler, NULL, 10);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
-}
-
-void test_ws2812b_transmit_busy_handler(void) {
-    ws2812b_handler.busy = true;
-    uint16_t pwm_buffer[10] = { 0 };
-    enum WS2812BReturnCode rc = ws2812b_transmit(&ws2812b_handler, pwm_buffer, 10);
-    TEST_ASSERT_EQUAL(WS2812B_RC_BUSY, rc);
-}
-
-void test_ws2812b_transmit_success(void) {
-    ws2812b_handler.busy = false;
-    uint16_t pwm_buffer[10] = { 0 };
-    enum WS2812BReturnCode rc = ws2812b_transmit(&ws2812b_handler, pwm_buffer, 10);
-    TEST_ASSERT_EQUAL(WS2812B_RC_OK, rc);
-    TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "ws2812b_transmit should call the transmit callback exactly once");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(&ws2812b_handler, fake_transmit_fake.arg0_val, "ws2812b_transmit should call the transmit callback with the correct handler pointer");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(pwm_buffer, fake_transmit_fake.arg1_val, "ws2812b_transmit should call the transmit callback with the correct PWM buffer pointer");
-    TEST_ASSERT_EQUAL_MESSAGE(10, fake_transmit_fake.arg2_val, "ws2812b_transmit should call the transmit callback with the correct length");
-}
-
-/*! \} */
-
-/*!
- * \defgroup ws2812b_set_busy ws2812b_set_busy tests
- * \{
- */
-
-void test_ws2812b_set_busy_null_handler(void) {
-    enum WS2812BReturnCode rc = ws2812b_set_busy(NULL, true);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
-}
-
-void test_ws2812b_set_busy_true(void) {
-    enum WS2812BReturnCode rc = ws2812b_set_busy(&ws2812b_handler, true);
-    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, rc, "ws2812b_set_busy should return WS2812B_RC_OK when setting busy to true");
-    TEST_ASSERT_TRUE_MESSAGE(ws2812b_handler.busy, "handler.busy should be set to true after calling ws2812b_set_busy with busy = true");
-}
-
-void test_ws2812b_set_busy_false(void) {
-    enum WS2812BReturnCode rc = ws2812b_set_busy(&ws2812b_handler, false);
-    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, rc, "ws2812b_set_busy should return WS2812B_RC_OK when setting busy to false");
-    TEST_ASSERT_FALSE_MESSAGE(ws2812b_handler.busy, "handler.busy should be set to false after calling ws2812b_set_busy with busy = false");
-}
-
-/*! \} */
-
 int main(void) {
     UNITY_BEGIN();
 
     RUN_TEST(test_ws2812b_api_init_success);
     RUN_TEST(test_ws2812b_api_init_null_handler);
-    RUN_TEST(test_ws2812b_api_init_null_transmit);
     RUN_TEST(test_ws2812b_api_init_null_get_tick_hz);
-    RUN_TEST(test_ws2812b_api_init_get_tick_hz_called);
 
     RUN_TEST(test_ws2812b_api_buffer_size_macro);
     RUN_TEST(test_ws2812b_api_buffer_size_macro_zero_leds);
@@ -289,15 +216,6 @@ int main(void) {
     RUN_TEST(test_ws2812b_encode_msb_first);
     RUN_TEST(test_ws2812b_encode_reset_slots_are_zero);
     RUN_TEST(test_ws2812b_encode_brightness_scaling);
-
-    RUN_TEST(test_ws2812b_transmit_null_handler);
-    RUN_TEST(test_ws2812b_transmit_null_pwm_buffer);
-    RUN_TEST(test_ws2812b_transmit_busy_handler);
-    RUN_TEST(test_ws2812b_transmit_success);
-
-    RUN_TEST(test_ws2812b_set_busy_null_handler);
-    RUN_TEST(test_ws2812b_set_busy_true);
-    RUN_TEST(test_ws2812b_set_busy_false);
 
     return UNITY_END();
 }

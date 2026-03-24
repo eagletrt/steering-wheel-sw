@@ -38,13 +38,12 @@ EAGLETRT_STATIC const uint8_t WS2812BGammaCorrectionTable[256] = {
 };
 // clang-format on
 
-enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_pwm_transmit_callback transmit_callback, ws2812b_get_tick_hz_callback get_tick_hz_callback) {
-    if (handler == NULL || transmit_callback == NULL || get_tick_hz_callback == NULL) {
+enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_get_tick_hz_callback get_tick_hz_callback) {
+    if (handler == NULL || get_tick_hz_callback == NULL) {
         return WS2812B_RC_NULL_POINTER;
     }
 
     memset(handler, 0, sizeof(*handler));
-    handler->transmit_callback = transmit_callback;
     uint32_t arr = (get_tick_hz_callback() / WS2812B_FREQUENCY_HZ) - 1;
     handler->duty_0 = (uint16_t)((arr + 1) * WS2812B_DUTY_0_RATIO) / 100;
     handler->duty_1 = (uint16_t)((arr + 1) * WS2812B_DUTY_1_RATIO) / 100;
@@ -66,7 +65,7 @@ enum WS2812BReturnCode ws2812b_encode(
     size_t in_idx = 0;
 
     for (size_t led = 0; led < num_leds; led++) {
-        /* 3 bytes per LED: G, R, B */
+        // 3 bytes per LED: G, R, B
         for (int byte = 0; byte < 3; byte++) {
             uint8_t value = ((uint16_t)WS2812BGammaCorrectionTable[grb_color_buffer[in_idx]] * brightness) / 255;
             in_idx++;
@@ -79,30 +78,16 @@ enum WS2812BReturnCode ws2812b_encode(
         }
     }
 
-    /* reset (low for >50µs) */
+    // reset (low for >50µs)
     for (size_t i = 0; i < WS2812B_RESET_SLOTS; i++) {
         pwm_duty_out[out_idx] = 0U;
         out_idx++;
     }
 
-    return WS2812B_RC_OK;
-}
+    if (out_idx != WS2812B_API_BUFFER_SIZE(num_leds)) {
+        // This should never happen, but we can check to be sure we filled the expected number of slots
+        return WS2812B_RC_TRANSMISSION_ERROR;
+    }
 
-enum WS2812BReturnCode ws2812b_transmit(struct WS2812BHandler *handler, uint16_t *pwm_buffer, size_t length) {
-    if (handler == NULL || handler->transmit_callback == NULL || pwm_buffer == NULL) {
-        return WS2812B_RC_NULL_POINTER;
-    }
-    if (handler->busy) {
-        return WS2812B_RC_BUSY;
-    }
-    ws2812b_set_busy(handler, true);
-    return handler->transmit_callback(handler, (uint32_t *)pwm_buffer, length);
-}
-
-enum WS2812BReturnCode ws2812b_set_busy(struct WS2812BHandler *handler, bool busy) {
-    if (handler == NULL) {
-        return WS2812B_RC_NULL_POINTER;
-    }
-    handler->busy = busy;
     return WS2812B_RC_OK;
 }
