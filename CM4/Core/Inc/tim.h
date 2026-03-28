@@ -70,25 +70,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
  */
 enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t size);
 
-/*!
- * \brief Gets the timer frequency in Hz for the WS2812B LED transmission.
- *
- * This function calculates the timer frequency based on the configuration of TIM3, which is used for transmitting data to the WS2812B LEDs. The frequency is determined by the timer's clock source and prescaler settings.
- *
- * \return The timer frequency in Hz.
- */
-uint32_t tim_ws2812b_get_timer_hz();
-
-/*!
- * \brief Checks if the WS2812B LEDs are currently busy transmitting data.
- *
- * This function returns a boolean value indicating whether the LEDs are currently busy with a transmission. It can be used to determine if it is safe to initiate a new transmission or if the previous one is still in progress.
- *
- * \retval true if the LEDs are busy.
- * \retval false if the LEDs are not busy.
- */
-bool tim_leds_get_busy();
-
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

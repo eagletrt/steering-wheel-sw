@@ -24,11 +24,14 @@
 
 #include "eagletrt.h"
 #include "leds.h"
+#include <string.h>
 
-EAGLETRT_STATIC volatile bool leds_busy = false;
-EAGLETRT_STATIC uint16_t duty0;
-EAGLETRT_STATIC uint16_t duty1;
-EAGLETRT_STATIC uint16_t duty_buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)] = { 0 };
+EAGLETRT_STATIC struct {
+    uint16_t duty_buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)];
+    uint16_t duty0;
+    uint16_t duty1;
+    volatile bool leds_busy;
+} leds_pwm_data;
 
 EAGLETRT_STATIC uint32_t prv_timer_get_tick_hz(TIM_HandleTypeDef *htim) {
     uint32_t pclk;
@@ -427,8 +430,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *timHandle) {
 
         /* USER CODE BEGIN TIM3_MspPostInit 1 */
 
-        duty0 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_0_RATIO);
-        duty1 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_1_RATIO);
+        memset(&leds_pwm_data, 0, sizeof(leds_pwm_data));
+        leds_pwm_data.leds_busy = false;
+        leds_pwm_data.duty0 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_0_RATIO);
+        leds_pwm_data.duty1 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_1_RATIO);
 
         /* USER CODE END TIM3_MspPostInit 1 */
     }
@@ -527,7 +532,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 /* USER CODE BEGIN 1 */
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
-    leds_busy = false;
+    leds_pwm_data.leds_busy = false;
     HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
 }
 
@@ -536,7 +541,7 @@ enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint1
         return LEDS_RC_NULL_POINTER;
     }
 
-    if (leds_busy) {
+    if (leds_pwm_data.leds_busy) {
         return LEDS_RC_BUSY;
     }
 
@@ -547,13 +552,13 @@ enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint1
     for (size_t i = 0; i < size; i++) {
         switch (buffer[i]) {
             case WS2812B_DUTY_CYCLE_0:
-                duty_buffer[i] = duty0;
+                leds_pwm_data.duty_buffer[i] = leds_pwm_data.duty0;
                 break;
             case WS2812B_DUTY_CYCLE_1:
-                duty_buffer[i] = duty1;
+                leds_pwm_data.duty_buffer[i] = leds_pwm_data.duty1;
                 break;
             case WS2812B_DUTY_CYCLE_RESET:
-                duty_buffer[i] = 0;
+                leds_pwm_data.duty_buffer[i] = 0;
                 break;
             default:
                 return LEDS_RC_TRANSMISSION_ERROR;
@@ -563,17 +568,13 @@ enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint1
     if (HAL_TIM_PWM_Start_DMA(
             &htim3,
             TIM_CHANNEL_1,
-            (uint32_t *)duty_buffer,
+            (uint32_t *)leds_pwm_data.duty_buffer,
             size) != HAL_OK) {
         return LEDS_RC_TRANSMISSION_ERROR;
     }
 
-    leds_busy = true;
+    leds_pwm_data.leds_busy = true;
     return LEDS_RC_OK;
-}
-
-uint32_t tim_ws2812b_get_timer_hz() {
-    return prv_timer_get_tick_hz(&htim3);
 }
 
 /* USER CODE END 1 */
