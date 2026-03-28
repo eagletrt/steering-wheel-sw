@@ -34,8 +34,6 @@ extern "C" {
 
 /* USER CODE BEGIN Private defines */
 
-extern struct InputsHandler input_handler;
-
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);

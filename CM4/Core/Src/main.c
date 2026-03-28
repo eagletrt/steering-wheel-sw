@@ -123,13 +123,19 @@ int main(void) {
     MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
 
+    struct FsmData data = {
+        .critical_section_callback = __DMB,
+        .get_tick = HAL_GetTick,
+        .leds_transmit = tim_leds_transmit,
+    };
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
 
-        current_state = fsm_run_state(current_state, NULL);
+        current_state = fsm_run_state(current_state, &data);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

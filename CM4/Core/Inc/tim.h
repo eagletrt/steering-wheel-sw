@@ -29,6 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "leds.h"
 
 /* USER CODE END Includes */
 
@@ -55,6 +56,19 @@ void MX_TIM5_Init(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* USER CODE BEGIN Prototypes */
+
+/*!
+ * \brief Transmits a buffer of duty cicles to the WS2812B LEDs using PWM on TIM3.
+ *
+ * \param buffer A pointer to an array of duty cycles representing the data to be transmitted to the WS2812B LEDs. Each duty cycle corresponds to a specific color and brightness for the LEDs.
+ * \param size The number of duty cycles in the buffer.
+ *
+ * \retval WS2812B_RC_OK if the transmission was successful.
+ * \retval WS2812B_RC_NULL_POINTER if the buffer pointer is NULL.
+ * \retval WS2812B_RC_TRANSMISSION_ERROR if there was an error during transmission.
+ * \retval WS2812B_RC_BUSY if the LEDs are currently busy with another transmission.
+ */
+enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t size);
 
 /* USER CODE END Prototypes */
 

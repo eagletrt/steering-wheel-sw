@@ -34,8 +34,6 @@
 /*----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 
-struct InputsHandler input_handler;
-
 /* USER CODE END 1 */
 
 /** Configure pins
@@ -199,7 +197,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
             break;
     }
 
-    inputs_api_update_button(&input_handler, button_id, button_state, timestamp);
+    inputs_api_update_button(button_id, button_state, timestamp);
 }
 
 /* USER CODE END 2 */

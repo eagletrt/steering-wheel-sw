@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "fsm_"
 #include <stdbool.h>
 
 /*** USER CODE BEGIN MACROS ***/
+#include "leds.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -62,6 +63,20 @@ typedef fsm_state_t fsm_state_func_t(fsm_state_data_t *data);
 typedef void transition_func_t(fsm_state_data_t *data);
 
 /*** USER CODE BEGIN TYPES ***/
+
+/*!
+ * \brief Callback definition for to retrieve the currect system time.
+ *
+ * \retval current system tick
+ */
+typedef uint32_t (*get_system_tick)(void);
+
+// TODO: this is temporary, until POST is properly implemented
+struct FsmData {
+    void (*critical_section_callback)(void);
+    leds_transmit_callback leds_transmit;
+    get_system_tick get_tick;
+};
 
 /*** USER CODE END TYPES ***/
 

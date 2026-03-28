@@ -22,6 +22,32 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "eagletrt.h"
+#include "leds.h"
+#include <string.h>
+
+EAGLETRT_STATIC struct {
+    uint16_t duty_buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)];
+    uint16_t duty0;
+    uint16_t duty1;
+    volatile bool leds_busy;
+} leds_pwm_data;
+
+EAGLETRT_STATIC uint32_t prv_timer_get_tick_hz(TIM_HandleTypeDef *htim) {
+    uint32_t pclk;
+    uint32_t prescaler = htim->Init.Prescaler;
+
+    pclk = HAL_RCC_GetPCLK1Freq();
+
+    uint32_t ppre1 = (RCC->D2CFGR & RCC_D2CFGR_D2PPRE1);
+
+    if (ppre1 != RCC_D2CFGR_D2PPRE1_DIV1) {
+        pclk *= 2;
+    }
+
+    return pclk / (prescaler + 1);
+}
+
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -128,11 +154,11 @@ void MX_TIM3_Init(void) {
 
     /* USER CODE END TIM3_Init 1 */
     htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 0;
+    htim3.Init.Prescaler = 2;
     htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 299;
+    htim3.Init.Period = 99;
     htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
     if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
         Error_Handler();
     }
@@ -404,6 +430,11 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *timHandle) {
 
         /* USER CODE BEGIN TIM3_MspPostInit 1 */
 
+        memset(&leds_pwm_data, 0, sizeof(leds_pwm_data));
+        leds_pwm_data.leds_busy = false;
+        leds_pwm_data.duty0 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_0_RATIO);
+        leds_pwm_data.duty1 = WS2812B_API_CALCULATE_DUTY_VALUE(prv_timer_get_tick_hz(&htim3), WS2812B_DUTY_1_RATIO);
+
         /* USER CODE END TIM3_MspPostInit 1 */
     }
 }
@@ -499,5 +530,51 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
+    leds_pwm_data.leds_busy = false;
+    HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
+}
+
+enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t size) {
+    if (buffer == NULL) {
+        return LEDS_RC_NULL_POINTER;
+    }
+
+    if (leds_pwm_data.leds_busy) {
+        return LEDS_RC_BUSY;
+    }
+
+    if (size > WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)) {
+        return LEDS_RC_TRANSMISSION_ERROR;
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        switch (buffer[i]) {
+            case WS2812B_DUTY_CYCLE_0:
+                leds_pwm_data.duty_buffer[i] = leds_pwm_data.duty0;
+                break;
+            case WS2812B_DUTY_CYCLE_1:
+                leds_pwm_data.duty_buffer[i] = leds_pwm_data.duty1;
+                break;
+            case WS2812B_DUTY_CYCLE_RESET:
+                leds_pwm_data.duty_buffer[i] = 0;
+                break;
+            default:
+                return LEDS_RC_TRANSMISSION_ERROR;
+        }
+    }
+
+    if (HAL_TIM_PWM_Start_DMA(
+            &htim3,
+            TIM_CHANNEL_1,
+            (uint32_t *)leds_pwm_data.duty_buffer,
+            size) != HAL_OK) {
+        return LEDS_RC_TRANSMISSION_ERROR;
+    }
+
+    leds_pwm_data.leds_busy = true;
+    return LEDS_RC_OK;
+}
 
 /* USER CODE END 1 */

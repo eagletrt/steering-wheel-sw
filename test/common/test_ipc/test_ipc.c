@@ -25,7 +25,7 @@ void setUp() {
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
 void test_ipc_input_queue_read_and_process_all_empty(void) {
@@ -63,11 +63,11 @@ void test_ipc_input_queue_read_and_process_read_event(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(ev.button.button_id, last_event.button.button_id, "Button ID mismatch");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
 void test_ipc_input_queue_push_event_success(void) {
@@ -86,14 +86,14 @@ void test_ipc_input_queue_push_event_full(void) {
     TEST_ASSERT_EQUAL_MESSAGE(false, rc, "Expected queue to be full, but push succeeded");
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup ipc_api_read_and_process_all Tests for ipc_api_read_and_process_all function
- * @{
+ * \{
  */
 
-void test_ipc_input_queue_producer_consumer(void) {
+void test_ipc_input_queue_write_all_read_all(void) {
     struct InputsSharedEvent ev = { 0 };
     for (int i = 0; i < IPC_INPUT_QUEUE_SIZE - 1; i++) {
         bool rc = ipc_api_push_event(ev, NULL);
@@ -103,7 +103,7 @@ void test_ipc_input_queue_producer_consumer(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(IPC_INPUT_QUEUE_SIZE - 1, read_and_process_callback_fake.call_count, "Expected to process all events in the queue");
 }
 
-void test_ipc_input_queue_producer_consumer_wrap(void) {
+void test_ipc_input_queue_write_100_read_100(void) {
     struct InputsSharedEvent ev = { 0 };
     for (int i = 0; i < 100; i++) {
         bool rc = ipc_api_push_event(ev, NULL);
@@ -115,7 +115,7 @@ void test_ipc_input_queue_producer_consumer_wrap(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(100, read_and_process_callback_fake.call_count, "Expected to process all events in the queue across multiple wraps");
 }
 
-/*! @} */
+/*! \} */
 
 
 int main() {
@@ -129,8 +129,8 @@ int main() {
     RUN_TEST(test_ipc_input_queue_push_event_success);
     RUN_TEST(test_ipc_input_queue_push_event_full);
 
-    RUN_TEST(test_ipc_input_queue_producer_consumer);
-    RUN_TEST(test_ipc_input_queue_producer_consumer_wrap);
+    RUN_TEST(test_ipc_input_queue_write_all_read_all);
+    RUN_TEST(test_ipc_input_queue_write_100_read_100);
 
     return UNITY_END();
 }

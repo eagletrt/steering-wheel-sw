@@ -1,3 +1,11 @@
+/*!
+ * \file test_input_events.c
+ * \date 2026-03-14
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Test Input Events API functionality.
+ */
+
 #include "unity.h"
 #include "fff.h"
 #include "input-events-api.h"
@@ -9,6 +17,8 @@ FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_button_long_press_callback, enu
 FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_button_release_callback, enum InputsSharedButtonID);
 FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_knob_rotation_callback, enum InputsSharedKnobID, int8_t);
 
+extern struct InputEventHandler handler;
+
 void setUp(void) {
     RESET_FAKE(test_button_press_callback);
     RESET_FAKE(test_button_long_press_callback);
@@ -19,12 +29,16 @@ void setUp(void) {
 
 /*!
  * \defgroup input_events_api_init Input Events API Initialization Tests
- * @{
+ * \{
  */
 
 void test_input_events_api_init_should_store_callbacks(void) {
     enum InputEventsReturnCode rc = input_events_api_init(test_button_press_callback, test_button_long_press_callback, test_button_release_callback, test_knob_rotation_callback);
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, rc);
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_press_callback, handler.on_button_press, "Button press callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_long_press_callback, handler.on_button_long_press, "Button long press callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_button_release_callback, handler.on_button_release, "Button release callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_knob_rotation_callback, handler.on_knob_rotation, "Knob rotation callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(INPUT_EVENTS_RC_OK, rc, "Initialization failed");
 }
 
 void test_input_events_api_init_should_fail_null_button_callback(void) {
@@ -47,11 +61,11 @@ void test_input_events_api_init_should_fail_null_rotation_callback(void) {
     TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_ERROR, rc);
 }
 
-/*! @} */
+/*! \} */
 
 /*!
  * \defgroup input_events_api_handle_event Input Events API Event Handling Tests
- * @{
+ * \{
  */
 
 void test_input_events_api_handle_event_should_invoke_button_press_callback(void) {
@@ -108,7 +122,7 @@ void test_input_events_api_handle_event_should_invoke_knob_rotation_callback(voi
     TEST_ASSERT_EQUAL_MESSAGE(5, test_knob_rotation_callback_fake.arg1_val, "Wrong delta passed to knob rotation callback");
 }
 
-/*! @} */
+/*! \} */
 
 int main() {
     UNITY_BEGIN();
