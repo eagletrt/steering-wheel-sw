@@ -15,13 +15,11 @@
  * \brief Initializes the LED system, clearing all LEDs and preparing the driver for operation.
  *
  * \param transmit A callback function that will be called to transmit the data to the LEDs.
- * \param get_busy A callback function that returns true if the handler is currently busy transmitting data to the LEDs, and false otherwise. This allows the system to avoid attempting to transmit or encode new data while a previous transmission is still in progress.
- * \param get_tick_hz A callback function that returns the frequency of the timer ticks in Hz, which is used to calculate the duty cycle values for WS2812B data transmission.
  *
  * \retval LEDS_RC_OK Initialization successful.
  * \retval LEDS_RC_NULL_POINTER A null pointer was passed for the transmit callback.
  */
-enum LedsReturnCode leds_api_init(leds_transmit_callback transmit, leds_get_busy_callback get_busy, ws2812b_get_tick_hz_callback get_tick_hz);
+enum LedsReturnCode leds_api_init(leds_transmit_callback transmit);
 
 /*!
  * \brief Sets the color of a specific LED in the strip.
@@ -59,6 +57,7 @@ void leds_api_set_brightness(float brightness);
  * \retval LEDS_RC_OK Data transmitted successfully.
  * \retval LEDS_RC_NULL_POINTER The transmit callback function is not set.
  * \retval LEDS_RC_TRANSMISSION_ERROR An error occurred during data transmission.
+ * \retval LEDS_RC_BUSY The handler is currently busy transmitting data.
  */
 enum LedsReturnCode leds_api_show();
 

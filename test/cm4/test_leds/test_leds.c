@@ -9,23 +9,18 @@
 #include "unity.h"
 #include "fff.h"
 #include "leds-api.h"
-#include "ws2812b-api.h"
 #include <string.h>
 
 extern struct LedsHandler leds_handler;
 
 DEFINE_FFF_GLOBALS;
 
-FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const uint32_t *, uint16_t);
-FAKE_VALUE_FUNC(bool, fake_get_busy);
-FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
+FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const enum WS2812BDutyCycle *, uint16_t);
 
 void setUp(void) {
     RESET_FAKE(fake_transmit);
-    RESET_FAKE(fake_get_busy);
-    RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
-    leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
+    leds_api_init(fake_transmit);
 }
 
 /*!
@@ -34,25 +29,14 @@ void setUp(void) {
  */
 
 void test_leds_api_init_success(void) {
-    enum LedsReturnCode rc = leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
+    enum LedsReturnCode rc = leds_api_init(fake_transmit);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, leds_handler.transmit_callback, "leds_api_init should set the transmit callback correctly");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_get_busy, leds_handler.get_busy_callback, "leds_api_init should set the get_busy callback correctly");
     TEST_ASSERT_EQUAL_MESSAGE(1.0f, leds_handler.brightness, "leds_api_init should set the default brightness to 1.0");
 }
 
 void test_leds_api_init_transmit_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(NULL, fake_get_busy, fake_get_tick_hz);
-    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
-}
-
-void test_leds_api_init_get_busy_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(fake_transmit, NULL, fake_get_tick_hz);
-    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
-}
-
-void test_leds_api_init_get_tick_hz_null_pointer(void) {
-    enum LedsReturnCode rc = leds_api_init(fake_transmit, fake_get_busy, NULL);
+    enum LedsReturnCode rc = leds_api_init(NULL);
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
@@ -67,21 +51,25 @@ void test_leds_api_set_led_color_valid_index(void) {
     struct LedColor color = { .r = 255, .g = 0, .b = 0 }; // Red
     enum LedsReturnCode rc = leds_api_set_led_color(0, color);
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_set_led should return LEDS_RC_OK when setting a valid LED index");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[0].r, "leds_handler.leds[0].r should be set to the specified color value");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[0].g, "leds_handler.leds[0].g should be set to the specified color value");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[0].b, "leds_handler.leds[0].b should be set to the specified color value");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.colors[0].r, "leds_handler.colors[0].r should be set to the specified color value");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.colors[0].g, "leds_handler.colors[0].g should be set to the specified color value");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.colors[0].b, "leds_handler.colors[0].b should be set to the specified color value");
 }
 
 void test_leds_api_set_led_color_invalid_index(void) {
     struct LedColor color = { .r = 255, .g = 0, .b = 0 };                     // Red
+    uint8_t expected_colors[LEDS_INDEX_COUNT] = { 0 };                        // Expect no changes to the colors array
     enum LedsReturnCode rc = leds_api_set_led_color(LEDS_INDEX_COUNT, color); // Out of range index
-    TEST_ASSERT_EQUAL(LEDS_RC_INVALID_LED, rc);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(expected_colors, leds_handler.colors, sizeof(expected_colors), "leds_handler.colors should remain unchanged when an invalid LED index is provided");
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_INVALID_LED, rc, "leds_api_set_led should return LEDS_RC_INVALID_LED when an out of range LED index is provided");
 }
 
 void test_leds_api_set_led_color_negative_index(void) {
     struct LedColor color = { .r = 255, .g = 0, .b = 0 };       // Red
+    uint8_t expected_colors[LEDS_INDEX_COUNT] = { 0 };          // Expect no changes to the colors array
     enum LedsReturnCode rc = leds_api_set_led_color(-1, color); // Negative index
-    TEST_ASSERT_EQUAL(LEDS_RC_INVALID_LED, rc);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(expected_colors, leds_handler.colors, sizeof(expected_colors), "leds_handler.colors should remain unchanged when an invalid LED index is provided");
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_INVALID_LED, rc, "leds_api_set_led should return LEDS_RC_INVALID_LED when an out of range LED index is provided");
 }
 
 /*! \} */
@@ -93,12 +81,9 @@ void test_leds_api_set_led_color_negative_index(void) {
 
 void test_leds_api_set_led_color_all(void) {
     struct LedColor color = { .r = 0, .g = 255, .b = 0 }; // Green
+    struct LedColor colors[LEDS_INDEX_COUNT] = { [0 ... LEDS_INDEX_COUNT - 1] = color };
     leds_api_set_led_color_all(color);
-    for (size_t i = 0; i < LEDS_INDEX_COUNT; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to the specified color value");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to the specified color value");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to the specified color value");
-    }
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(colors, leds_handler.colors, sizeof(colors));
 }
 
 /*! \} */
@@ -109,14 +94,11 @@ void test_leds_api_set_led_color_all(void) {
  */
 
 void test_leds_api_clear(void) {
-    memset(&leds_handler.leds, 0xff, sizeof(leds_handler.leds));
+    memset(&leds_handler.colors, 0xff, sizeof(leds_handler.colors));
+    struct LedColor colors[LEDS_INDEX_COUNT] = { 0 };
 
     leds_api_clear();
-    for (size_t i = 0; i < LEDS_INDEX_COUNT; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be cleared to 0");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be cleared to 0");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be cleared to 0");
-    }
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(colors, leds_handler.colors, sizeof(colors));
 }
 
 /*! \} */
@@ -127,12 +109,10 @@ void test_leds_api_clear(void) {
  */
 
 void test_leds_api_show_success(void) {
-    fake_get_busy_fake.return_val = false; // Not busy
     fake_transmit_fake.return_val = LEDS_RC_OK;
 
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_show should return LEDS_RC_OK when transmission is successful");
-    TEST_ASSERT_EQUAL_MESSAGE(1, fake_get_busy_fake.call_count, "leds_api_show should call the get_busy callback once");
     TEST_ASSERT_EQUAL_MESSAGE(1, fake_transmit_fake.call_count, "leds_api_show should call the transmit callback once");
 }
 
@@ -143,26 +123,11 @@ void test_leds_api_show_null_transmit(void) {
     TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
 }
 
-void test_leds_api_show_null_get_busy(void) {
-    leds_handler.get_busy_callback = NULL; // Simulate null get_busy callback
-
-    enum LedsReturnCode rc = leds_api_show();
-    TEST_ASSERT_EQUAL(LEDS_RC_NULL_POINTER, rc);
-}
-
 void test_leds_api_show_transmission_error(void) {
-    fake_get_busy_fake.return_val = false; // Not busy
     fake_transmit_fake.return_val = LEDS_RC_TRANSMISSION_ERROR;
 
     enum LedsReturnCode rc = leds_api_show();
     TEST_ASSERT_EQUAL(LEDS_RC_TRANSMISSION_ERROR, rc);
-}
-
-void test_leds_api_show_busy(void) {
-    fake_get_busy_fake.return_val = true; // Simulate busy state
-
-    enum LedsReturnCode rc = leds_api_show();
-    TEST_ASSERT_EQUAL(LEDS_RC_BUSY, rc);
 }
 
 /*! \} */
@@ -201,56 +166,44 @@ void test_leds_api_set_brightness_above_one(void) {
 
 void test_leds_api_set_ptt_pattern(void) {
     leds_api_set_ptt_pattern();
-    for (size_t i = 0; i < 5; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for PTT indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for PTT indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 255 for PTT indication");
-    }
+    struct LedColor expected_color = { .r = 0, .g = 0, .b = 255 };
+    struct LedColor expected_colors[5] = { [0 ... 4] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, leds_handler.colors, sizeof(expected_colors));
 }
 
 void test_leds_api_set_target_lap_pattern(void) {
     leds_api_set_target_lap_pattern();
-    for (size_t i = 5; i < 9; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for target lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for target lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for target lap indication");
-    }
+    struct LedColor expected_color = { .r = 0, .g = 0, .b = 0 };
+    struct LedColor expected_colors[4] = { [0 ... 3] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, &leds_handler.colors[5], sizeof(expected_colors));
 }
 
 void test_leds_api_set_fast_lap_pattern(void) {
     leds_api_set_fast_lap_pattern();
-    for (size_t i = 5; i < 9; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for fast lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for fast lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for fast lap indication");
-    }
+    struct LedColor expected_color = { .r = 0, .g = 255, .b = 0 };
+    struct LedColor expected_colors[4] = { [0 ... 3] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, &leds_handler.colors[5], sizeof(expected_colors));
 }
 
 void test_leds_api_set_slow_lap_pattern(void) {
     leds_api_set_slow_lap_pattern();
-    for (size_t i = 5; i < 9; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for slow lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 255 for slow lap indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for slow lap indication");
-    }
+    struct LedColor expected_color = { .r = 255, .g = 255, .b = 0 };
+    struct LedColor expected_colors[4] = { [0 ... 3] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, &leds_handler.colors[5], sizeof(expected_colors));
 }
 
 void test_leds_api_set_error_pattern(void) {
     leds_api_set_error_pattern();
-    for (size_t i = 0; i < 5; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 255 for error indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 0 for error indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for error indication");
-    }
+    struct LedColor expected_color = { .r = 255, .g = 0, .b = 0 };
+    struct LedColor expected_colors[5] = { [0 ... 4] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, leds_handler.colors, sizeof(expected_colors));
 }
 
 void test_leds_api_set_ok_pattern(void) {
     leds_api_set_ok_pattern();
-    for (size_t i = 0; i < 5; i++) {
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to 0 for OK indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to 255 for OK indication");
-        TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to 0 for OK indication");
-    }
+    struct LedColor expected_color = { .r = 0, .g = 0, .b = 0 };
+    struct LedColor expected_colors[5] = { [0 ... 4] = expected_color };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, leds_handler.colors, sizeof(expected_colors));
 }
 
 /*! \} */
@@ -260,8 +213,6 @@ int main(void) {
 
     RUN_TEST(test_leds_api_init_success);
     RUN_TEST(test_leds_api_init_transmit_null_pointer);
-    RUN_TEST(test_leds_api_init_get_busy_null_pointer);
-    RUN_TEST(test_leds_api_init_get_tick_hz_null_pointer);
 
     RUN_TEST(test_leds_api_set_led_color_valid_index);
     RUN_TEST(test_leds_api_set_led_color_invalid_index);
@@ -273,9 +224,7 @@ int main(void) {
 
     RUN_TEST(test_leds_api_show_success);
     RUN_TEST(test_leds_api_show_null_transmit);
-    RUN_TEST(test_leds_api_show_null_get_busy);
     RUN_TEST(test_leds_api_show_transmission_error);
-    RUN_TEST(test_leds_api_show_busy);
 
     RUN_TEST(test_leds_api_set_brightness);
     RUN_TEST(test_leds_api_set_brightness_zero);

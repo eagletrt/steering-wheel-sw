@@ -60,7 +60,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /*!
  * \brief Transmits a buffer of duty cicles to the WS2812B LEDs using PWM on TIM3.
  *
- * \param buffer Pointer to the buffer containing the duty cycles to be transmitted. Each duty cycle should be a 32-bit value.
+ * \param buffer A pointer to an array of duty cycles representing the data to be transmitted to the WS2812B LEDs. Each duty cycle corresponds to a specific color and brightness for the LEDs.
  * \param size The number of duty cycles in the buffer.
  *
  * \retval WS2812B_RC_OK if the transmission was successful.
@@ -68,7 +68,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
  * \retval WS2812B_RC_TRANSMISSION_ERROR if there was an error during transmission.
  * \retval WS2812B_RC_BUSY if the LEDs are currently busy with another transmission.
  */
-enum LedsReturnCode tim_leds_transmit(const uint32_t *buffer, uint16_t size);
+enum LedsReturnCode tim_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t size);
 
 /*!
  * \brief Gets the timer frequency in Hz for the WS2812B LED transmission.

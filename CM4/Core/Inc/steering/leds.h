@@ -26,17 +26,7 @@
  * \retval LEDS_RC_NULL_POINTER A null pointer was passed for the buffer.
  * \retval LEDS_RC_BUSY The handler is currently busy transmitting data.
  */
-typedef enum LedsReturnCode (*leds_transmit_callback)(const uint32_t *buffer, uint16_t length);
-
-/*!
- * \brief Callback function type for checking if the LED handler is currently busy.
- *
- * This function should return true if the handler is currently busy transmitting data to the LEDs, and false otherwise. This allows the system to avoid attempting to transmit or encode new data while a previous transmission is still in progress.
- *
- * \retval true The handler is currently busy transmitting data.
- * \retval false The handler is not busy and can accept new data for transmission.
- */
-typedef bool (*leds_get_busy_callback)(void);
+typedef enum LedsReturnCode (*leds_transmit_callback)(const enum WS2812BDutyCycle *buffer, uint16_t length);
 
 /*!
  * \brief Return codes for LED operations.
@@ -80,12 +70,10 @@ enum LedsIndex {
  * \brief Handler structure for managing the LED system.
  */
 struct LedsHandler {
-    struct LedColor leds[LEDS_INDEX_COUNT];                     /*!< Array of LedColor structures representing the colors of each LED. */
-    float brightness;                                           /*!< Brightness level for the LEDs (0-1), where 0 is off and 1 is full brightness. (default: 1) */
-    uint16_t buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)]; /*!< Buffer for storing the PWM data to be transmitted to the LEDs. */
-    struct WS2812BHandler ws2812b_handler;                      /*!< Handler for managing the WS2812B LED strip. */
-    leds_transmit_callback transmit_callback;                   /*!< Callback function for transmitting the LED data to the hardware. */
-    leds_get_busy_callback get_busy_callback;                   /*!< Callback function for checking if the handler is currently busy transmitting data. */
+    struct LedColor colors[LEDS_INDEX_COUNT];                                /*!< Array of LedColor structures representing the colors of each LED. */
+    float brightness;                                                        /*!< Brightness level for the LEDs (0-1), where 0 is off and 1 is full brightness. (default: 1) */
+    enum WS2812BDutyCycle buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)]; /*!< Buffer for storing the encoded LED data to be transmitted to the hardware. The size is determined by the number of LEDs and the requirements of the hardware peripheral. */
+    leds_transmit_callback transmit_callback;                                /*!< Callback function for transmitting the LED data to the hardware. */
 };
 
 #endif // LEDS_H

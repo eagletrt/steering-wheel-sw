@@ -19,13 +19,15 @@
 #define WS2812B_DUTY_1_RATIO (0.70f)   /*!< Duty cycle ratio for representing binary 1 (70% of the time slot). */
 
 /*!
- * \brief Callback function type for retrieving the timer tick frequency in Hz.
+ * \brief Enumeration for WS2812B duty cycle types.
  *
- * This function should return the frequency of the timer ticks in Hz, which is used to calculate the duty cycle values and reset slots for WS2812B data transmission.
- *
- * \return The timer tick frequency in Hz.
+ * This enumeration defines the different duty cycle types used for representing binary 0, binary 1, and reset slots in WS2812B data transmission.
  */
-typedef uint32_t (*ws2812b_get_tick_hz_callback)(void);
+enum WS2812BDutyCycle {
+    WS2812B_DUTY_CYCLE_0,    /*!< Duty cycle for binary 0. */
+    WS2812B_DUTY_CYCLE_1,    /*!< Duty cycle for binary 1. */
+    WS2812B_DUTY_CYCLE_RESET /*!< Duty cycle for reset slots. */
+};
 
 /*!
  * \brief Return codes for WS2812B functions.
@@ -34,16 +36,6 @@ enum WS2812BReturnCode {
     WS2812B_RC_OK,             /*!< Operation successful. */
     WS2812B_RC_ENCODING_ERROR, /*!< An error occurred during data encoding. */
     WS2812B_RC_NULL_POINTER,   /*!< A null pointer was passed to a function. */
-};
-
-/*!
- * \brief Handler structure for WS2812B LED control.
- *
- * This structure contains the duty cycle values for representing binary 0 and 1, as well as the number of reset slots required after transmitting data to the LEDs.
- */
-struct WS2812BHandler {
-    uint16_t duty_0; /*!< Duty cycle value representing binary 0. */
-    uint16_t duty_1; /*!< Duty cycle value representing binary 1. */
 };
 
 #endif // WS2812B_H

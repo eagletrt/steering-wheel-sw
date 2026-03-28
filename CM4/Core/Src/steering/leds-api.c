@@ -6,25 +6,21 @@
  * \brief Implementation of the API for controlling the LED strip on the steering wheel, including functions for setting individual LED colors, filling the strip with a color, clearing the strip, and transmitting data to the LEDs.
  */
 
-#include "leds-api.h"
 #include "ws2812b-api.h"
+#include "leds-api.h"
 #include "eagletrt-api.h"
 #include <string.h>
 
 EAGLETRT_STATIC struct LedsHandler leds_handler;
 
-enum LedsReturnCode leds_api_init(leds_transmit_callback transmit, leds_get_busy_callback get_busy, ws2812b_get_tick_hz_callback get_tick_hz) {
-    if (transmit == NULL || get_busy == NULL || get_tick_hz == NULL) {
+enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
+    if (transmit == NULL) {
         return LEDS_RC_NULL_POINTER;
     }
 
     memset(&leds_handler, 0, sizeof(leds_handler));
     leds_handler.brightness = 1.0f;
     leds_handler.transmit_callback = transmit;
-    leds_handler.get_busy_callback = get_busy;
-    if (ws2812b_api_init(&leds_handler.ws2812b_handler, get_tick_hz) != WS2812B_RC_OK) {
-        return LEDS_RC_NULL_POINTER;
-    }
     return LEDS_RC_OK;
 }
 
@@ -33,13 +29,13 @@ enum LedsReturnCode leds_api_set_led_color(enum LedsIndex index, struct LedColor
         return LEDS_RC_INVALID_LED;
     }
 
-    leds_handler.leds[index] = color;
+    leds_handler.colors[index] = color;
     return LEDS_RC_OK;
 }
 
 void leds_api_set_led_color_all(struct LedColor color) {
     for (size_t i = 0; i < LEDS_INDEX_COUNT; i++) {
-        leds_handler.leds[i] = color;
+        leds_handler.colors[i] = color;
     }
 }
 
@@ -53,66 +49,61 @@ void leds_api_set_brightness(float brightness) {
 }
 
 enum LedsReturnCode leds_api_show() {
-    if (leds_handler.transmit_callback == NULL || leds_handler.get_busy_callback == NULL) {
+    if (leds_handler.transmit_callback == NULL) {
         return LEDS_RC_NULL_POINTER;
     }
 
-    if (leds_handler.get_busy_callback()) {
-        return LEDS_RC_BUSY;
-    }
-
     enum WS2812BReturnCode encode_rc = ws2812b_api_encode(
-        &leds_handler.ws2812b_handler,
-        leds_handler.brightness,
-        (const uint8_t *)leds_handler.leds,
+        (const uint8_t *)leds_handler.colors,
         leds_handler.buffer,
+        leds_handler.brightness,
         LEDS_INDEX_COUNT);
 
     if (encode_rc != WS2812B_RC_OK) {
         return LEDS_RC_TRANSMISSION_ERROR;
     }
 
-    return leds_handler.transmit_callback((uint32_t *)leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT));
+    return leds_handler.transmit_callback(leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT));
 }
 
 void leds_api_set_ptt_pattern(void) {
     struct LedColor blue = { .g = 0, .r = 0, .b = 255 };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {
-        leds_handler.leds[i] = blue;
+        leds_handler.colors[i] = blue;
     }
 }
 
 void leds_api_set_target_lap_pattern(void) {
     struct LedColor off = { 0, 0, 0 };
     for (size_t i = LEDS_INDEX_TOP_LEFT_1; i < LEDS_INDEX_TOP_RIGHT_1 + 1; i++) {
-        leds_handler.leds[i] = off;
+        leds_handler.colors[i] = off;
     }
 }
 
 void leds_api_set_fast_lap_pattern(void) {
     struct LedColor green = { .g = 255, .r = 0, .b = 0 };
     for (size_t i = LEDS_INDEX_TOP_LEFT_1; i < LEDS_INDEX_TOP_RIGHT_1 + 1; i++) {
-        leds_handler.leds[i] = green;
+        leds_handler.colors[i] = green;
     }
 }
 
 void leds_api_set_slow_lap_pattern(void) {
     struct LedColor yellow = { .g = 255, .r = 255, .b = 0 };
     for (size_t i = LEDS_INDEX_TOP_LEFT_1; i < LEDS_INDEX_TOP_RIGHT_1 + 1; i++) {
-        leds_handler.leds[i] = yellow;
+        leds_handler.colors[i] = yellow;
     }
 }
 
 void leds_api_set_error_pattern(void) {
     struct LedColor red = { .g = 0, .r = 255, .b = 0 };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {
-        leds_handler.leds[i] = red;
+        leds_handler.colors[i] = red;
     }
 }
 
 void leds_api_set_ok_pattern(void) {
     struct LedColor off = { 0, 0, 0 };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {
-        leds_handler.leds[i] = off;
+        leds_handler.colors[i] = off;
     }
 }

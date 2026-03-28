@@ -20,7 +20,6 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 #include "leds.h"
-#include "ws2812b.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -76,8 +75,6 @@ typedef uint32_t (*get_system_tick)(void);
 struct FsmData {
     void (*critical_section_callback)(void);
     leds_transmit_callback leds_transmit;
-    leds_get_busy_callback leds_get_busy;
-    ws2812b_get_tick_hz_callback ws2812b_get_tick_hz;
     get_system_tick get_tick;
 };
 

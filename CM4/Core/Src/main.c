@@ -127,8 +127,6 @@ int main(void) {
         .critical_section_callback = __DMB,
         .get_tick = HAL_GetTick,
         .leds_transmit = tim_leds_transmit,
-        .leds_get_busy = tim_leds_get_busy,
-        .ws2812b_get_tick_hz = tim_ws2812b_get_timer_hz,
     };
 
     /* USER CODE END 2 */
