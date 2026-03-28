@@ -20,14 +20,12 @@ FAKE_VALUE_FUNC(enum LedsReturnCode, fake_transmit, const uint32_t *, uint16_t);
 FAKE_VALUE_FUNC(bool, fake_get_busy);
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick_hz);
 
-enum LedsReturnCode init_rc;
-
 void setUp(void) {
     RESET_FAKE(fake_transmit);
     RESET_FAKE(fake_get_busy);
     RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
-    init_rc = leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
+    leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
 }
 
 /*!
@@ -36,10 +34,11 @@ void setUp(void) {
  */
 
 void test_leds_api_init_success(void) {
-    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, init_rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
+    enum LedsReturnCode rc = leds_api_init(fake_transmit, fake_get_busy, fake_get_tick_hz);
+    TEST_ASSERT_EQUAL_MESSAGE(LEDS_RC_OK, rc, "leds_api_init should return LEDS_RC_OK on successful initialization");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_transmit, leds_handler.transmit_callback, "leds_api_init should set the transmit callback correctly");
     TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_get_busy, leds_handler.get_busy_callback, "leds_api_init should set the get_busy callback correctly");
-    TEST_ASSERT_EQUAL_MESSAGE(255, leds_handler.brightness, "leds_api_init should set the default brightness to 255");
+    TEST_ASSERT_EQUAL_MESSAGE(1.0f, leds_handler.brightness, "leds_api_init should set the default brightness to 1.0");
 }
 
 void test_leds_api_init_transmit_null_pointer(void) {
@@ -74,8 +73,8 @@ void test_leds_api_set_led_color_valid_index(void) {
 }
 
 void test_leds_api_set_led_color_invalid_index(void) {
-    struct LedColor color = { .r = 255, .g = 0, .b = 0 };               // Red
-    enum LedsReturnCode rc = leds_api_set_led_color(LEDS_COUNT, color); // Out of range index
+    struct LedColor color = { .r = 255, .g = 0, .b = 0 };                     // Red
+    enum LedsReturnCode rc = leds_api_set_led_color(LEDS_INDEX_COUNT, color); // Out of range index
     TEST_ASSERT_EQUAL(LEDS_RC_INVALID_LED, rc);
 }
 
@@ -95,7 +94,7 @@ void test_leds_api_set_led_color_negative_index(void) {
 void test_leds_api_set_led_color_all(void) {
     struct LedColor color = { .r = 0, .g = 255, .b = 0 }; // Green
     leds_api_set_led_color_all(color);
-    for (size_t i = 0; i < LEDS_COUNT; i++) {
+    for (size_t i = 0; i < LEDS_INDEX_COUNT; i++) {
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be set to the specified color value");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(255, leds_handler.leds[i].g, "leds_handler.leds[i].g should be set to the specified color value");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be set to the specified color value");
@@ -113,7 +112,7 @@ void test_leds_api_clear(void) {
     memset(&leds_handler.leds, 0xff, sizeof(leds_handler.leds));
 
     leds_api_clear();
-    for (size_t i = 0; i < LEDS_COUNT; i++) {
+    for (size_t i = 0; i < LEDS_INDEX_COUNT; i++) {
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].r, "leds_handler.leds[i].r should be cleared to 0");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].g, "leds_handler.leds[i].g should be cleared to 0");
         TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, leds_handler.leds[i].b, "leds_handler.leds[i].b should be cleared to 0");
@@ -174,8 +173,23 @@ void test_leds_api_show_busy(void) {
  */
 
 void test_leds_api_set_brightness(void) {
-    leds_api_set_brightness(128);
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(128, leds_handler.brightness, "leds_handler.brightness should be set to the specified value");
+    leds_api_set_brightness(1.0f);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1.0f, leds_handler.brightness, "leds_handler.brightness should be set to the specified value");
+}
+
+void test_leds_api_set_brightness_zero(void) {
+    leds_api_set_brightness(0.0f);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0.0f, leds_handler.brightness, "leds_handler.brightness should be set to 0.0");
+}
+
+void test_leds_api_set_brightness_negative(void) {
+    leds_api_set_brightness(-0.5f);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0.0f, leds_handler.brightness, "leds_handler.brightness should be set to 0.0 when a negative value is provided");
+}
+
+void test_leds_api_set_brightness_above_one(void) {
+    leds_api_set_brightness(1.5f);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1.0f, leds_handler.brightness, "leds_handler.brightness should be set to 1.0 when a value above 1.0 is provided");
 }
 
 /*! \} */
@@ -264,6 +278,9 @@ int main(void) {
     RUN_TEST(test_leds_api_show_busy);
 
     RUN_TEST(test_leds_api_set_brightness);
+    RUN_TEST(test_leds_api_set_brightness_zero);
+    RUN_TEST(test_leds_api_set_brightness_negative);
+    RUN_TEST(test_leds_api_set_brightness_above_one);
 
     RUN_TEST(test_leds_api_set_ptt_pattern);
     RUN_TEST(test_leds_api_set_target_lap_pattern);

@@ -15,8 +15,8 @@
 
 #define WS2812B_FREQUENCY_HZ (800000U) /*!< Frequency in Hz for WS2812B LED data transmission. */
 #define WS2812B_RESET_SLOTS (50U)      /*!< Number of time slots required to reset the WS2812B LEDs after data transmission. */
-#define WS2812B_DUTY_0_RATIO (35U)     /*!< Duty cycle ratio for representing binary 0 (35% of the time slot). */
-#define WS2812B_DUTY_1_RATIO (70U)     /*!< Duty cycle ratio for representing binary 1 (70% of the time slot). */
+#define WS2812B_DUTY_0_RATIO (0.35f)   /*!< Duty cycle ratio for representing binary 0 (35% of the time slot). */
+#define WS2812B_DUTY_1_RATIO (0.70f)   /*!< Duty cycle ratio for representing binary 1 (70% of the time slot). */
 
 /*!
  * \brief Callback function type for retrieving the timer tick frequency in Hz.
@@ -31,10 +31,9 @@ typedef uint32_t (*ws2812b_get_tick_hz_callback)(void);
  * \brief Return codes for WS2812B functions.
  */
 enum WS2812BReturnCode {
-    WS2812B_RC_OK,                 /*!< Operation successful. */
-    WS2812B_RC_TRANSMISSION_ERROR, /*!< An error occurred during data transmission. */
-    WS2812B_RC_NULL_POINTER,       /*!< A null pointer was passed to a function. */
-    WS2812B_RC_BUSY,               /*!< The handler is currently busy transmitting data. */
+    WS2812B_RC_OK,             /*!< Operation successful. */
+    WS2812B_RC_ENCODING_ERROR, /*!< An error occurred during data encoding. */
+    WS2812B_RC_NULL_POINTER,   /*!< A null pointer was passed to a function. */
 };
 
 /*!

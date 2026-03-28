@@ -45,18 +45,18 @@ enum WS2812BReturnCode ws2812b_api_init(struct WS2812BHandler *handler, ws2812b_
 
     memset(handler, 0, sizeof(*handler));
     uint32_t arr = (get_tick_hz_callback() / WS2812B_FREQUENCY_HZ) - 1;
-    handler->duty_0 = (uint16_t)((arr + 1) * WS2812B_DUTY_0_RATIO) / 100;
-    handler->duty_1 = (uint16_t)((arr + 1) * WS2812B_DUTY_1_RATIO) / 100;
+    handler->duty_0 = (uint16_t)((arr + 1) * WS2812B_DUTY_0_RATIO);
+    handler->duty_1 = (uint16_t)((arr + 1) * WS2812B_DUTY_1_RATIO);
 
     return WS2812B_RC_OK;
 }
 
-enum WS2812BReturnCode ws2812b_encode(
+enum WS2812BReturnCode ws2812b_api_encode(
     struct WS2812BHandler *handler,
-    uint8_t brightness,
+    float brightness,
     const uint8_t *grb_color_buffer,
     uint16_t *pwm_duty_out,
-    size_t num_leds) {
+    size_t led_count) {
 
     if (handler == NULL || grb_color_buffer == NULL || pwm_duty_out == NULL)
         return WS2812B_RC_NULL_POINTER;
@@ -64,12 +64,14 @@ enum WS2812BReturnCode ws2812b_encode(
     size_t out_idx = 0;
     size_t in_idx = 0;
 
-    for (size_t led = 0; led < num_leds; led++) {
+    brightness = EAGLETRT_API_CLAMP(brightness, 0.0f, 1.0f);
+
+    for (size_t led = 0; led < led_count; led++) {
         // 3 bytes per LED: G, R, B
-        for (int byte = 0; byte < 3; byte++) {
-            uint8_t value = ((uint16_t)WS2812BGammaCorrectionTable[grb_color_buffer[in_idx]] * brightness) / 255;
+        for (int channel = 0; channel < 3; channel++) {
+            uint8_t value = WS2812BGammaCorrectionTable[grb_color_buffer[in_idx]] * brightness;
             in_idx++;
-            /* MSB first */
+            // MSB first
             for (int bit = 7; bit >= 0; bit--) {
                 pwm_duty_out[out_idx] =
                     EAGLETRT_API_BIT_GET(value, bit) ? handler->duty_1 : handler->duty_0;
@@ -84,9 +86,9 @@ enum WS2812BReturnCode ws2812b_encode(
         out_idx++;
     }
 
-    if (out_idx != WS2812B_API_BUFFER_SIZE(num_leds)) {
+    if (out_idx != WS2812B_API_BUFFER_SIZE(led_count)) {
         // This should never happen, but we can check to be sure we filled the expected number of slots
-        return WS2812B_RC_TRANSMISSION_ERROR;
+        return WS2812B_RC_ENCODING_ERROR;
     }
 
     return WS2812B_RC_OK;

@@ -49,9 +49,9 @@ void leds_api_clear(void);
 /*!
  * \brief Sets the brightness level for the LEDs.
  *
- * \param brightness Brightness level (0-255), where 0 is off and 255 is full brightness.
+ * \param brightness Brightness level (0-1), where 0 is off and 1 is full brightness.
  */
-void leds_api_set_brightness(uint8_t brightness);
+void leds_api_set_brightness(float brightness);
 
 /*!
  * \brief Transmits the current LED color data to the LED strip, updating the displayed colors.

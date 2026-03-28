@@ -18,7 +18,6 @@
 
 extern const uint8_t WS2812BGammaCorrectionTable[256];
 struct WS2812BHandler ws2812b_handler;
-enum WS2812BReturnCode init_rc;
 
 DEFINE_FFF_GLOBALS;
 
@@ -28,19 +27,19 @@ void setUp(void) {
     RESET_FAKE(fake_get_tick_hz);
     FFF_RESET_HISTORY();
     fake_get_tick_hz_fake.return_val = TEST_FREQUENCY_HZ;
-    init_rc = ws2812b_api_init(&ws2812b_handler, fake_get_tick_hz);
+    ws2812b_api_init(&ws2812b_handler, fake_get_tick_hz);
 }
 
-static void encode_byte(uint8_t value, uint16_t *out, uint8_t brightness) {
-    uint8_t scaled_value = ((uint16_t)WS2812BGammaCorrectionTable[value] * brightness) / 255;
+EAGLETRT_STATIC void encode_byte(uint8_t value, uint16_t *out, float brightness) {
+    uint8_t scaled_value = WS2812BGammaCorrectionTable[value] * brightness;
     for (int i = 7; i >= 0; i--) {
         out[7 - i] = EAGLETRT_API_BIT_GET(scaled_value, i) ? ws2812b_handler.duty_1 : ws2812b_handler.duty_0;
     }
 }
 
-EAGLETRT_STATIC uint16_t calculate_expected_duty(uint32_t duty_ratio) {
+EAGLETRT_STATIC uint16_t calculate_expected_duty(float duty_ratio) {
     uint32_t arr = (TEST_FREQUENCY_HZ / WS2812B_FREQUENCY_HZ) - 1;
-    return (uint16_t)((arr + 1) * duty_ratio) / 100;
+    return (uint16_t)((arr + 1) * duty_ratio);
 }
 
 /*!
@@ -49,10 +48,13 @@ EAGLETRT_STATIC uint16_t calculate_expected_duty(uint32_t duty_ratio) {
  */
 
 void test_ws2812b_api_init_success(void) {
+    RESET_FAKE(fake_get_tick_hz);
+    fake_get_tick_hz_fake.return_val = TEST_FREQUENCY_HZ;
+    enum WS2812BReturnCode rc = ws2812b_api_init(&ws2812b_handler, fake_get_tick_hz);
     TEST_ASSERT_EQUAL_MESSAGE(1, fake_get_tick_hz_fake.call_count, "ws2812b_api_init should call get_tick_hz exactly once");
     TEST_ASSERT_EQUAL_MESSAGE(calculate_expected_duty(WS2812B_DUTY_0_RATIO), ws2812b_handler.duty_0, "handler.duty_0 should be calculated based on the tick frequency");
     TEST_ASSERT_EQUAL_MESSAGE(calculate_expected_duty(WS2812B_DUTY_1_RATIO), ws2812b_handler.duty_1, "handler.duty_1 should be calculated based on the tick frequency");
-    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, init_rc, "ws2812b_api_init should return WS2812B_RC_OK on successful initialization");
+    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, rc, "ws2812b_api_init should return WS2812B_RC_OK on successful initialization");
 }
 
 void test_ws2812b_api_init_null_handler(void) {
@@ -92,22 +94,34 @@ void test_ws2812b_api_buffer_size_macro_zero_leds(void) {
 void test_ws2812b_encode_null_handler(void) {
     uint8_t input[ONE_LED_INPUT_SIZE] = { 0xFF, 0x00, 0x00 }; // Green
     uint16_t output[ONE_LED_OUTPUT_SIZE] = { 0 };
-    uint8_t brightness = 255;
-    enum WS2812BReturnCode rc = ws2812b_encode(NULL, brightness, input, output, 1);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
+    uint16_t expected[ONE_LED_OUTPUT_SIZE] = { 0 };
+    float brightness = 1.0f;
+    enum WS2812BReturnCode rc = ws2812b_api_encode(NULL, brightness, input, output, 1);
+    TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(
+        expected,
+        output,
+        ONE_LED_OUTPUT_SIZE,
+        "Output buffer should remain unchanged when handler is NULL");
+    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_NULL_POINTER, rc, "ws2812b_api_encode should return WS2812B_RC_NULL_POINTER when handler is NULL");
 }
 
 void test_ws2812b_encode_null_input(void) {
     uint16_t output[ONE_LED_OUTPUT_SIZE] = { 0 };
-    uint8_t brightness = 255;
-    enum WS2812BReturnCode rc = ws2812b_encode(&ws2812b_handler, brightness, NULL, output, 1);
-    TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
+    uint16_t expected[ONE_LED_OUTPUT_SIZE] = { 0 };
+    float brightness = 1.0f;
+    enum WS2812BReturnCode rc = ws2812b_api_encode(&ws2812b_handler, brightness, NULL, output, 1);
+    TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(
+        expected,
+        output,
+        ONE_LED_OUTPUT_SIZE,
+        "Output buffer should remain unchanged when input is NULL");
+    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_NULL_POINTER, rc, "ws2812b_api_encode should return WS2812B_RC_NULL_POINTER when input is NULL");
 }
 
 void test_ws2812b_encode_null_output(void) {
     uint8_t input[ONE_LED_INPUT_SIZE] = { 0xFF, 0x00, 0x00 }; // Green
-    uint8_t brightness = 255;
-    enum WS2812BReturnCode rc = ws2812b_encode(&ws2812b_handler, brightness, input, NULL, 1);
+    float brightness = 1.0f;
+    enum WS2812BReturnCode rc = ws2812b_api_encode(&ws2812b_handler, brightness, input, NULL, 1);
     TEST_ASSERT_EQUAL(WS2812B_RC_NULL_POINTER, rc);
 }
 
@@ -121,7 +135,7 @@ void test_ws2812b_encode_two_leds(void) {
         0xFF
     };
 
-    uint8_t brightness = 143;
+    float brightness = 1.0f;
 
     size_t leds_num = 2;
     size_t out_size = WS2812B_API_BUFFER_SIZE(leds_num);
@@ -130,27 +144,16 @@ void test_ws2812b_encode_two_leds(void) {
     memset(output, 0, sizeof(output));
 
     uint16_t expected[out_size];
-    uint16_t *ptr = expected;
-
-    encode_byte(0x00, ptr, brightness);
-    ptr += 8;
-    encode_byte(0xFF, ptr, brightness);
-    ptr += 8;
-    encode_byte(0x00, ptr, brightness);
-    ptr += 8;
-
-    encode_byte(0xFF, ptr, brightness);
-    ptr += 8;
-    encode_byte(0x00, ptr, brightness);
-    ptr += 8;
-    encode_byte(0xFF, ptr, brightness);
-    ptr += 8;
-
-    for (size_t i = 0; i < WS2812B_RESET_SLOTS; i++) {
-        *ptr++ = 0;
+    for (size_t i = 0; i < leds_num; i++) {
+        encode_byte(input[i * 3], &expected[i * ONE_LED_INPUT_SIZE * 8], brightness);
+        encode_byte(input[i * 3 + 1], &expected[i * ONE_LED_INPUT_SIZE * 8 + 8], brightness);
+        encode_byte(input[i * 3 + 2], &expected[i * ONE_LED_INPUT_SIZE * 8 + 16], brightness);
+    }
+    for (size_t i = leds_num * ONE_LED_INPUT_SIZE * 8; i < out_size; i++) {
+        expected[i] = 0; // Reset slots
     }
 
-    enum WS2812BReturnCode rc = ws2812b_encode(&ws2812b_handler, brightness, input, output, leds_num);
+    enum WS2812BReturnCode rc = ws2812b_api_encode(&ws2812b_handler, brightness, input, output, leds_num);
     TEST_ASSERT_EQUAL_MESSAGE(
         WS2812B_RC_OK,
         rc,
@@ -166,36 +169,46 @@ void test_ws2812b_encode_msb_first(void) {
         0x00
     };
 
-    uint8_t brightness = 255;
+    float brightness = 1.0f;
 
-    uint16_t output[ONE_LED_OUTPUT_SIZE];
+    uint16_t output[ONE_LED_OUTPUT_SIZE] = { 0 };
 
-    ws2812b_encode(&ws2812b_handler, brightness, input, output, 1);
+    enum WS2812BReturnCode rc = ws2812b_api_encode(&ws2812b_handler, brightness, input, output, 1);
 
     TEST_ASSERT_EQUAL_MESSAGE(ws2812b_handler.duty_0, output[0], "First bit of the first byte should be encoded as handler.duty_0");
     TEST_ASSERT_EQUAL_MESSAGE(ws2812b_handler.duty_1, output[1], "Second bit of the first byte should be encoded as handler.duty_1");
     TEST_ASSERT_EQUAL_MESSAGE(ws2812b_handler.duty_0, output[15], "Last bit of the second byte should be encoded as handler.duty_0");
+    TEST_ASSERT_EQUAL_MESSAGE(WS2812B_RC_OK, rc, "ws2812b_encode should return WS2812B_RC_OK for valid input and output pointers");
 }
 
 void test_ws2812b_encode_reset_slots_are_zero(void) {
     uint8_t input[3] = { 0x00, 0x00, 0x00 };
-    uint8_t brightness = 255;
-    uint16_t output[ONE_LED_OUTPUT_SIZE];
-    ws2812b_encode(&ws2812b_handler, brightness, input, output, 1);
+    float brightness = 1.0f;
+    uint16_t output[ONE_LED_OUTPUT_SIZE] = { 0 };
+    uint16_t expected[WS2812B_RESET_SLOTS] = { 0 };
+    ws2812b_api_encode(&ws2812b_handler, brightness, input, output, 1);
     size_t start = 24;
 
-    for (size_t i = 0; i < WS2812B_RESET_SLOTS; i++) {
-        char msg[50];
-        snprintf(msg, sizeof(msg), "Reset slot %zu should be 0", i);
-        TEST_ASSERT_EQUAL_UINT16_MESSAGE(0, output[start + i], msg);
-    }
+    TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(
+        expected,
+        &output[start],
+        WS2812B_RESET_SLOTS,
+        "Reset slots at the end of the output buffer should be set to 0");
 }
 
 void test_ws2812b_encode_brightness_scaling(void) {
     uint8_t input[3] = { 0xFF, 0xFF, 0xFF };
-    uint8_t brightness = 128; // 50% brightness
+    float brightness = 0.5f; // 50% brightness
+    uint8_t expected_scaled_value = WS2812BGammaCorrectionTable[0xFF];
+    uint16_t expected_scaled_out[8] = { 0 };
+    encode_byte(expected_scaled_value, expected_scaled_out, 0.5f);
     uint16_t output[ONE_LED_OUTPUT_SIZE];
-    ws2812b_encode(&ws2812b_handler, brightness, input, output, 1);
+    ws2812b_api_encode(&ws2812b_handler, brightness, input, output, 1);
+    TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(
+        expected_scaled_out,
+        output,
+        8,
+        "Brightness scaling should correctly adjust the duty cycle for the first byte of the LED data");
 }
 
 /*! \} */
