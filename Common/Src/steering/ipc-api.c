@@ -1,3 +1,12 @@
+/*!
+ * \file ipc-api.c
+ * \date 2026-01-20
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup Shared
+ *
+ * \brief Implementation of the IPC API for managing input events between CM4 and CM7.
+ */
+
 #include "ipc-api.h"
 #include "shared-ipc.h"
 #include <stdio.h>

@@ -2,6 +2,7 @@
  * \file leds.h
  * \date 2026-03-18
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM4_Core
  *
  * \brief This file defines structures and enumerations to manage 9 leds on the steering wheel.
  */

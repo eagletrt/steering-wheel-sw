@@ -2,6 +2,7 @@
  * \file ws2812b-api.c
  * \date 2026-03-18
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM4_Core
  *
  * \brief Implementation of the API for encoding GRB color data into a PWM buffer suitable for WS2812B LEDs, including handling brightness scaling and gamma correction.
  */

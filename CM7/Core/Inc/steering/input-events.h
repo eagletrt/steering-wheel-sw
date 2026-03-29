@@ -2,6 +2,7 @@
  * \file input-events.h
  * \date 2025-12-24
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM7_Core
  *
  * \brief Hardware-agnostic definitions for the steering wheel input events handling.
  */

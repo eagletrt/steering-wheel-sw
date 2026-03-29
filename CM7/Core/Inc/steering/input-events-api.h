@@ -2,6 +2,7 @@
  * \file input-events-api.h
  * \date 2025-12-24
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM7_Core
  *
  * \brief Hardware-agnostic API to handle input events.
  */

@@ -1,3 +1,12 @@
+/*!
+ * \file ipc.h
+ * \date 2026-01-20
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup Shared
+ *
+ * \brief Inter-Processor Communication (IPC) definitions for input event sharing between CM4 and CM7.
+ */
+
 #ifndef IPC_H
 #define IPC_H
 

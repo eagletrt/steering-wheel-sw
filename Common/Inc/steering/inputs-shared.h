@@ -2,6 +2,7 @@
  * \file inputs-shared.h
  * \date 2025-12-21
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup Shared
  *
  * \brief Header file defining shared data structures
  *
