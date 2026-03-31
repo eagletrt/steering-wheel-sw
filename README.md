@@ -40,7 +40,3 @@ The codebase is based on **PlatformIO** and can be build, flashed and tested usi
 ## Mantainers
 
 - [Bridi Alessandro](https://github.com/bridiro)
-
-## License
-
-The code is licensed under the **GNU Affero General Public License v3.0**. See the [LICENSE](LICENSE) file for more details.
