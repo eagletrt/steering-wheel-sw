@@ -15,7 +15,7 @@ void ipc_api_reset(void) {
     ipc_input = (struct IPCInputQueue){ 0 };
 }
 
-void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent ev)) {
+void ipc_api_read_and_process_all(ipc_process_event_callback callback) {
     while (ipc_input.read_idx != ipc_input.write_idx) {
         struct InputsSharedEvent ev =
             ipc_input.events[ipc_input.read_idx];
@@ -27,7 +27,7 @@ void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent ev))
     }
 }
 
-bool ipc_api_push_event(struct InputsSharedEvent ev, void (*critical_section_callback)(void)) {
+bool ipc_api_push_event(struct InputsSharedEvent ev, ipc_critical_section_callback critical_section_callback) {
     uint32_t next = (ipc_input.write_idx + 1) % IPC_INPUT_QUEUE_SIZE;
 
     if (next == ipc_input.read_idx) {

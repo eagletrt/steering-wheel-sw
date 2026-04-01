@@ -11,6 +11,7 @@
 #define IPC_API_H
 
 #include <stdbool.h>
+#include "ipc.h"
 #include "inputs-shared.h"
 
 /*!
@@ -23,7 +24,7 @@ void ipc_api_reset(void);
  *
  * \param callback Callback function to handle each input event.
  */
-void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent ev));
+void ipc_api_read_and_process_all(ipc_process_event_callback callback);
 
 /*!
  * \brief Push an input event to the IPC input queue.
@@ -35,6 +36,6 @@ void ipc_api_read_and_process_all(void (*callback)(struct InputsSharedEvent ev))
  *
  * \return true if the event was successfully pushed, false otherwise.
  */
-bool ipc_api_push_event(struct InputsSharedEvent ev, void (*critical_section_callback)(void));
+bool ipc_api_push_event(struct InputsSharedEvent ev, ipc_critical_section_callback critical_section_callback);
 
 #endif // IPC_API_H
