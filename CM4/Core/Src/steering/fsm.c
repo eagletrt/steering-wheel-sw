@@ -17,10 +17,9 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
-#include "eagletrt-api.h"
 #include "inputs-api.h"
-#include "ipc-api.h"
 #include "leds-api.h"
+#include "post-api.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -56,11 +55,6 @@ fsm_event_data_t *fsm_fired_event = NULL;
 
 /*** USER CODE BEGIN GLOBALS ***/
 
-EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent ev) {
-    EAGLETRT_API_UNUSED(ev);
-    return INPUTS_RC_OK;
-}
-
 /*** USER CODE END GLOBALS ***/
 
 // Function to check if an event has fired
@@ -95,13 +89,9 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    struct FsmData *fsm_data = (struct FsmData *)data;
+    struct PostInitData *post_init_data = (struct PostInitData *)data;
 
-    if (inputs_api_init(fsm_data->critical_section_callback, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
-        next_state = FSM_STATE_ERROR;
-    }
-
-    if (leds_api_init(fsm_data->leds_transmit) != LEDS_RC_OK) {
+    if (post_api_do_init(post_init_data) != POST_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
@@ -125,9 +115,12 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_IDLE ***/
 
-    struct FsmData *fsm_data = (struct FsmData *)data;
-
-    if (inputs_api_poll_for_long_press(fsm_data->get_tick()) != INPUTS_RC_OK) {
+    if (data != NULL) {
+        struct FsmData *fsm_data = (struct FsmData *)data;
+        if (inputs_api_poll_for_long_press(fsm_data->tick) != INPUTS_RC_OK) {
+            next_state = FSM_STATE_ERROR;
+        }
+    } else {
         next_state = FSM_STATE_ERROR;
     }
 

@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
+#include "post.h"
 
 /* USER CODE END Includes */
 
@@ -123,19 +124,22 @@ int main(void) {
     MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
 
-    struct FsmData data = {
-        .critical_section_callback = __DMB,
-        .get_tick = HAL_GetTick,
+    struct PostInitData data = {
+        .ipc_critical_section = __DMB,
         .leds_transmit = tim_leds_transmit,
     };
+
+    current_state = fsm_run_state(current_state, &data);
+
+    struct FsmData fsm_data;
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-
-        current_state = fsm_run_state(current_state, &data);
+        fsm_data.tick = HAL_GetTick();
+        current_state = fsm_run_state(current_state, &fsm_data);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

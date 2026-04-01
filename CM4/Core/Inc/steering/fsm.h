@@ -65,17 +65,10 @@ typedef void transition_func_t(fsm_state_data_t *data);
 /*** USER CODE BEGIN TYPES ***/
 
 /*!
- * \brief Callback definition for to retrieve the currect system time.
- *
- * \retval current system tick
+ * \brief This struct contains the data needed by the FSM to operate and call other modules successfully. It is passed as an argument to all state and transition functions.
  */
-typedef uint32_t (*get_system_tick)(void);
-
-// TODO: this is temporary, until POST is properly implemented
 struct FsmData {
-    void (*critical_section_callback)(void);
-    leds_transmit_callback leds_transmit;
-    get_system_tick get_tick;
+    uint32_t tick; /*!< Current tick. */
 };
 
 /*** USER CODE END TYPES ***/
