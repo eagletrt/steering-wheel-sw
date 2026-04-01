@@ -2,6 +2,7 @@
  * \file leds-api.c
  * \date 2026-03-18
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM4_Core
  *
  * \brief Implementation of the API for controlling the LED strip on the steering wheel, including functions for setting individual LED colors, filling the strip with a color, clearing the strip, and transmitting data to the LEDs.
  */

@@ -387,6 +387,7 @@ CMakeUserPresets.json
 !steering-wheel-bootloader-sw/CM7/FATFS/Target
 .DS_Store
 Thumbs.db
+docs/
 
 ### Binary and compiled files ###
 *.bin

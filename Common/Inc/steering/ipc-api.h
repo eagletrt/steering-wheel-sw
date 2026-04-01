@@ -1,3 +1,12 @@
+/*!
+ * \file ipc-api.h
+ * \date 2026-01-20
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup Shared
+ *
+ * \brief API for Inter-Processor Communication (IPC) to manage input events between CM4 and CM7.
+ */
+
 #ifndef IPC_API_H
 #define IPC_API_H
 
