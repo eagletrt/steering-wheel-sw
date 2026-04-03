@@ -8,7 +8,6 @@
 
 #include "post-api.h"
 #include "inputs-api.h"
-#include "ipc-api.h"
 #include "leds-api.h"
 #include "eagletrt-api.h"
 
@@ -19,9 +18,13 @@ EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent
 }
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
+    if (post_init_data == NULL || post_init_data->ipc_critical_section == NULL || post_init_data->leds_transmit == NULL || post_init_data->inputs_notify == NULL) {
+        return POST_RC_ERROR;
+    }
+
     enum PostReturnCode ret_code = POST_RC_OK;
 
-    if (inputs_api_init(post_init_data->ipc_critical_section, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
+    if (inputs_api_init(post_init_data->ipc_critical_section, post_init_data->inputs_notify, input_action_noop) != INPUTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

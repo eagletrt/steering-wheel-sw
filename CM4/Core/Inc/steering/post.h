@@ -9,6 +9,7 @@
 #ifndef POST_H
 #define POST_H
 
+#include "inputs.h"
 #include "leds.h"
 #include "ipc.h"
 
@@ -20,6 +21,7 @@ enum PostReturnCode {
 struct PostInitData {
     ipc_critical_section_callback ipc_critical_section; /*!< Callback function required by leds module. */
     leds_transmit_callback leds_transmit;               /*!< Callback function required by leds module. */
+    inputs_notify_callback inputs_notify;               /*!< Callback function required by inputs module. */
 };
 
 #endif // POST_H

@@ -161,6 +161,7 @@ HSEM notification */
     /* USER CODE END Boot_Mode_Sequence_2 */
 
     /* USER CODE BEGIN SysInit */
+    HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
 
     /* USER CODE END SysInit */
 
