@@ -23,7 +23,7 @@
  * \retval INPUTS_RC_ERROR if there was an error during initialization
  */
 enum InputsReturnCode inputs_api_init(
-    void (*critical_section_callback)(void),
+    ipc_critical_section_callback critical_section_callback,
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback);
 

@@ -11,6 +11,7 @@
 #define INPUTS_H
 
 #include "inputs-shared.h"
+#include "ipc.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -60,7 +61,7 @@ struct InputsKnobHandler {
  * \retval true if the event was handled successfully
  * \retval false if there was an error notifying the event
  */
-typedef bool (*inputs_notify_callback)(struct InputsSharedEvent ev, void (*critical_section_callback)(void));
+typedef bool (*inputs_notify_callback)(struct InputsSharedEvent ev, ipc_critical_section_callback critical_section_callback);
 
 /*!
  * \brief Callback definition for input actions
@@ -76,7 +77,7 @@ typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent
  * \brief Main input handler structure
  */
 struct InputsHandler {
-    void (*critical_section_callback)(void); /*!< Callback to perform DMB after notifying CM7 */
+    ipc_critical_section_callback critical_section_callback; /*!< Callback to perform critical section operations for IPC */
 
     inputs_notify_callback notify_callback; /*!< Callback to notify CM7 about input events */
     inputs_action_callback action_callback; /*!< Callback to perform local actions on input */

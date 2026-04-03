@@ -33,7 +33,7 @@ EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
 }
 
 enum InputsReturnCode inputs_api_init(
-    void (*critical_section_callback)(void),
+    ipc_critical_section_callback critical_section_callback,
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback) {
     if (notify_callback == NULL || action_callback == NULL) {
