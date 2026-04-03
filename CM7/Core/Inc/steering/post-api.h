@@ -17,8 +17,7 @@
  * This function initializes all the modules required by the steering wheel firmware.
  *
  * \retval POST_RC_OK if POST completed successfully
- * \retval POST_RC_ERROR_MINOR if POST encountered a minor error
- * \retval POST_RC_ERROR_SEVERE if POST encountered a severe error
+ * \retval POST_RC_ERROR if POST encountered an error
  */
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data);
 

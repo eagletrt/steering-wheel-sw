@@ -22,11 +22,11 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     enum PostReturnCode ret_code = POST_RC_OK;
 
     if (inputs_api_init(post_init_data->ipc_critical_section, ipc_api_push_event, input_action_noop) != INPUTS_RC_OK) {
-        ret_code = POST_RC_ERROR_SEVERE;
+        ret_code = POST_RC_ERROR;
     }
 
     if (leds_api_init(post_init_data->leds_transmit) != LEDS_RC_OK) {
-        ret_code = POST_RC_ERROR_SEVERE;
+        ret_code = POST_RC_ERROR;
     }
 
     return ret_code;

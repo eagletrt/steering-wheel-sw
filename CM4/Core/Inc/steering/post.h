@@ -13,9 +13,8 @@
 #include "ipc.h"
 
 enum PostReturnCode {
-    POST_RC_OK,           /*!< POST completed successfully. */
-    POST_RC_ERROR_MINOR,  /*!< POST encountered a minor error. */
-    POST_RC_ERROR_SEVERE, /*!< POST encountered a severe error. */
+    POST_RC_OK,    /*!< POST completed successfully. */
+    POST_RC_ERROR, /*!< POST encountered an error. */
 };
 
 struct PostInitData {
