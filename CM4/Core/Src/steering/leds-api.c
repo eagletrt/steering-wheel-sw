@@ -26,7 +26,7 @@ enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
 }
 
 enum LedsReturnCode leds_api_set_led_color(enum LedsIndex index, struct LedColor color) {
-    if (index < 0 || index >= LEDS_INDEX_COUNT) {
+    if (index >= LEDS_INDEX_COUNT) {
         return LEDS_RC_INVALID_LED;
     }
 

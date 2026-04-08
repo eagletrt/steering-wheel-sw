@@ -23,6 +23,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "eagletrt-api.h"
+
 /* USER CODE END 0 */
 
 SDRAM_HandleTypeDef hsdram1;
@@ -197,6 +199,8 @@ static void HAL_FMC_MspInit(void) {
 void HAL_SDRAM_MspInit(SDRAM_HandleTypeDef *sdramHandle) {
     /* USER CODE BEGIN SDRAM_MspInit 0 */
 
+    EAGLETRT_API_UNUSED(sdramHandle);
+
     /* USER CODE END SDRAM_MspInit 0 */
     HAL_FMC_MspInit();
     /* USER CODE BEGIN SDRAM_MspInit 1 */
@@ -277,6 +281,8 @@ static void HAL_FMC_MspDeInit(void) {
 
 void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef *sdramHandle) {
     /* USER CODE BEGIN SDRAM_MspDeInit 0 */
+
+    EAGLETRT_API_UNUSED(sdramHandle);
 
     /* USER CODE END SDRAM_MspDeInit 0 */
     HAL_FMC_MspDeInit();

@@ -1,18 +1,24 @@
 #include "screen-api.h"
 #include "inputs-shared.h"
+#include "eagletrt-api.h"
 
 enum InputEventsReturnCode mock_input_event_button_event_callback(enum InputsSharedButtonID button_id) {
+    EAGLETRT_API_UNUSED(button_id);
     return INPUT_EVENTS_RC_OK;
 }
 
 enum InputEventsReturnCode mock_input_event_button_long_press_callback(enum InputsSharedButtonID button_id) {
+    EAGLETRT_API_UNUSED(button_id);
     return INPUT_EVENTS_RC_OK;
 }
 
 enum InputEventsReturnCode mock_input_event_button_release_callback(enum InputsSharedButtonID button_id) {
+    EAGLETRT_API_UNUSED(button_id);
     return INPUT_EVENTS_RC_OK;
 }
 
 enum InputEventsReturnCode mock_input_event_knob_rotation_callback(enum InputsSharedKnobID knob_id, int8_t delta) {
+    EAGLETRT_API_UNUSED(knob_id);
+    EAGLETRT_API_UNUSED(delta);
     return INPUT_EVENTS_RC_OK;
 }

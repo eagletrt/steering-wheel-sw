@@ -20,6 +20,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "inputs-api.h"
 #include "leds-api.h"
 #include "post-api.h"
+#include "eagletrt-api.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -152,6 +153,8 @@ fsm_state_t fsm_do_error(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_ERROR ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END DO_ERROR ***/
 
     switch (next_state) {
@@ -171,6 +174,8 @@ fsm_state_t fsm_do_flash(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_NO_CHANGE;
 
     /*** USER CODE BEGIN DO_FLASH ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END DO_FLASH ***/
 
@@ -194,6 +199,8 @@ fsm_state_t fsm_do_ts_on(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_TS_ON ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END DO_TS_ON ***/
 
     switch (next_state) {
@@ -215,6 +222,8 @@ fsm_state_t fsm_do_autonomous(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_AUTONOMOUS ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END DO_AUTONOMOUS ***/
 
     switch (next_state) {
@@ -234,6 +243,8 @@ fsm_state_t fsm_do_drive(fsm_state_data_t *data) {
     fsm_state_t next_state = FSM_STATE_IDLE;
 
     /*** USER CODE BEGIN DO_DRIVE ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END DO_DRIVE ***/
 
@@ -267,6 +278,8 @@ void fsm_init_done(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN INIT_DONE ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END INIT_DONE ***/
 }
 
@@ -276,6 +289,8 @@ void fsm_init_error(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN INIT_ERROR ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END INIT_ERROR ***/
 }
 
@@ -284,6 +299,8 @@ void fsm_init_error(fsm_state_data_t *data) {
 void fsm_start_flash(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN START_FLASH ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END START_FLASH ***/
 }
@@ -298,6 +315,8 @@ void fsm_error_detected(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN ERROR_DETECTED ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END ERROR_DETECTED ***/
 }
 
@@ -306,6 +325,8 @@ void fsm_error_detected(fsm_state_data_t *data) {
 void fsm_ts_on_request(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN TS_ON_REQUEST ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END TS_ON_REQUEST ***/
 }
@@ -316,6 +337,8 @@ void fsm_autonomous_enable(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN AUTONOMOUS_ENABLE ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END AUTONOMOUS_ENABLE ***/
 }
 
@@ -324,6 +347,8 @@ void fsm_autonomous_enable(fsm_state_data_t *data) {
 void fsm_flash_done(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN FLASH_DONE ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END FLASH_DONE ***/
 }
@@ -334,6 +359,8 @@ void fsm_ts_cancel(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN TS_CANCEL ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END TS_CANCEL ***/
 }
 
@@ -342,6 +369,8 @@ void fsm_ts_cancel(fsm_state_data_t *data) {
 void fsm_ts_on_accepted(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN TS_ON_ACCEPTED ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END TS_ON_ACCEPTED ***/
 }
@@ -352,6 +381,8 @@ void fsm_ts_off(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN TS_OFF ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END TS_OFF ***/
 }
 
@@ -360,6 +391,8 @@ void fsm_ts_off(fsm_state_data_t *data) {
 void fsm_autonomous_disable(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN AUTONOMOUS_DISABLE ***/
+
+    EAGLETRT_API_UNUSED(data);
 
     /*** USER CODE END AUTONOMOUS_DISABLE ***/
 }

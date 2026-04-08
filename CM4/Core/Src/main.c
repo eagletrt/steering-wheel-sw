@@ -67,8 +67,8 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool main_notify_event(struct InputsSharedEvent ev, ipc_critical_section_callback critical_section_callback) {
-    bool ret = ipc_api_push_event(ev, critical_section_callback);
+bool main_notify_event(struct InputsSharedEvent ev) {
+    bool ret = ipc_api_push_event(ev, __DMB);
     HAL_HSEM_FastTake(HSEM_INPUT_ID);
     HAL_HSEM_Release(HSEM_INPUT_ID, 0);
     return ret;
@@ -133,7 +133,6 @@ int main(void) {
     /* USER CODE BEGIN 2 */
 
     struct PostInitData data = {
-        .ipc_critical_section = __DMB,
         .leds_transmit = tim_leds_transmit,
         .inputs_notify = main_notify_event,
     };

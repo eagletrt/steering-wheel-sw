@@ -10,8 +10,10 @@
 #include "post-api.h"
 #include "input-events-api.h"
 #include "screen-api.h"
+#include "eagletrt-api.h"
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
+    EAGLETRT_API_UNUSED(post_init_data);
     enum PostReturnCode ret_code = POST_RC_OK;
 
     if (input_events_api_init(
