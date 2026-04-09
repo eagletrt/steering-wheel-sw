@@ -29,7 +29,7 @@
 
 #include "fsm.h"
 #include "post.h"
-#include "ipc-api.h"
+#include "ipc-queue-api.h"
 #include "shared.h"
 
 /* USER CODE END Includes */
@@ -68,7 +68,7 @@ static void MPU_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 bool main_notify_event(struct InputsSharedEvent ev) {
-    bool ret = ipc_api_push_event(ev, __DMB);
+    bool ret = ipc_queue_api_push_event(ev, __DMB);
     HAL_HSEM_FastTake(HSEM_INPUT_ID);
     HAL_HSEM_Release(HSEM_INPUT_ID, 0);
     return ret;

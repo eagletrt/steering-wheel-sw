@@ -1,7 +1,7 @@
 #ifndef SHARED_IPC_H
 #define SHARED_IPC_H
 
-#include "ipc.h"
+#include "ipc-queue.h"
 #include "eagletrt.h"
 
 /*!

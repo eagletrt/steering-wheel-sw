@@ -1,7 +1,7 @@
 #ifndef MOCK_SHARED_IPC_H
 #define MOCK_SHARED_IPC_H
 
-#include "ipc.h"
+#include "ipc-queue.h"
 
 struct IPCInputQueue ipc_input;
 

@@ -1,14 +1,14 @@
 /*!
- * \file ipc.h
+ * \file ipc-queue.h
  * \date 2026-01-20
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  * \ingroup Shared
  *
- * \brief Inter-Processor Communication (IPC) definitions for input event sharing between CM4 and CM7.
+ * \brief Inter-Processor Communication (IPC) Queue definitions for input event sharing between CM4 and CM7.
  */
 
-#ifndef IPC_H
-#define IPC_H
+#ifndef IPC_QUEUE_H
+#define IPC_QUEUE_H
 
 #include "inputs-shared.h"
 
@@ -42,4 +42,4 @@ struct IPCInputQueue {
     struct InputsSharedEvent events[IPC_INPUT_QUEUE_SIZE]; /*!< Ring buffer storage */
 };
 
-#endif // IPC_H
+#endif // IPC_QUEUE_H
