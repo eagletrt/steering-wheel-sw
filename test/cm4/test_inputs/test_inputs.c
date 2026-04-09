@@ -15,18 +15,16 @@ DEFINE_FFF_GLOBALS;
 
 typedef void (*cs_callback)(void);
 
-FAKE_VOID_FUNC(critical_section_callback);
-FAKE_VALUE_FUNC(bool, notify_callback, struct InputsSharedEvent, cs_callback);
+FAKE_VALUE_FUNC(bool, notify_callback, struct InputsSharedEvent);
 FAKE_VALUE_FUNC(enum InputsReturnCode, action_callback, struct InputsSharedEvent);
 
 extern struct InputsHandler handler;
 
 void setUp(void) {
-    RESET_FAKE(critical_section_callback);
     RESET_FAKE(notify_callback);
     RESET_FAKE(action_callback);
     FFF_RESET_HISTORY();
-    inputs_api_init(critical_section_callback, notify_callback, action_callback);
+    inputs_api_init(notify_callback, action_callback);
 }
 
 /*!
@@ -35,19 +33,19 @@ void setUp(void) {
  */
 
 void test_inputs_init_success(void) {
-    enum InputsReturnCode rc = inputs_api_init(critical_section_callback, notify_callback, action_callback);
+    enum InputsReturnCode rc = inputs_api_init(notify_callback, action_callback);
     TEST_ASSERT_EQUAL_MESSAGE(notify_callback, handler.notify_callback, "Notify callback was not set correctly");
     TEST_ASSERT_EQUAL_MESSAGE(action_callback, handler.action_callback, "Action callback was not set correctly");
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, rc, "Expected success return code from inputs_api_init");
 }
 
 void test_inputs_init_fail_action_callback(void) {
-    enum InputsReturnCode rc = inputs_api_init(NULL, notify_callback, NULL);
+    enum InputsReturnCode rc = inputs_api_init(notify_callback, NULL);
     TEST_ASSERT_EQUAL(INPUTS_RC_ERROR, rc);
 }
 
 void test_inputs_init_fail_notify_callback(void) {
-    enum InputsReturnCode rc = inputs_api_init(NULL, NULL, action_callback);
+    enum InputsReturnCode rc = inputs_api_init(NULL, action_callback);
     TEST_ASSERT_EQUAL(INPUTS_RC_ERROR, rc);
 }
 
@@ -86,7 +84,7 @@ void test_inputs_update_button_action_fail(void) {
 }
 
 void test_inputs_update_button_invalid_button_id(void) {
-    enum InputsReturnCode ret = inputs_api_update_button(-1, true, 100);
+    enum InputsReturnCode ret = inputs_api_update_button(100, true, 100);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_ERROR, ret, "Expected error return code when button ID is invalid");
     ret = inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_COUNT, true, 100);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_ERROR, ret, "Expected error return code when button ID is out of range");
