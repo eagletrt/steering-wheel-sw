@@ -15,6 +15,17 @@
 #include <stddef.h>
 
 /*!
+ * \brief Return codes for LED operations.
+ */
+enum LedsReturnCode {
+    LEDS_RC_OK,                 /*!< Operation successful. */
+    LEDS_RC_INVALID_LED,        /*!< The specified LED index is out of range. */
+    LEDS_RC_NULL_POINTER,       /*!< A null pointer was passed */
+    LEDS_RC_TRANSMISSION_ERROR, /*!< An error ocurred during data transmission */
+    LEDS_RC_BUSY,               /*!< The handler is currently busy transmitting data. */
+};
+
+/*!
  * \brief Callback function type for transmitting LED data.
  *
  * This function should be implemented by the user to handle the actual transmission of the LED data to the hardware. The buffer will contain the encoded values for the LEDs, and the length will indicate how many values are in the buffer.
@@ -28,17 +39,6 @@
  * \retval LEDS_RC_BUSY The handler is currently busy transmitting data.
  */
 typedef enum LedsReturnCode (*leds_transmit_callback)(const enum WS2812BDutyCycle *buffer, uint16_t length);
-
-/*!
- * \brief Return codes for LED operations.
- */
-enum LedsReturnCode {
-    LEDS_RC_OK,                 /*!< Operation successful. */
-    LEDS_RC_INVALID_LED,        /*!< The specified LED index is out of range. */
-    LEDS_RC_NULL_POINTER,       /*!< A null pointer was passed */
-    LEDS_RC_TRANSMISSION_ERROR, /*!< An error ocurred during data transmission */
-    LEDS_RC_BUSY,               /*!< The handler is currently busy transmitting data. */
-};
 
 /*!
  * \brief Structure representing the color of a LED (GRB ordering).

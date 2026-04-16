@@ -34,7 +34,7 @@
 
 #include "fsm.h"
 #include "input-events-api.h"
-#include "ipc-api.h"
+#include "ipc-queue-api.h"
 #include "shared.h"
 #include "eagletrt-api.h"
 
@@ -72,7 +72,7 @@ static void MPU_Config(void);
 
 void HAL_HSEM_FreeCallback(uint32_t SemMask) {
     if (EAGLETRT_API_BIT_GET(SemMask, HSEM_INPUT_ID)) {
-        ipc_api_read_and_process_all(input_events_api_handle_event);
+        ipc_queue_api_read_and_process_all(input_events_api_handle_event);
         HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
     }
 }
@@ -161,6 +161,7 @@ HSEM notification */
     /* USER CODE END Boot_Mode_Sequence_2 */
 
     /* USER CODE BEGIN SysInit */
+    HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
 
     /* USER CODE END SysInit */
 

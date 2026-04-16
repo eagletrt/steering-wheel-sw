@@ -24,7 +24,7 @@ EAGLETRT_STATIC struct InputsHandler handler;
  */
 EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
     struct InputsSharedEvent event) {
-    bool notify_rc = handler.notify_callback(event, handler.critical_section_callback);
+    bool notify_rc = handler.notify_callback(event);
     enum InputsReturnCode action_rc = handler.action_callback(event);
     if (!notify_rc) {
         return INPUTS_RC_NOTIFY_ERROR;
@@ -33,7 +33,6 @@ EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
 }
 
 enum InputsReturnCode inputs_api_init(
-    ipc_critical_section_callback critical_section_callback,
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback) {
     if (notify_callback == NULL || action_callback == NULL) {
@@ -44,7 +43,6 @@ enum InputsReturnCode inputs_api_init(
 
     handler.notify_callback = notify_callback;
     handler.action_callback = action_callback;
-    handler.critical_section_callback = critical_section_callback;
 
     for (size_t i = 0; i < INPUTS_SHARED_BUTTON_ID_COUNT; i++) {
         handler.buttons[i].enabled = true;
@@ -63,7 +61,7 @@ enum InputsReturnCode inputs_api_update_button(
     enum InputsSharedButtonID button_id,
     bool pressed,
     uint32_t current_tick_ms) {
-    if (button_id < 0 || button_id >= INPUTS_SHARED_BUTTON_ID_COUNT) {
+    if (button_id >= INPUTS_SHARED_BUTTON_ID_COUNT) {
         return INPUTS_RC_ERROR;
     }
 
@@ -97,7 +95,7 @@ enum InputsReturnCode inputs_api_update_button(
 enum InputsReturnCode inputs_api_update_knob(
     enum InputsSharedKnobID knob_id,
     int16_t current_position) {
-    if (knob_id < 0 || knob_id >= INPUTS_SHARED_KNOB_ID_COUNT) {
+    if (knob_id >= INPUTS_SHARED_KNOB_ID_COUNT) {
         return INPUTS_RC_ERROR;
     }
 

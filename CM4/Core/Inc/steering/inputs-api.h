@@ -15,7 +15,6 @@
 /*!
  * \brief Initialize the input handler
  *
- * \param critical_section_callback Callback to perform in critical section
  * \param notify_callback Callback function to notify CM7 about input events
  * \param action_callback Callback for local actions on input
  *
@@ -23,7 +22,6 @@
  * \retval INPUTS_RC_ERROR if there was an error during initialization
  */
 enum InputsReturnCode inputs_api_init(
-    ipc_critical_section_callback critical_section_callback,
     inputs_notify_callback notify_callback,
     inputs_action_callback action_callback);
 

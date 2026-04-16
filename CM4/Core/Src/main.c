@@ -29,6 +29,8 @@
 
 #include "fsm.h"
 #include "post.h"
+#include "ipc-queue-api.h"
+#include "shared.h"
 
 /* USER CODE END Includes */
 
@@ -65,6 +67,12 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+bool main_notify_event(struct InputsSharedEvent ev) {
+    bool ret = ipc_queue_api_push_event(ev, __DMB);
+    HAL_HSEM_FastTake(HSEM_INPUT_ID);
+    HAL_HSEM_Release(HSEM_INPUT_ID, 0);
+    return ret;
+}
 
 /* USER CODE END 0 */
 
@@ -125,8 +133,8 @@ int main(void) {
     /* USER CODE BEGIN 2 */
 
     struct PostInitData data = {
-        .ipc_critical_section = __DMB,
         .leds_transmit = tim_leds_transmit,
+        .inputs_notify = main_notify_event,
     };
 
     current_state = fsm_run_state(current_state, &data);
