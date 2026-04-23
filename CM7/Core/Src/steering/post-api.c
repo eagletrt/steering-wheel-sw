@@ -10,17 +10,23 @@
 #include "post-api.h"
 #include "input-events-api.h"
 #include "screen-api.h"
-#include "eagletrt-api.h"
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
-    EAGLETRT_API_UNUSED(post_init_data);
     enum PostReturnCode ret_code = POST_RC_OK;
+
+    if (post_init_data == NULL || post_init_data->draw_line == NULL || post_init_data->draw_rectangle == NULL) {
+        return POST_RC_ERROR;
+    }
 
     if (input_events_api_init(
             mock_input_event_button_event_callback,
             mock_input_event_button_long_press_callback,
             mock_input_event_button_release_callback,
             mock_input_event_knob_rotation_callback) != INPUT_EVENTS_RC_OK) {
+        ret_code = POST_RC_ERROR;
+    }
+
+    if (screen_init(post_init_data->draw_line, post_init_data->draw_rectangle) != SCREEN_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

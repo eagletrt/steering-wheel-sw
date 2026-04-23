@@ -21,7 +21,8 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
-#include "eagletrt-api.h"
+#include "dma2d.h"
+#include "eagletrt.h"
 #include "screen.h"
 
 EAGLETRT_STATIC uint32_t framebuffer1[SCREEN_WIDTH * SCREEN_HEIGHT]
@@ -29,6 +30,9 @@ EAGLETRT_STATIC uint32_t framebuffer1[SCREEN_WIDTH * SCREEN_HEIGHT]
 
 EAGLETRT_STATIC uint32_t framebuffer2[SCREEN_WIDTH * SCREEN_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));
+
+EAGLETRT_STATIC uint32_t *display_framebuffer = framebuffer1;
+EAGLETRT_STATIC uint32_t *draw_framebuffer = framebuffer2;
 
 /* USER CODE END 0 */
 
@@ -38,9 +42,6 @@ LTDC_HandleTypeDef hltdc;
 void MX_LTDC_Init(void) {
 
     /* USER CODE BEGIN LTDC_Init 0 */
-
-    EAGLETRT_API_UNUSED(framebuffer1);
-    EAGLETRT_API_UNUSED(framebuffer2);
 
     /* USER CODE END LTDC_Init 0 */
 
@@ -323,5 +324,24 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef *ltdcHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+void ltdc_swap_framebuffers(void) {
+    // Swap the display and draw framebuffers
+    uint32_t *temp = display_framebuffer;
+    display_framebuffer = draw_framebuffer;
+    draw_framebuffer = temp;
+
+    // Update the LTDC layer's framebuffer address
+    __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
+    __HAL_LTDC_RELOAD_CONFIG(&hltdc);
+}
+
+void ltdc_draw_line(uint16_t x, uint16_t y, uint16_t length, struct Color color) {
+    dma2d_draw_line(draw_framebuffer, x, y, length, color);
+}
+
+void ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+    dma2d_draw_rectangle(draw_framebuffer, x, y, w, h, color);
+}
 
 /* USER CODE END 1 */

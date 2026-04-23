@@ -23,6 +23,7 @@
 #include "dma2d.h"
 #include "fatfs.h"
 #include "jpeg.h"
+#include "post.h"
 #include "usart.h"
 #include "ltdc.h"
 #include "sdmmc.h"
@@ -177,6 +178,13 @@ HSEM notification */
     MX_FATFS_Init();
     MX_DAC1_Init();
     /* USER CODE BEGIN 2 */
+
+    struct PostInitData post_init_data = {
+        .draw_line = ltdc_draw_line,
+        .draw_rectangle = ltdc_draw_rectangle,
+    };
+
+    current_state = fsm_run_state(current_state, &post_init_data);
 
     /* USER CODE END 2 */
 

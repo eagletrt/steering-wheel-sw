@@ -36,6 +36,8 @@ typedef struct {
 
     /*** USER CODE BEGIN EVENT_DATA ***/
 
+    void *empty_for_warning;
+
     /*** USER CODE END EVENT_DATA ***/
 
 } fsm_event_data_t;

@@ -95,4 +95,70 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
 /* USER CODE BEGIN 1 */
 
+void dma2d_draw_line(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t length, struct Color color) {
+    while (DMA2D->CR & DMA2D_CR_START)
+        ;
+
+    uint32_t dst = (uint32_t)(framebuffer + (y * 800 + x) * 4);
+
+    if (color.a == 0xFF) {
+        DMA2D->CR = DMA2D_R2M;
+        DMA2D->OCOLR = color.argb;
+        DMA2D->OMAR = dst;
+        DMA2D->OOR = 800 - length;
+        DMA2D->NLR = (1 << 16) | length;
+    } else {
+        DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
+
+        DMA2D->FGCOLR = color.argb;
+        DMA2D->FGPFCCR = DMA2D_INPUT_A8 | (color.a << DMA2D_FGPFCCR_ALPHA_Pos) | DMA2D_FGPFCCR_AM_0;
+        DMA2D->FGMAR = dst;
+        DMA2D->FGOR = 800 - length;
+
+        DMA2D->BGMAR = dst;
+        DMA2D->BGPFCCR = DMA2D_INPUT_ARGB8888;
+        DMA2D->BGOR = 800 - length;
+
+        DMA2D->OMAR = dst;
+        DMA2D->OOR = 800 - length;
+        DMA2D->NLR = (1 << 16) | length;
+    }
+
+    DMA2D->CR |= DMA2D_CR_START;
+}
+
+void dma2d_draw_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+    while (DMA2D->CR & DMA2D_CR_START)
+        ;
+
+    uint32_t dst = (uint32_t)(framebuffer + (y * 800 + x) * 4);
+    uint32_t oor = 800 - w;
+
+    if (color.a == 0xFF) {
+        DMA2D->CR = (0x3UL << DMA2D_CR_MODE_Pos);
+        DMA2D->OCOLR = color.argb;
+        DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
+        DMA2D->OMAR = dst;
+        DMA2D->OOR = oor;
+        DMA2D->NLR = ((uint32_t)h << 16) | w;
+    } else if (color.a > 0) {
+        DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
+
+        DMA2D->FGCOLR = color.argb & 0x00FFFFFF;
+        DMA2D->FGPFCCR = DMA2D_INPUT_ARGB8888 | DMA2D_FGPFCCR_AM_0 | ((uint32_t)color.a << DMA2D_FGPFCCR_ALPHA_Pos);
+        DMA2D->FGMAR = dst;
+        DMA2D->FGOR = oor;
+
+        DMA2D->BGPFCCR = DMA2D_INPUT_ARGB8888;
+        DMA2D->BGMAR = dst;
+        DMA2D->BGOR = oor;
+
+        DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
+        DMA2D->OMAR = dst;
+        DMA2D->OOR = oor;
+        DMA2D->NLR = ((uint32_t)h << 16) | w;
+    }
+    DMA2D->CR |= DMA2D_CR_START;
+}
+
 /* USER CODE END 1 */
