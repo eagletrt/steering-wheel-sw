@@ -41,13 +41,24 @@ typedef enum InputEventsReturnCode (*input_events_button_event_callback)(enum In
 typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum InputsSharedKnobID knob_id, int8_t delta);
 
 /*!
+ * \brief Callback type for parameter change events.
+ *
+ * \param parameter_id The ID of the parameter that changed.
+ * \param value The new value of the parameter.
+ *
+ * \return An InputEventsReturnCode indicating success or failure.
+ */
+typedef enum InputEventsReturnCode (*input_events_parameter_change_callback)(enum InputsSharedParameterID parameter_id, uint8_t value);
+
+/*!
  * \brief Structure holding all input event callbacks.
  */
 struct InputEventHandler {
-    input_events_button_event_callback on_button_press;      /*!< Callback for button press events */
-    input_events_button_event_callback on_button_long_press; /*!< Callback for button long press events */
-    input_events_button_event_callback on_button_release;    /*!< Callback for button release events */
-    input_events_knob_rotation_callback on_knob_rotation;    /*!< Callback for knob rotation events */
+    input_events_button_event_callback on_button_press;         /*!< Callback for button press events */
+    input_events_button_event_callback on_button_long_press;    /*!< Callback for button long press events */
+    input_events_button_event_callback on_button_release;       /*!< Callback for button release events */
+    input_events_knob_rotation_callback on_knob_rotation;       /*!< Callback for knob rotation events */
+    input_events_parameter_change_callback on_parameter_change; /*!< Callback for parameter change events */
 };
 
 #endif // INPUT_EVENTS_H

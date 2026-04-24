@@ -2,6 +2,7 @@
 #include "fontutils.h"
 #include "inputs-shared.h"
 #include "eagletrt-api.h"
+#include "popup-api.h"
 #include "raster-api.h"
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
@@ -50,13 +51,42 @@ enum InputEventsReturnCode mock_input_event_knob_rotation_callback(enum InputsSh
     return INPUT_EVENTS_RC_OK;
 }
 
+enum InputEventsReturnCode screen_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
+    // Called from the HSEM ISR: only update the popup state here.
+    // The raster interface swap is performed by screen_update in the main loop.
+    if (popup_api_show(&screen_handler.popup, parameter_id, value, screen_handler.last_event_tick) != POPUP_RC_OK) {
+        return INPUT_EVENTS_RC_ERROR;
+    }
+    return INPUT_EVENTS_RC_OK;
+}
+
 enum ScreenReturnCode screen_init(font_draw_line_callback draw_line, raster_draw_rectangle_callback draw_rectangle) {
     uint16_t len = sizeof(main_interface) / sizeof(main_interface[0]);
     raster_api_init(&screen_handler.raster, main_interface, len, draw_line, draw_rectangle, NULL);
+
+    if (popup_api_init(&screen_handler.popup) != POPUP_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    screen_handler.popup_visible = false;
+    screen_handler.last_event_tick = 0U;
+
     return SCREEN_RC_OK;
 }
 
 enum ScreenReturnCode screen_update(uint32_t tick) {
+    screen_handler.last_event_tick = tick;
+
+    bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
+
+    if (popup_active && !screen_handler.popup_visible) {
+        raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT);
+        screen_handler.popup_visible = true;
+    } else if (!popup_active && screen_handler.popup_visible) {
+        uint16_t len = sizeof(main_interface) / sizeof(main_interface[0]);
+        raster_api_set_interface(&screen_handler.raster, main_interface, len);
+        screen_handler.popup_visible = false;
+    }
+
     raster_api_render(&screen_handler.raster);
     return SCREEN_RC_OK;
 }

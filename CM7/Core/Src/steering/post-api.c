@@ -22,7 +22,8 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
             mock_input_event_button_event_callback,
             mock_input_event_button_long_press_callback,
             mock_input_event_button_release_callback,
-            mock_input_event_knob_rotation_callback) != INPUT_EVENTS_RC_OK) {
+            mock_input_event_knob_rotation_callback,
+            screen_on_parameter_change) != INPUT_EVENTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

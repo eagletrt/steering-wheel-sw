@@ -1,7 +1,9 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include "popup.h"
 #include "raster.h"
+#include <stdbool.h>
 #include <stddef.h>
 
 #define SCREEN_WIDTH (800U)
@@ -22,8 +24,10 @@ enum ScreenReturnCode {
  */
 struct ScreenHandler {
     uint32_t last_event_tick; /*!< Timestamp of the last screen event, in milliseconds */
+    bool popup_visible;       /*!< Whether the popup interface is currently mounted on the raster */
 
     struct RasterHandler raster; /*!< Handler for raster operations */
+    struct PopupHandler popup;   /*!< State of the parameter-change popup overlay */
 };
 
 #endif // SCREEN_H

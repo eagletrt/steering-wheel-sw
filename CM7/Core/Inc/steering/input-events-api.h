@@ -19,6 +19,7 @@
  * \param long_press_cb Callback for button long press.
  * \param release_cb Callback for button release.
  * \param rotation_cb Callback for knob rotation events.
+ * \param parameter_cb Callback for parameter change events.
  *
  * \retval INPUT_EVENTS_OK if initialization was successful.
  * \retval INPUT_EVENTS_ERROR if there was an error during initialization.
@@ -27,7 +28,8 @@ enum InputEventsReturnCode input_events_api_init(
     input_events_button_event_callback button_press_cb,
     input_events_button_event_callback button_long_press_cb,
     input_events_button_event_callback button_release_cb,
-    input_events_knob_rotation_callback rotation_cb);
+    input_events_knob_rotation_callback rotation_cb,
+    input_events_parameter_change_callback parameter_cb);
 
 /*!
  * \brief Handle an input event by invoking the appropriate callback.

@@ -23,6 +23,7 @@ enum InputsSharedEventType {
     INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS,
     INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE,
     INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS,
+    INPUTS_SHARED_EVENT_TYPE_PARAMETER_CHANGE,
 };
 
 /*!
@@ -59,6 +60,27 @@ enum InputsSharedButtonID {
 };
 
 /*!
+ * \brief Enumeration of user-facing parameters driven by inputs.
+ *
+ * \details Parameters with a numeric range use a uint8_t value from 0 to
+ *     INPUTS_SHARED_PARAMETER_NUMERIC_MAX. Toggle parameters use 0 for OFF
+ *     and 1 for ON.
+ */
+enum InputsSharedParameterID {
+    INPUTS_SHARED_PARAMETER_ID_POWER,            /*!< Power level (0..10) */
+    INPUTS_SHARED_PARAMETER_ID_REGEN,            /*!< Regenerative braking level (0..10) */
+    INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING, /*!< Torque vectoring level (0..10) */
+    INPUTS_SHARED_PARAMETER_ID_TRACTION_CONTROL, /*!< Traction control toggle */
+    INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL,   /*!< Launch control toggle */
+    INPUTS_SHARED_PARAMETER_ID_COUNT,
+};
+
+/*!
+ * \brief Inclusive upper bound for numeric parameter values.
+ */
+#define INPUTS_SHARED_PARAMETER_NUMERIC_MAX (10U)
+
+/*!
  * \brief Structure representing an input event
  *
  * \details This structure uses a union to store different types of input events.
@@ -73,6 +95,10 @@ struct InputsSharedEvent {
         struct {
             enum InputsSharedButtonID button_id; /*!< Identifier for the button */
         } button;
+        struct {
+            enum InputsSharedParameterID parameter_id; /*!< Identifier of the parameter that changed */
+            uint8_t value;                             /*!< New value of the parameter */
+        } parameter;
     };
 };
 

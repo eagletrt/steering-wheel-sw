@@ -10,13 +10,7 @@
 #include "post-api.h"
 #include "inputs-api.h"
 #include "leds-api.h"
-#include "eagletrt-api.h"
-
-// THIS IS HERE AS A PLACEHOLDER, WILL BE CHANGED WITH UI MODULE IMPLEMENTATION
-EAGLETRT_STATIC enum InputsReturnCode input_action_noop(struct InputsSharedEvent ev) {
-    EAGLETRT_API_UNUSED(ev);
-    return INPUTS_RC_OK;
-}
+#include "parameters-api.h"
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (post_init_data == NULL || post_init_data->leds_transmit == NULL || post_init_data->inputs_notify == NULL) {
@@ -25,7 +19,11 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
 
     enum PostReturnCode ret_code = POST_RC_OK;
 
-    if (inputs_api_init(post_init_data->inputs_notify, input_action_noop) != INPUTS_RC_OK) {
+    if (parameters_api_init(post_init_data->inputs_notify) != PARAMETERS_RC_OK) {
+        ret_code = POST_RC_ERROR;
+    }
+
+    if (inputs_api_init(post_init_data->inputs_notify, parameters_api_handle_input) != INPUTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 
