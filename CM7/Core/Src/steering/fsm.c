@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "fsm_"
 
 #include "post-api.h"
 #include "eagletrt-api.h"
+#include "screen-api.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -114,7 +115,11 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_IDLE ***/
 
-    EAGLETRT_API_UNUSED(data);
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (screen_update(fsm_data->tick) != SCREEN_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
 
     /*** USER CODE END DO_IDLE ***/
 
