@@ -1,7 +1,7 @@
 #include "screen-api.h"
+#include "eagletrt.h"
 #include "fontutils.h"
 #include "inputs-shared.h"
-#include "eagletrt-api.h"
 #include "popup-api.h"
 #include "raster-api.h"
 
@@ -29,27 +29,6 @@ EAGLETRT_STATIC struct RasterBox main_interface[8] = {
     { .updated = true, .id = 6, .rect = { .x = 10, .y = 370, .w = 200, .h = 50 }, .color = { .argb = 0xFFFFFFFF }, .label = &main_interface_labels[6] },
     { .updated = true, .id = 7, .rect = { .x = 220, .y = 10, .w = 570, .h = 410 }, .color = { .argb = 0xFFCCCCCC }, .label = &main_interface_labels[7] }
 };
-
-enum InputEventsReturnCode mock_input_event_button_event_callback(enum InputsSharedButtonID button_id) {
-    EAGLETRT_API_UNUSED(button_id);
-    return INPUT_EVENTS_RC_OK;
-}
-
-enum InputEventsReturnCode mock_input_event_button_long_press_callback(enum InputsSharedButtonID button_id) {
-    EAGLETRT_API_UNUSED(button_id);
-    return INPUT_EVENTS_RC_OK;
-}
-
-enum InputEventsReturnCode mock_input_event_button_release_callback(enum InputsSharedButtonID button_id) {
-    EAGLETRT_API_UNUSED(button_id);
-    return INPUT_EVENTS_RC_OK;
-}
-
-enum InputEventsReturnCode mock_input_event_knob_rotation_callback(enum InputsSharedKnobID knob_id, int8_t delta) {
-    EAGLETRT_API_UNUSED(knob_id);
-    EAGLETRT_API_UNUSED(delta);
-    return INPUT_EVENTS_RC_OK;
-}
 
 enum InputEventsReturnCode screen_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
     // Called from the HSEM ISR: only update the popup state here.

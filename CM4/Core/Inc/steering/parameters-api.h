@@ -6,10 +6,14 @@
  *
  * \brief Hardware-agnostic API to manage the steering wheel tunable parameters.
  *
- * \details Maps raw input events (knob rotations, button presses) to changes
- *     on a small set of user-facing parameters (power, regen, torque vectoring,
- *     traction control, launch control) and notifies CM7 about every change so
- *     the UI can render a popup.
+ * \details This module is the single source of truth for the user-facing
+ *     parameters (power, regen, torque vectoring, traction/launch control).
+ *     It can be driven either from the inputs module (knob/button callbacks
+ *     wired to parameters_api_handle_*) or from any other source through
+ *     parameters_api_set (for instance a CAN RX handler). Every transition
+ *     triggers the on-change callback registered at init time, which is
+ *     the single hook the integrator uses to broadcast the change to the
+ *     rest of the system (CM7 popup, CAN TX, ...).
  */
 
 #ifndef PARAMETERS_API_H
@@ -21,29 +25,17 @@
 /*!
  * \brief Initialize the parameters handler.
  *
- * \param notify_callback Callback used to push parameter change events to CM7.
+ * \details All parameter values are reset to 0. The on-change callback is
+ *     invoked on every transition (both input-driven and external) but not
+ *     during initialization.
+ *
+ * \param on_change Callback fired on every value transition.
  *
  * \retval PARAMETERS_RC_OK if initialization was successful.
- * \retval PARAMETERS_RC_ERROR if the callback is NULL.
+ * \retval PARAMETERS_RC_ERROR if \p on_change is NULL.
  */
 enum ParametersReturnCode parameters_api_init(
-    inputs_notify_callback notify_callback);
-
-/*!
- * \brief Translate an input event into a parameter change, if any.
- *
- * \details This function is meant to be registered as the action callback of
- *     the inputs module. Input events that do not map to a parameter are
- *     silently ignored.
- *
- * \param event The input event to process.
- *
- * \retval INPUTS_RC_OK if the event was handled (or ignored) successfully.
- * \retval INPUTS_RC_NOTIFY_ERROR if the change could not be notified to CM7.
- * \retval INPUTS_RC_ERROR on generic failure.
- */
-enum InputsReturnCode parameters_api_handle_input(
-    struct InputsSharedEvent event);
+    parameters_on_change_callback on_change);
 
 /*!
  * \brief Read the current value of a parameter.
@@ -52,6 +44,58 @@ enum InputsReturnCode parameters_api_handle_input(
  *
  * \return Current value of the parameter, 0 if \p parameter_id is invalid.
  */
-uint8_t parameters_api_get_value(enum InputsSharedParameterID parameter_id);
+uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id);
+
+/*!
+ * \brief Set a parameter to an explicit value.
+ *
+ * \details The value is clamped to the parameter's valid range (0..1 for
+ *     toggle parameters, 0..INPUTS_SHARED_PARAMETER_NUMERIC_MAX for numeric
+ *     ones). The on-change callback is fired only when the clamped value
+ *     differs from the current one.
+ *
+ * \param parameter_id The parameter to update.
+ * \param value The desired value (will be clamped).
+ *
+ * \retval PARAMETERS_RC_OK if the set was applied (whether or not the value
+ *     actually changed).
+ * \retval PARAMETERS_RC_ERROR if \p parameter_id is invalid or the on-change
+ *     callback reported failure.
+ */
+enum ParametersReturnCode parameters_api_set(
+    enum InputsSharedParameterID parameter_id,
+    uint8_t value);
+
+/*!
+ * \brief Map a button press to a parameter transition.
+ *
+ * \details Intended to be registered as the button-press callback of the
+ *     inputs module. Buttons that do not map to any parameter are silently
+ *     ignored.
+ *
+ * \param button_id The button that was pressed.
+ *
+ * \retval INPUTS_RC_OK on success (including "no mapping").
+ * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
+ */
+enum InputsReturnCode parameters_api_handle_button(
+    enum InputsSharedButtonID button_id);
+
+/*!
+ * \brief Map a knob rotation to a parameter transition.
+ *
+ * \details Intended to be registered as the knob-rotation callback of the
+ *     inputs module. Knobs that do not map to any parameter are silently
+ *     ignored.
+ *
+ * \param knob_id The knob that moved.
+ * \param delta Signed rotation delta.
+ *
+ * \retval INPUTS_RC_OK on success (including "no mapping").
+ * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
+ */
+enum InputsReturnCode parameters_api_handle_knob(
+    enum InputsSharedKnobID knob_id,
+    int8_t delta);
 
 #endif // PARAMETERS_API_H

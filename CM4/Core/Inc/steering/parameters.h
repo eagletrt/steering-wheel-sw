@@ -10,24 +10,41 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
-#include "inputs.h"
 #include "inputs-shared.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 /*!
  * \brief Return codes for parameters operations.
  */
 enum ParametersReturnCode {
-    PARAMETERS_RC_OK,           /*!< Operation completed successfully */
-    PARAMETERS_RC_NOTIFY_ERROR, /*!< Error while notifying the change to CM7 */
-    PARAMETERS_RC_ERROR,        /*!< General error */
+    PARAMETERS_RC_OK,    /*!< Operation completed successfully */
+    PARAMETERS_RC_ERROR, /*!< Invalid input or the on-change handler reported failure */
 };
+
+/*!
+ * \brief Callback fired whenever a parameter's value actually changes.
+ *
+ * \details Registered through parameters_api_init and invoked by both the
+ *     input-driven handlers and the external setter. The caller uses it
+ *     to broadcast the change to the rest of the system (typically the
+ *     CM7 popup via IPC, and in the future a CAN frame).
+ *
+ * \param parameter_id Parameter whose value just changed.
+ * \param value New clamped value of the parameter.
+ *
+ * \retval true if the change was dispatched successfully.
+ * \retval false on failure; the parameter value is still updated locally.
+ */
+typedef bool (*parameters_on_change_callback)(
+    enum InputsSharedParameterID parameter_id,
+    uint8_t value);
 
 /*!
  * \brief Parameters handler structure.
  */
 struct ParametersHandler {
-    inputs_notify_callback notify_callback;           /*!< Callback used to notify CM7 about parameter changes */
+    parameters_on_change_callback on_change;          /*!< Called on every value transition */
     uint8_t values[INPUTS_SHARED_PARAMETER_ID_COUNT]; /*!< Current value of each parameter */
 };
 

@@ -4,27 +4,25 @@
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  * \ingroup Shared
  *
- * \brief Header file defining shared data structures
+ * \brief Cross-core vocabulary for the steering wheel inputs and parameters.
  *
- * \details This file contains the definition of data structures
- *     that are shared between the 2 cores.
+ * \details This header carries the few symbols that need to be visible from
+ *     both CM4 and CM7:
+ *     - the taxonomy of physical inputs (knob and button IDs), consumed by
+ *       CM4's inputs module;
+ *     - the list of tunable parameters (power, regen, torque vectoring,
+ *       traction/launch control) and the single payload struct pushed to CM7
+ *       whenever one of them changes.
+ *
+ *     Raw button/knob events never cross the core boundary: they are mapped
+ *     to parameter changes inside CM4 and only the resulting {parameter_id,
+ *     value} pair is forwarded to CM7 for the UI popup.
  */
 
 #ifndef INPUTS_SHARED_H
 #define INPUTS_SHARED_H
 
 #include <stdint.h>
-
-/*!
- * \brief Enumeration of input event types
- */
-enum InputsSharedEventType {
-    INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION,
-    INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS,
-    INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE,
-    INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS,
-    INPUTS_SHARED_EVENT_TYPE_PARAMETER_CHANGE,
-};
 
 /*!
  * \brief Enumeration of knob identifiers
@@ -70,7 +68,7 @@ enum InputsSharedParameterID {
     INPUTS_SHARED_PARAMETER_ID_POWER,            /*!< Power level (0..10) */
     INPUTS_SHARED_PARAMETER_ID_REGEN,            /*!< Regenerative braking level (0..10) */
     INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING, /*!< Torque vectoring level (0..10) */
-    INPUTS_SHARED_PARAMETER_ID_TRACTION_CONTROL, /*!< Traction control toggle */
+    INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG,    /*!< Telemetry log toggle */
     INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL,   /*!< Launch control toggle */
     INPUTS_SHARED_PARAMETER_ID_COUNT,
 };
@@ -81,25 +79,16 @@ enum InputsSharedParameterID {
 #define INPUTS_SHARED_PARAMETER_NUMERIC_MAX (10U)
 
 /*!
- * \brief Structure representing an input event
+ * \brief Cross-core payload describing a parameter value update.
  *
- * \details This structure uses a union to store different types of input events.
+ * \details This is the only payload that ever travels through the IPC queue.
+ *     CM4 pushes one of these whenever a parameter changes (either in
+ *     response to a physical input or via the external setter), and CM7
+ *     reads them to drive the popup UI.
  */
 struct InputsSharedEvent {
-    enum InputsSharedEventType type; /*!< Type of the input event */
-    union {
-        struct {
-            enum InputsSharedKnobID knob_id; /*!< Identifier for the knob */
-            int8_t delta;                    /*!< Change in knob position */
-        } knob;
-        struct {
-            enum InputsSharedButtonID button_id; /*!< Identifier for the button */
-        } button;
-        struct {
-            enum InputsSharedParameterID parameter_id; /*!< Identifier of the parameter that changed */
-            uint8_t value;                             /*!< New value of the parameter */
-        } parameter;
-    };
+    enum InputsSharedParameterID parameter_id; /*!< Parameter that changed */
+    uint8_t value;                             /*!< New value of the parameter */
 };
 
 #endif // INPUTS_SHARED_H

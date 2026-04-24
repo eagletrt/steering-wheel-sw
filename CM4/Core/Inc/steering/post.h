@@ -10,8 +10,8 @@
 #ifndef POST_H
 #define POST_H
 
-#include "inputs.h"
 #include "leds.h"
+#include "parameters.h"
 
 enum PostReturnCode {
     POST_RC_OK,    /*!< POST completed successfully. */
@@ -19,8 +19,8 @@ enum PostReturnCode {
 };
 
 struct PostInitData {
-    leds_transmit_callback leds_transmit; /*!< Callback function required by leds module. */
-    inputs_notify_callback inputs_notify; /*!< Callback function required by inputs module. */
+    leds_transmit_callback leds_transmit;               /*!< Callback function required by leds module. */
+    parameters_on_change_callback parameters_on_change; /*!< Callback fired on every parameter transition. */
 };
 
 #endif // POST_H

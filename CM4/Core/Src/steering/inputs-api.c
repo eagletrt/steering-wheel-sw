@@ -7,7 +7,6 @@
  * \brief Hardware-agnostic input handling implementation for the steering wheel.
  */
 
-// needs it just because of memset
 #include <string.h>
 
 #include "inputs-api.h"
@@ -16,33 +15,34 @@
 EAGLETRT_STATIC struct InputsHandler handler;
 
 /*!
- * \brief Dispatch an event to both the notify and action callbacks.
+ * \brief Invoke a button callback if one is registered.
  *
- * The notify callback is always called first.
- * If either fails the first non-OK code is returned, but both
- * are always attempted.
+ * \param cb Callback pointer (may be NULL).
+ * \param button_id Identifier to pass through.
+ *
+ * \retval INPUTS_RC_OK if the callback is NULL or returned OK.
+ * \retval INPUTS_RC_ERROR if the callback returned an error.
  */
-EAGLETRT_STATIC enum InputsReturnCode prv_inputs_dispatch(
-    struct InputsSharedEvent event) {
-    bool notify_rc = handler.notify_callback(event);
-    enum InputsReturnCode action_rc = handler.action_callback(event);
-    if (!notify_rc) {
-        return INPUTS_RC_NOTIFY_ERROR;
+EAGLETRT_STATIC enum InputsReturnCode prv_fire_button_callback(
+    inputs_button_event_callback cb,
+    enum InputsSharedButtonID button_id) {
+    if (cb == NULL) {
+        return INPUTS_RC_OK;
     }
-    return action_rc;
+    return cb(button_id);
 }
 
 enum InputsReturnCode inputs_api_init(
-    inputs_notify_callback notify_callback,
-    inputs_action_callback action_callback) {
-    if (notify_callback == NULL || action_callback == NULL) {
-        return INPUTS_RC_ERROR;
-    }
-
+    inputs_button_event_callback on_button_press,
+    inputs_button_event_callback on_button_long_press,
+    inputs_button_event_callback on_button_release,
+    inputs_knob_rotation_callback on_knob_rotation) {
     memset(&handler, 0, sizeof(handler));
 
-    handler.notify_callback = notify_callback;
-    handler.action_callback = action_callback;
+    handler.on_button_press = on_button_press;
+    handler.on_button_long_press = on_button_long_press;
+    handler.on_button_release = on_button_release;
+    handler.on_knob_rotation = on_knob_rotation;
 
     for (size_t i = 0; i < INPUTS_SHARED_BUTTON_ID_COUNT; i++) {
         handler.buttons[i].enabled = true;
@@ -70,23 +70,15 @@ enum InputsReturnCode inputs_api_update_button(
         return INPUTS_RC_OK;
     }
 
-    struct InputsSharedEvent event = {
-        .button.button_id = button_id
-    };
-
     if (pressed) {
         if (btn->state == INPUTS_BUTTON_STATE_IDLE) {
             btn->state = INPUTS_BUTTON_STATE_PRESSED;
             btn->press_tick = current_tick_ms;
-
-            event.type = INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS;
-            return prv_inputs_dispatch(event);
+            return prv_fire_button_callback(handler.on_button_press, button_id);
         }
     } else if (btn->state == INPUTS_BUTTON_STATE_PRESSED || btn->state == INPUTS_BUTTON_STATE_LONG_PRESSED) {
         btn->state = INPUTS_BUTTON_STATE_IDLE;
-
-        event.type = INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE;
-        return prv_inputs_dispatch(event);
+        return prv_fire_button_callback(handler.on_button_release, button_id);
     }
 
     return INPUTS_RC_OK;
@@ -105,20 +97,13 @@ enum InputsReturnCode inputs_api_update_knob(
     }
 
     int16_t delta = current_position - knob->last_position;
-
     knob->last_position = current_position;
 
-    if (delta != 0) {
-        struct InputsSharedEvent event = {
-            .type = INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION,
-            .knob.knob_id = knob_id,
-            .knob.delta = (int8_t)delta
-        };
-
-        return prv_inputs_dispatch(event);
+    if (delta == 0 || handler.on_knob_rotation == NULL) {
+        return INPUTS_RC_OK;
     }
 
-    return INPUTS_RC_OK;
+    return handler.on_knob_rotation(knob_id, (int8_t)delta);
 }
 
 enum InputsReturnCode inputs_api_poll_for_long_press(uint32_t current_tick_ms) {
@@ -131,13 +116,8 @@ enum InputsReturnCode inputs_api_poll_for_long_press(uint32_t current_tick_ms) {
 
         if (btn->state == INPUTS_BUTTON_STATE_PRESSED && current_tick_ms - btn->press_tick >= INPUTS_LONG_PRESS_THRESHOLD_MS) {
             btn->state = INPUTS_BUTTON_STATE_LONG_PRESSED;
-
-            struct InputsSharedEvent event = {
-                .type = INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS,
-                .button.button_id = i
-            };
-
-            enum InputsReturnCode ret = prv_inputs_dispatch(event);
+            enum InputsReturnCode ret =
+                prv_fire_button_callback(handler.on_button_long_press, (enum InputsSharedButtonID)i);
             if (ret != INPUTS_RC_OK) {
                 return ret;
             }

@@ -12,119 +12,114 @@
 #include "parameters-api.h"
 #include "eagletrt.h"
 #include "eagletrt-api.h"
+#include "inputs-shared.h"
 
 EAGLETRT_STATIC struct ParametersHandler handler;
 
 /*!
- * \brief Adjust a numeric parameter by a signed delta, clamping to [0, MAX].
- *
- * \param parameter_id The parameter to adjust.
- * \param delta The signed amount to apply.
- *
- * \return The new value after clamping.
+ * \brief Whether a parameter is boolean (0/1) rather than numeric (0..MAX).
  */
-EAGLETRT_STATIC uint8_t prv_parameters_adjust_numeric(
-    enum InputsSharedParameterID parameter_id,
-    int16_t delta) {
-    int16_t next = (int16_t)handler.values[parameter_id] + delta;
-    next = EAGLETRT_API_CLAMP(next, 0, (int16_t)INPUTS_SHARED_PARAMETER_NUMERIC_MAX);
-    handler.values[parameter_id] = (uint8_t)next;
-    return (uint8_t)next;
+EAGLETRT_STATIC bool prv_is_toggle(enum InputsSharedParameterID parameter_id) {
+    return parameter_id == INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG ||
+           parameter_id == INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL;
 }
 
 /*!
- * \brief Toggle a boolean parameter between 0 and 1.
- *
- * \param parameter_id The parameter to toggle.
- *
- * \return The new value after toggling.
+ * \brief Clamp a signed candidate value to the parameter's valid range.
  */
-EAGLETRT_STATIC uint8_t prv_parameters_toggle(
-    enum InputsSharedParameterID parameter_id) {
-    handler.values[parameter_id] = handler.values[parameter_id] ? 0U : 1U;
-    return handler.values[parameter_id];
+EAGLETRT_STATIC uint8_t prv_clamp(
+    enum InputsSharedParameterID parameter_id,
+    int16_t candidate) {
+    int16_t max = prv_is_toggle(parameter_id) ? 1 : (int16_t)INPUTS_SHARED_PARAMETER_NUMERIC_MAX;
+    int16_t clamped = EAGLETRT_API_CLAMP(candidate, 0, max);
+    return (uint8_t)clamped;
 }
 
 /*!
- * \brief Build and push a parameter change event to CM7.
+ * \brief Apply an already-clamped value and notify the caller if it changed.
  *
- * \param parameter_id The parameter that changed.
- * \param value The new value of the parameter.
- *
- * \retval INPUTS_RC_OK if the event was notified successfully.
- * \retval INPUTS_RC_NOTIFY_ERROR if the notify callback failed.
+ * \retval PARAMETERS_RC_OK if the value is unchanged or the on-change callback succeeded.
+ * \retval PARAMETERS_RC_ERROR if the on-change callback returned false.
  */
-EAGLETRT_STATIC enum InputsReturnCode prv_parameters_notify(
+EAGLETRT_STATIC enum ParametersReturnCode prv_apply(
     enum InputsSharedParameterID parameter_id,
-    uint8_t value) {
-    struct InputsSharedEvent event = {
-        .type = INPUTS_SHARED_EVENT_TYPE_PARAMETER_CHANGE,
-        .parameter.parameter_id = parameter_id,
-        .parameter.value = value,
-    };
-    if (!handler.notify_callback(event)) {
-        return INPUTS_RC_NOTIFY_ERROR;
+    uint8_t new_value) {
+    if (handler.values[parameter_id] == new_value) {
+        return PARAMETERS_RC_OK;
     }
-    return INPUTS_RC_OK;
+    handler.values[parameter_id] = new_value;
+    if (!handler.on_change(parameter_id, new_value)) {
+        return PARAMETERS_RC_ERROR;
+    }
+    return PARAMETERS_RC_OK;
 }
 
-enum ParametersReturnCode parameters_api_init(inputs_notify_callback notify_callback) {
-    if (notify_callback == NULL) {
+enum ParametersReturnCode parameters_api_init(parameters_on_change_callback on_change) {
+    if (on_change == NULL) {
         return PARAMETERS_RC_ERROR;
     }
 
     memset(&handler, 0, sizeof(handler));
-    handler.notify_callback = notify_callback;
+    handler.on_change = on_change;
 
     return PARAMETERS_RC_OK;
 }
 
-enum InputsReturnCode parameters_api_handle_input(struct InputsSharedEvent event) {
-    switch (event.type) {
-        case INPUTS_SHARED_EVENT_TYPE_KNOB_ROTATION: {
-            enum InputsSharedParameterID parameter_id;
-            switch (event.knob.knob_id) {
-                case INPUTS_SHARED_KNOB_ID_FRONT_LEFT:
-                    parameter_id = INPUTS_SHARED_PARAMETER_ID_POWER;
-                    break;
-                case INPUTS_SHARED_KNOB_ID_FRONT_RIGHT:
-                    parameter_id = INPUTS_SHARED_PARAMETER_ID_REGEN;
-                    break;
-                case INPUTS_SHARED_KNOB_ID_SIDE_LEFT:
-                    parameter_id = INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING;
-                    break;
-                default:
-                    return INPUTS_RC_OK;
-            }
-            uint8_t value = prv_parameters_adjust_numeric(parameter_id, event.knob.delta);
-            return prv_parameters_notify(parameter_id, value);
-        }
-        case INPUTS_SHARED_EVENT_TYPE_BUTTON_PRESS: {
-            enum InputsSharedParameterID parameter_id;
-            switch (event.button.button_id) {
-                case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT:
-                    parameter_id = INPUTS_SHARED_PARAMETER_ID_TRACTION_CONTROL;
-                    break;
-                case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT:
-                    parameter_id = INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL;
-                    break;
-                default:
-                    return INPUTS_RC_OK;
-            }
-            uint8_t value = prv_parameters_toggle(parameter_id);
-            return prv_parameters_notify(parameter_id, value);
-        }
-        case INPUTS_SHARED_EVENT_TYPE_BUTTON_RELEASE:
-        case INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS:
-        case INPUTS_SHARED_EVENT_TYPE_PARAMETER_CHANGE:
-        default:
-            return INPUTS_RC_OK;
-    }
-}
-
-uint8_t parameters_api_get_value(enum InputsSharedParameterID parameter_id) {
+uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id) {
     if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return 0U;
     }
     return handler.values[parameter_id];
+}
+
+enum ParametersReturnCode parameters_api_set(
+    enum InputsSharedParameterID parameter_id,
+    uint8_t value) {
+    if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
+        return PARAMETERS_RC_ERROR;
+    }
+    return prv_apply(parameter_id, prv_clamp(parameter_id, (int16_t)value));
+}
+
+enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id) {
+    enum InputsSharedParameterID parameter_id;
+    switch (button_id) {
+        case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT:
+            parameter_id = INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG;
+            break;
+        case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT:
+            parameter_id = INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL;
+            break;
+        default:
+            return INPUTS_RC_OK;
+    }
+    uint8_t next = handler.values[parameter_id] ? 0U : 1U;
+    if (prv_apply(parameter_id, next) != PARAMETERS_RC_OK) {
+        return INPUTS_RC_ERROR;
+    }
+    return INPUTS_RC_OK;
+}
+
+enum InputsReturnCode parameters_api_handle_knob(
+    enum InputsSharedKnobID knob_id,
+    int8_t delta) {
+    enum InputsSharedParameterID parameter_id;
+    switch (knob_id) {
+        case INPUTS_SHARED_KNOB_ID_FRONT_RIGHT:
+            parameter_id = INPUTS_SHARED_PARAMETER_ID_POWER;
+            break;
+        case INPUTS_SHARED_KNOB_ID_SIDE_RIGHT:
+            parameter_id = INPUTS_SHARED_PARAMETER_ID_REGEN;
+            break;
+        case INPUTS_SHARED_KNOB_ID_SIDE_LEFT:
+            parameter_id = INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING;
+            break;
+        default:
+            return INPUTS_RC_OK;
+    }
+    int16_t candidate = (int16_t)handler.values[parameter_id] + (int16_t)delta;
+    if (prv_apply(parameter_id, prv_clamp(parameter_id, candidate)) != PARAMETERS_RC_OK) {
+        return INPUTS_RC_ERROR;
+    }
+    return INPUTS_RC_OK;
 }

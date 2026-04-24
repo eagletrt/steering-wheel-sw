@@ -5,6 +5,10 @@
  * \ingroup CM7_Core
  *
  * \brief Hardware-agnostic definitions for the steering wheel input events handling.
+ *
+ * \details CM7 only ever observes one kind of cross-core event: a parameter
+ *     value update pushed by CM4. This module is the thin dispatch layer
+ *     between the IPC queue and the UI.
  */
 
 #ifndef INPUT_EVENTS_H
@@ -22,25 +26,6 @@ enum InputEventsReturnCode {
 };
 
 /*!
- * \brief Callback type for button press events.
- *
- * \param button_id The ID of the button that was pressed.
- *
- * \return An InputEventsReturnCode indicating success or failure.
- */
-typedef enum InputEventsReturnCode (*input_events_button_event_callback)(enum InputsSharedButtonID button_id);
-
-/*!
- * \brief Callback type for knob rotation events.
- *
- * \param knob_id The ID of the knob that was rotated.
- * \param delta The amount of rotation; positive for clockwise, negative for counter-clockwise.
- *
- * \return An InputEventsReturnCode indicating success or failure.
- */
-typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum InputsSharedKnobID knob_id, int8_t delta);
-
-/*!
  * \brief Callback type for parameter change events.
  *
  * \param parameter_id The ID of the parameter that changed.
@@ -48,16 +33,14 @@ typedef enum InputEventsReturnCode (*input_events_knob_rotation_callback)(enum I
  *
  * \return An InputEventsReturnCode indicating success or failure.
  */
-typedef enum InputEventsReturnCode (*input_events_parameter_change_callback)(enum InputsSharedParameterID parameter_id, uint8_t value);
+typedef enum InputEventsReturnCode (*input_events_parameter_change_callback)(
+    enum InputsSharedParameterID parameter_id,
+    uint8_t value);
 
 /*!
- * \brief Structure holding all input event callbacks.
+ * \brief Structure holding the registered input event callbacks.
  */
 struct InputEventHandler {
-    input_events_button_event_callback on_button_press;         /*!< Callback for button press events */
-    input_events_button_event_callback on_button_long_press;    /*!< Callback for button long press events */
-    input_events_button_event_callback on_button_release;       /*!< Callback for button release events */
-    input_events_knob_rotation_callback on_knob_rotation;       /*!< Callback for knob rotation events */
     input_events_parameter_change_callback on_parameter_change; /*!< Callback for parameter change events */
 };
 

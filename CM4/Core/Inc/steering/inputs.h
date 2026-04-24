@@ -5,6 +5,12 @@
  * \ingroup CM4_Core
  *
  * \brief Hardware-agnostic input handling definitions for the steering wheel.
+ *
+ * \details The inputs module owns the low-level debouncing, long-press
+ *     detection and encoder-delta computation. It reports what the user
+ *     did to the physical controls through a set of callbacks; mapping
+ *     those raw events to application-level effects (such as parameter
+ *     updates) is the responsibility of the caller.
  */
 
 #ifndef INPUTS_H
@@ -17,12 +23,11 @@
 #define INPUTS_LONG_PRESS_THRESHOLD_MS (500)
 
 /*!
- * \brief Input event types
+ * \brief Return codes for inputs operations.
  */
 enum InputsReturnCode {
-    INPUTS_RC_OK,           /*!< Operation successful */
-    INPUTS_RC_NOTIFY_ERROR, /*!< Error while notifying */
-    INPUTS_RC_ERROR,        /*!< General error */
+    INPUTS_RC_OK,    /*!< Operation successful */
+    INPUTS_RC_ERROR, /*!< General error (e.g. a callback reported failure) */
 };
 
 /*!
@@ -52,31 +57,40 @@ struct InputsKnobHandler {
 };
 
 /*!
- * \brief Callback definition for input event notifications
+ * \brief Callback type for button press/release/long-press events.
  *
- * \param ev The input event to handle
+ * \param button_id Identifier of the button that produced the event.
  *
- * \retval true if the event was handled successfully
- * \retval false if there was an error notifying the event
+ * \retval INPUTS_RC_OK if the event was handled successfully.
+ * \retval INPUTS_RC_ERROR if there was an error handling the event.
  */
-typedef bool (*inputs_notify_callback)(struct InputsSharedEvent ev);
+typedef enum InputsReturnCode (*inputs_button_event_callback)(
+    enum InputsSharedButtonID button_id);
 
 /*!
- * \brief Callback definition for input actions
+ * \brief Callback type for knob rotation events.
  *
- * \param ev The input event to handle
+ * \param knob_id Identifier of the knob that moved.
+ * \param delta Signed rotation delta since the last report.
  *
- * \retval INPUTS_RC_OK if the action was performed successfully
- * \retval INPUTS_RC_ERROR if there was an error handling the action
+ * \retval INPUTS_RC_OK if the event was handled successfully.
+ * \retval INPUTS_RC_ERROR if there was an error handling the event.
  */
-typedef enum InputsReturnCode (*inputs_action_callback)(struct InputsSharedEvent ev);
+typedef enum InputsReturnCode (*inputs_knob_rotation_callback)(
+    enum InputsSharedKnobID knob_id,
+    int8_t delta);
 
 /*!
- * \brief Main input handler structure
+ * \brief Main input handler structure.
+ *
+ * \details Each callback may be NULL: in that case the corresponding event
+ *     type is silently dropped.
  */
 struct InputsHandler {
-    inputs_notify_callback notify_callback; /*!< Callback to notify CM7 about input events */
-    inputs_action_callback action_callback; /*!< Callback to perform local actions on input */
+    inputs_button_event_callback on_button_press;      /*!< Fired on the rising edge of a button */
+    inputs_button_event_callback on_button_long_press; /*!< Fired once the long-press threshold is reached */
+    inputs_button_event_callback on_button_release;    /*!< Fired on the falling edge of a button */
+    inputs_knob_rotation_callback on_knob_rotation;    /*!< Fired on every non-zero encoder delta */
 
     struct InputsButtonHandler buttons[INPUTS_SHARED_BUTTON_ID_COUNT]; /*!< Tracking state for each button */
     struct InputsKnobHandler knobs[INPUTS_SHARED_KNOB_ID_COUNT];       /*!< Tracking state for each encoder */
