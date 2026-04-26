@@ -67,6 +67,14 @@ enum LedsReturnCode leds_api_show() {
     return leds_handler.transmit_callback(leds_handler.buffer, WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT));
 }
 
+void leds_api_save_pattern(void) {
+    memcpy(leds_handler.colors_backup, leds_handler.colors, sizeof(leds_handler.colors));
+}
+
+void leds_api_restore_pattern(void) {
+    memcpy(leds_handler.colors, leds_handler.colors_backup, sizeof(leds_handler.colors));
+}
+
 void leds_api_set_ptt_pattern(void) {
     struct LedColor blue = { .g = 0, .r = 0, .b = 255 };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {

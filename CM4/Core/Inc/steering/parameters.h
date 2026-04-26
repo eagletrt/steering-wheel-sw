@@ -46,6 +46,8 @@ typedef bool (*parameters_on_change_callback)(
 struct ParametersHandler {
     parameters_on_change_callback on_change;          /*!< Called on every value transition */
     uint8_t values[INPUTS_SHARED_PARAMETER_ID_COUNT]; /*!< Current value of each parameter */
+    bool ptt_top_left_held;                           /*!< Top-left paddle is currently held; PTT is active while either paddle is held */
+    bool ptt_top_right_held;                          /*!< Top-right paddle is currently held; PTT is active while either paddle is held */
 };
 
 #endif // PARAMETERS_H

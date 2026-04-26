@@ -25,12 +25,13 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         ret_code = POST_RC_ERROR;
     }
 
-    // Only the events that currently drive parameters are wired up; long-press
-    // and release are left NULL until a use case for them surfaces.
+    // Press and release both feed parameters-api: release is needed so the
+    // PTT chord (both top paddles held) can detect a let-go on either side.
+    // Long-press is unused today.
     if (inputs_api_init(
             parameters_api_handle_button,
             NULL,
-            NULL,
+            parameters_api_handle_button_release,
             parameters_api_handle_knob) != INPUTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }

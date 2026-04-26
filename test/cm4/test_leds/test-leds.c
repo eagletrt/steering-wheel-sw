@@ -171,6 +171,33 @@ void test_leds_api_set_ptt_pattern(void) {
     TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_colors, leds_handler.colors, sizeof(expected_colors));
 }
 
+void test_leds_api_save_pattern_snapshots_current_colors(void) {
+    leds_api_set_fast_lap_pattern();
+    leds_api_save_pattern();
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(leds_handler.colors, leds_handler.colors_backup, sizeof(leds_handler.colors));
+}
+
+void test_leds_api_restore_pattern_overwrites_current_colors(void) {
+    leds_api_set_fast_lap_pattern();
+    leds_api_save_pattern();
+    leds_api_set_ptt_pattern();
+    leds_api_restore_pattern();
+    struct LedColor green = { .r = 0, .g = 255, .b = 0 };
+    struct LedColor expected_top[4] = { [0 ... 3] = green };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_top, &leds_handler.colors[LEDS_INDEX_TOP_LEFT_1], sizeof(expected_top));
+    struct LedColor off = { 0, 0, 0 };
+    struct LedColor expected_center[5] = { [0 ... 4] = off };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected_center, leds_handler.colors, sizeof(expected_center));
+}
+
+void test_leds_api_restore_pattern_without_save_clears_strip(void) {
+    leds_api_set_ptt_pattern();
+    leds_api_restore_pattern();
+    struct LedColor off = { 0, 0, 0 };
+    struct LedColor expected[LEDS_INDEX_COUNT] = { [0 ... LEDS_INDEX_COUNT - 1] = off };
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, leds_handler.colors, sizeof(expected));
+}
+
 void test_leds_api_set_target_lap_pattern(void) {
     leds_api_set_target_lap_pattern();
     struct LedColor expected_color = { .r = 0, .g = 0, .b = 0 };
@@ -232,6 +259,9 @@ int main(void) {
     RUN_TEST(test_leds_api_set_brightness_above_one);
 
     RUN_TEST(test_leds_api_set_ptt_pattern);
+    RUN_TEST(test_leds_api_save_pattern_snapshots_current_colors);
+    RUN_TEST(test_leds_api_restore_pattern_overwrites_current_colors);
+    RUN_TEST(test_leds_api_restore_pattern_without_save_clears_strip);
     RUN_TEST(test_leds_api_set_target_lap_pattern);
     RUN_TEST(test_leds_api_set_fast_lap_pattern);
     RUN_TEST(test_leds_api_set_slow_lap_pattern);

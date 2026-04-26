@@ -63,6 +63,23 @@ void leds_api_set_brightness(float brightness);
 enum LedsReturnCode leds_api_show();
 
 /*!
+ * \brief Snapshot the current LED colors into the backup slot.
+ *
+ * \details Used by transient overlays (such as PTT) that need to restore
+ *     whatever pattern was on the strip before they were applied. Calling
+ *     it twice in a row simply overwrites the previous snapshot.
+ */
+void leds_api_save_pattern(void);
+
+/*!
+ * \brief Restore the LED colors saved by the last leds_api_save_pattern call.
+ *
+ * \details If save was never called the backup slot is zeroed, so this
+ *     effectively clears the strip.
+ */
+void leds_api_restore_pattern(void);
+
+/*!
  * \brief Sets the LEDs to indicate the PTT (Push-To-Talk) status.
  *
  * This function can be used to visually indicate when the PTT is active.

@@ -26,8 +26,7 @@
  * \brief Initialize the parameters handler.
  *
  * \details All parameter values are reset to 0. The on-change callback is
- *     invoked on every transition (both input-driven and external) but not
- *     during initialization.
+ *     invoked on every transition (both input-driven and external).
  *
  * \param on_change Callback fired on every value transition.
  *
@@ -67,11 +66,25 @@ enum ParametersReturnCode parameters_api_set(
     uint8_t value);
 
 /*!
+ * \brief Whether a parameter's transitions should cross the core boundary.
+ *
+ * \details Shared parameters are pushed to CM7 by the on-change handler
+ *     wired in main; CM4-local parameters (PTT) drive only local hardware
+ *     side effects and the CAN broadcast.
+ *
+ * \param parameter_id The parameter to query.
+ *
+ * \return true if the parameter is broadcast to CM7, false if CM4-local
+ *     (also false for invalid IDs).
+ */
+bool parameters_api_is_shared(enum InputsSharedParameterID parameter_id);
+
+/*!
  * \brief Map a button press to a parameter transition.
  *
  * \details Intended to be registered as the button-press callback of the
  *     inputs module. Buttons that do not map to any parameter are silently
- *     ignored.
+ *     ignored. Either top paddle press activates PTT.
  *
  * \param button_id The button that was pressed.
  *
@@ -79,6 +92,22 @@ enum ParametersReturnCode parameters_api_set(
  * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
  */
 enum InputsReturnCode parameters_api_handle_button(
+    enum InputsSharedButtonID button_id);
+
+/*!
+ * \brief Map a button release to a parameter transition.
+ *
+ * \details Intended to be registered as the button-release callback of the
+ *     inputs module. Only paddle releases are meaningful today: PTT goes
+ *     inactive once both top paddles are released. Every other button
+ *     release is silently ignored.
+ *
+ * \param button_id The button that was released.
+ *
+ * \retval INPUTS_RC_OK on success (including "no mapping").
+ * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
+ */
+enum InputsReturnCode parameters_api_handle_button_release(
     enum InputsSharedButtonID button_id);
 
 /*!

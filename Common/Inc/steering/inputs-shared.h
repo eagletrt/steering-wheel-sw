@@ -10,13 +10,14 @@
  *     both CM4 and CM7:
  *     - the taxonomy of physical inputs (knob and button IDs), consumed by
  *       CM4's inputs module;
- *     - the list of tunable parameters (power, regen, torque vectoring,
- *       traction/launch control) and the single payload struct pushed to CM7
- *       whenever one of them changes.
+ *     - the full list of parameters managed by CM4. Some are broadcast to
+ *       CM7 for the UI popup, others (like PTT) stay local to CM4 and only
+ *       drive hardware side effects there. parameters_api_is_shared is the
+ *       source of truth on which is which.
  *
  *     Raw button/knob events never cross the core boundary: they are mapped
  *     to parameter changes inside CM4 and only the resulting {parameter_id,
- *     value} pair is forwarded to CM7 for the UI popup.
+ *     value} pair is forwarded to CM7 for parameters that opt into it.
  */
 
 #ifndef INPUTS_SHARED_H
@@ -70,6 +71,7 @@ enum InputsSharedParameterID {
     INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING, /*!< Torque vectoring level (0..10) */
     INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG,    /*!< Telemetry log toggle */
     INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL,   /*!< Launch control toggle */
+    INPUTS_SHARED_PARAMETER_ID_PTT,              /*!< Push-To-Talk toggle */
     INPUTS_SHARED_PARAMETER_ID_COUNT,
 };
 
