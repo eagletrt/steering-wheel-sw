@@ -57,7 +57,6 @@ void test_ipc_queue_input_queue_read_and_process_read_event(void) {
     ipc_queue_api_push_event(ev, NULL);
     ipc_queue_api_read_and_process_all(read_and_process_callback);
     struct InputsSharedEvent last_event = read_and_process_callback_fake.arg0_val;
-    printf("Last event parameter_id: %d, value: %u\n", last_event.parameter_id, last_event.value);
     TEST_ASSERT_EQUAL_INT_MESSAGE(1, read_and_process_callback_fake.call_count, "Expected callback to be called once");
     TEST_ASSERT_EQUAL_INT_MESSAGE(ev.parameter_id, last_event.parameter_id, "Parameter ID mismatch");
     TEST_ASSERT_EQUAL_INT_MESSAGE(ev.value, last_event.value, "Value mismatch");
