@@ -40,7 +40,7 @@ typedef enum InputEventsReturnCode (*input_events_parameter_change_callback)(
 /*!
  * \brief Structure holding the registered input event callbacks.
  */
-struct InputEventHandler {
+struct InputEventsHandler {
     input_events_parameter_change_callback on_parameter_change; /*!< Callback for parameter change events */
 };
 

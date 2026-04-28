@@ -18,7 +18,7 @@ FAKE_VALUE_FUNC(enum InputsReturnCode, long_press_cb, enum InputsSharedButtonID)
 FAKE_VALUE_FUNC(enum InputsReturnCode, release_cb, enum InputsSharedButtonID);
 FAKE_VALUE_FUNC(enum InputsReturnCode, rotation_cb, enum InputsSharedKnobID, int8_t);
 
-extern struct InputsHandler handler;
+extern struct InputsHandler inputs_handler;
 
 void setUp(void) {
     RESET_FAKE(press_cb);
@@ -41,19 +41,19 @@ void setUp(void) {
 void test_inputs_init_stores_callbacks(void) {
     enum InputsReturnCode rc = inputs_api_init(press_cb, long_press_cb, release_cb, rotation_cb);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, rc, "Expected success return code from inputs_api_init");
-    TEST_ASSERT_EQUAL_MESSAGE(press_cb, handler.on_button_press, "Press callback was not set correctly");
-    TEST_ASSERT_EQUAL_MESSAGE(long_press_cb, handler.on_button_long_press, "Long press callback was not set correctly");
-    TEST_ASSERT_EQUAL_MESSAGE(release_cb, handler.on_button_release, "Release callback was not set correctly");
-    TEST_ASSERT_EQUAL_MESSAGE(rotation_cb, handler.on_knob_rotation, "Rotation callback was not set correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(press_cb, inputs_handler.on_button_press, "Press callback was not set correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(long_press_cb, inputs_handler.on_button_long_press, "Long press callback was not set correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(release_cb, inputs_handler.on_button_release, "Release callback was not set correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(rotation_cb, inputs_handler.on_knob_rotation, "Rotation callback was not set correctly");
 }
 
 void test_inputs_init_accepts_null_callbacks(void) {
     enum InputsReturnCode rc = inputs_api_init(NULL, NULL, NULL, NULL);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, rc, "Init should accept NULL callbacks");
-    TEST_ASSERT_NULL(handler.on_button_press);
-    TEST_ASSERT_NULL(handler.on_button_long_press);
-    TEST_ASSERT_NULL(handler.on_button_release);
-    TEST_ASSERT_NULL(handler.on_knob_rotation);
+    TEST_ASSERT_NULL(inputs_handler.on_button_press);
+    TEST_ASSERT_NULL(inputs_handler.on_button_long_press);
+    TEST_ASSERT_NULL(inputs_handler.on_button_release);
+    TEST_ASSERT_NULL(inputs_handler.on_knob_rotation);
 }
 
 /*! \} */
@@ -83,7 +83,7 @@ void test_inputs_update_button_invalid_button_id(void) {
 }
 
 void test_inputs_update_button_disabled(void) {
-    handler.buttons[INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT].enabled = false;
+    inputs_handler.buttons[INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT].enabled = false;
     enum InputsReturnCode ret = inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT, true, 100);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, ret, "Expected success return code when button is disabled");
     TEST_ASSERT_EQUAL_INT_MESSAGE(0, press_cb_fake.call_count, "Press callback should not be called when button is disabled");
@@ -131,21 +131,21 @@ void test_inputs_update_knob_invalid_knob_id(void) {
 }
 
 void test_inputs_update_knob_disabled(void) {
-    handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].enabled = false;
+    inputs_handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].enabled = false;
     enum InputsReturnCode ret = inputs_api_update_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 10);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, ret, "Expected success return code when knob is disabled");
     TEST_ASSERT_EQUAL_INT_MESSAGE(0, rotation_cb_fake.call_count, "Rotation callback should not be called when knob is disabled");
 }
 
 void test_inputs_update_knob_no_movement(void) {
-    handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].last_position = 10;
+    inputs_handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].last_position = 10;
     enum InputsReturnCode ret = inputs_api_update_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 10);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, ret, "Expected success return code when knob position does not change");
     TEST_ASSERT_EQUAL_INT_MESSAGE(0, rotation_cb_fake.call_count, "Rotation callback should not be called when knob position does not change");
 }
 
 void test_inputs_update_knob_movement(void) {
-    handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].last_position = 10;
+    inputs_handler.knobs[INPUTS_SHARED_KNOB_ID_FRONT_LEFT].last_position = 10;
     enum InputsReturnCode ret = inputs_api_update_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 15);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, ret, "Failed to update knob state on movement");
     TEST_ASSERT_EQUAL_INT_MESSAGE(1, rotation_cb_fake.call_count, "Rotation callback should be called once for knob movement");

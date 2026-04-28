@@ -14,7 +14,7 @@ DEFINE_FFF_GLOBALS;
 
 FAKE_VALUE_FUNC(enum InputEventsReturnCode, test_parameter_change_callback, enum InputsSharedParameterID, uint8_t);
 
-extern struct InputEventHandler handler;
+extern struct InputEventsHandler input_events_handler;
 
 void setUp(void) {
     RESET_FAKE(test_parameter_change_callback);
@@ -28,7 +28,7 @@ void setUp(void) {
 
 void test_input_events_api_init_should_store_callback(void) {
     enum InputEventsReturnCode rc = input_events_api_init(test_parameter_change_callback);
-    TEST_ASSERT_EQUAL_MESSAGE(test_parameter_change_callback, handler.on_parameter_change, "Parameter change callback was not stored correctly");
+    TEST_ASSERT_EQUAL_MESSAGE(test_parameter_change_callback, input_events_handler.on_parameter_change, "Parameter change callback was not stored correctly");
     TEST_ASSERT_EQUAL_MESSAGE(INPUT_EVENTS_RC_OK, rc, "Initialization failed");
 }
 

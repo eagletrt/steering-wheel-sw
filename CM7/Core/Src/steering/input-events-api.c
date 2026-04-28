@@ -11,19 +11,19 @@
 #include "eagletrt.h"
 #include <stddef.h>
 
-EAGLETRT_STATIC struct InputEventHandler handler;
+EAGLETRT_STATIC struct InputEventsHandler input_events_handler;
 
 enum InputEventsReturnCode input_events_api_init(
     input_events_parameter_change_callback on_parameter_change) {
     if (on_parameter_change == NULL) {
         return INPUT_EVENTS_RC_ERROR;
     }
-    handler.on_parameter_change = on_parameter_change;
+    input_events_handler.on_parameter_change = on_parameter_change;
     return INPUT_EVENTS_RC_OK;
 }
 
 void input_events_api_handle_event(struct InputsSharedEvent event) {
-    if (handler.on_parameter_change != NULL) {
-        handler.on_parameter_change(event.parameter_id, event.value);
+    if (input_events_handler.on_parameter_change != NULL) {
+        input_events_handler.on_parameter_change(event.parameter_id, event.value);
     }
 }

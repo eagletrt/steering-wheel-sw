@@ -14,7 +14,7 @@
 #include "eagletrt.h"
 #include "eagletrt-api.h"
 
-EAGLETRT_STATIC struct ParametersHandler handler;
+EAGLETRT_STATIC struct ParametersHandler parameters_handler;
 
 /*!
  * \brief Static descriptor for each parameter.
@@ -79,12 +79,12 @@ EAGLETRT_STATIC void prv_apply_local_effect(
 EAGLETRT_STATIC enum ParametersReturnCode prv_apply(
     enum InputsSharedParameterID parameter_id,
     uint8_t new_value) {
-    if (handler.values[parameter_id] == new_value) {
+    if (parameters_handler.values[parameter_id] == new_value) {
         return PARAMETERS_RC_OK;
     }
-    handler.values[parameter_id] = new_value;
+    parameters_handler.values[parameter_id] = new_value;
     prv_apply_local_effect(parameter_id, new_value);
-    if (!handler.on_change(parameter_id, new_value)) {
+    if (!parameters_handler.on_change(parameter_id, new_value)) {
         return PARAMETERS_RC_ERROR;
     }
     return PARAMETERS_RC_OK;
@@ -97,7 +97,7 @@ EAGLETRT_STATIC enum ParametersReturnCode prv_apply(
  *     back to 0 once both are released.
  */
 EAGLETRT_STATIC enum ParametersReturnCode prv_recompute_ptt(void) {
-    uint8_t desired = (handler.ptt_top_left_held || handler.ptt_top_right_held) ? 1U : 0U;
+    uint8_t desired = (parameters_handler.ptt_top_left_held || parameters_handler.ptt_top_right_held) ? 1U : 0U;
     return prv_apply(INPUTS_SHARED_PARAMETER_ID_PTT, desired);
 }
 
@@ -106,8 +106,8 @@ enum ParametersReturnCode parameters_api_init(parameters_on_change_callback on_c
         return PARAMETERS_RC_ERROR;
     }
 
-    memset(&handler, 0, sizeof(handler));
-    handler.on_change = on_change;
+    memset(&parameters_handler, 0, sizeof(parameters_handler));
+    parameters_handler.on_change = on_change;
 
     return PARAMETERS_RC_OK;
 }
@@ -123,7 +123,7 @@ uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id) {
     if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return 0U;
     }
-    return handler.values[parameter_id];
+    return parameters_handler.values[parameter_id];
 }
 
 enum ParametersReturnCode parameters_api_set(
@@ -138,22 +138,22 @@ enum ParametersReturnCode parameters_api_set(
 enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id) {
     switch (button_id) {
         case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT: {
-            uint8_t next = handler.values[INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] ? 0U : 1U;
+            uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] ? 0U : 1U;
             return prv_apply(INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG, next) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
         case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT: {
-            uint8_t next = handler.values[INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] ? 0U : 1U;
+            uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] ? 0U : 1U;
             return prv_apply(INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL, next) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-            handler.ptt_top_left_held = true;
+            parameters_handler.ptt_top_left_held = true;
             return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT:
-            handler.ptt_top_right_held = true;
+            parameters_handler.ptt_top_right_held = true;
             return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
         default:
             return INPUTS_RC_OK;
@@ -163,10 +163,10 @@ enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID but
 enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButtonID button_id) {
     switch (button_id) {
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-            handler.ptt_top_left_held = false;
+            parameters_handler.ptt_top_left_held = false;
             return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT:
-            handler.ptt_top_right_held = false;
+            parameters_handler.ptt_top_right_held = false;
             return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
         default:
             return INPUTS_RC_OK;
@@ -190,7 +190,7 @@ enum InputsReturnCode parameters_api_handle_knob(
         default:
             return INPUTS_RC_OK;
     }
-    int16_t candidate = (int16_t)handler.values[parameter_id] + (int16_t)delta;
+    int16_t candidate = (int16_t)parameters_handler.values[parameter_id] + (int16_t)delta;
     if (prv_apply(parameter_id, prv_clamp(parameter_id, candidate)) != PARAMETERS_RC_OK) {
         return INPUTS_RC_ERROR;
     }
