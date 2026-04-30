@@ -186,7 +186,7 @@ HSEM notification */
 
     current_state = fsm_run_state(current_state, &post_init_data);
 
-    struct FsmData fsm_data;
+    struct FsmData fsm_data = { 0 };
 
     /* USER CODE END 2 */
 

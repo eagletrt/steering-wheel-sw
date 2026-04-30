@@ -37,11 +37,7 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler);
  * \retval POPUP_RC_OK if the popup was updated successfully.
  * \retval POPUP_RC_ERROR if the arguments are invalid.
  */
-enum PopupReturnCode popup_api_show(
-    struct PopupHandler *handler,
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value,
-    uint32_t tick);
+enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick);
 
 /*!
  * \brief Deactivate the popup regardless of its current state.

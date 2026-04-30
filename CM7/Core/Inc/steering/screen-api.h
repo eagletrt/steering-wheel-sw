@@ -19,7 +19,31 @@
  */
 enum InputEventsReturnCode screen_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value);
 
+/*!
+ * \brief Initialize the screen interface.
+ *
+ * \details Sets up the raster interface and the popup overlay. The popup starts
+ *     in the inactive state.
+ *
+ * \param draw_line Font rendering callback provided by the caller.
+ * \param draw_rectangle Raster rendering callback provided by the caller.
+ *
+ * \retval SCREEN_RC_OK if initialization was successful.
+ * \retval SCREEN_RC_ERROR if initialization failed.
+ */
 enum ScreenReturnCode screen_init(font_draw_line_callback draw_line, raster_draw_rectangle_callback draw_rectangle);
+
+/*!
+ * \brief Update the screen state, including popup visibility and raster interface.
+ *
+ * \details Checks whether the popup should still be active based on the current
+ *     tick, and updates the raster interface accordingly.
+ *
+ * \param tick Current tick count in milliseconds, used for popup timeout checks.
+ *
+ * \retval SCREEN_RC_OK if the screen was updated successfully.
+ * \retval SCREEN_RC_ERROR if an error occurred during update.
+ */
 enum ScreenReturnCode screen_update(uint32_t tick);
 
 #endif // SCREEN_API_H

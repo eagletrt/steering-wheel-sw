@@ -39,10 +39,7 @@ EAGLETRT_STATIC bool prv_popup_is_toggle(enum InputsSharedParameterID parameter_
  * \param parameter_id The parameter being displayed.
  * \param value The new parameter value.
  */
-EAGLETRT_STATIC void prv_popup_format_value(
-    struct PopupHandler *handler,
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value) {
+EAGLETRT_STATIC void prv_popup_format_value(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (prv_popup_is_toggle(parameter_id)) {
         snprintf(handler->value_buffer, POPUP_VALUE_BUFFER_SIZE, "%s", value ? "ON" : "OFF");
     } else {
@@ -99,11 +96,7 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     return POPUP_RC_OK;
 }
 
-enum PopupReturnCode popup_api_show(
-    struct PopupHandler *handler,
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value,
-    uint32_t tick) {
+enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
     if (handler == NULL || parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return POPUP_RC_ERROR;
     }

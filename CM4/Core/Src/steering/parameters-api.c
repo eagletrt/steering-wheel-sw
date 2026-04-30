@@ -11,7 +11,6 @@
 
 #include "parameters-api.h"
 #include "leds-api.h"
-#include "eagletrt.h"
 #include "eagletrt-api.h"
 
 EAGLETRT_STATIC struct ParametersHandler parameters_handler;
@@ -24,7 +23,10 @@ struct ParameterMeta {
     bool is_shared; /*!< true if the parameter is broadcast to CM7 */
 };
 
-EAGLETRT_STATIC const struct ParameterMeta prv_meta[INPUTS_SHARED_PARAMETER_ID_COUNT] = {
+/*!
+ * \brief Metadata for each parameter, indexed by enum ID.
+ */
+EAGLETRT_STATIC const struct ParameterMeta parameters_api_meta[INPUTS_SHARED_PARAMETER_ID_COUNT] = {
     [INPUTS_SHARED_PARAMETER_ID_POWER] = { .is_toggle = false, .is_shared = true },
     [INPUTS_SHARED_PARAMETER_ID_REGEN] = { .is_toggle = false, .is_shared = true },
     [INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING] = { .is_toggle = false, .is_shared = true },
@@ -34,27 +36,25 @@ EAGLETRT_STATIC const struct ParameterMeta prv_meta[INPUTS_SHARED_PARAMETER_ID_C
 };
 
 /*!
- * \brief Clamp a signed candidate value to the parameter's valid range.
+ * \brief Clamp a signed value value to the parameter's valid range.
+ *
+ * \param parameter_id The parameter being set, used to determine the valid range.
+ * \param value The candidate value, which may be out of range.
+ *
+ * \return The clamped value, guaranteed to be within the parameter's valid range.
  */
-EAGLETRT_STATIC uint8_t prv_clamp(
-    enum InputsSharedParameterID parameter_id,
-    int16_t candidate) {
-    int16_t max = prv_meta[parameter_id].is_toggle ? 1 : (int16_t)INPUTS_SHARED_PARAMETER_NUMERIC_MAX;
-    int16_t clamped = EAGLETRT_API_CLAMP(candidate, 0, max);
-    return (uint8_t)clamped;
+EAGLETRT_STATIC uint8_t prv_parameters_api_clamp_to_allowed(enum InputsSharedParameterID parameter_id, int16_t value) {
+    int8_t max = parameters_api_meta[parameter_id].is_toggle ? 1 : INPUTS_SHARED_PARAMETER_NUMERIC_MAX;
+    return (uint8_t)EAGLETRT_API_CLAMP(value, 0, max);
 }
 
 /*!
- * \brief Run the local hardware side effect for a parameter that has one.
+ * \brief Apply the effect of a parameter change to the hardware, if any.
  *
- * \details PTT is the only parameter wired to local hardware today: it
- *     overlays the strip with the PTT pattern on activation and restores
- *     whatever was on it before on deactivation.
+ * \param parameter_id The parameter that changed, used to determine what effect to apply.
+ * \param new_value The new value of the parameter, already clamped to the valid range
  */
-EAGLETRT_STATIC void prv_apply_local_effect(
-    enum InputsSharedParameterID parameter_id,
-    uint8_t new_value) {
-
+EAGLETRT_STATIC void prv_parameters_api_apply_effect(enum InputsSharedParameterID parameter_id, uint8_t new_value) {
     switch (parameter_id) {
         case INPUTS_SHARED_PARAMETER_ID_PTT: {
             if (new_value) {
@@ -73,17 +73,18 @@ EAGLETRT_STATIC void prv_apply_local_effect(
 /*!
  * \brief Apply an already-clamped value and notify the caller if it changed.
  *
+ * \param parameter_id The parameter being set, used to determine the old value and what effect to apply.
+ * \param new_value The new value to apply, which must already be clamped to the parameter's valid range.
+ *
  * \retval PARAMETERS_RC_OK if the value is unchanged or the on-change callback succeeded.
  * \retval PARAMETERS_RC_ERROR if the on-change callback returned false.
  */
-EAGLETRT_STATIC enum ParametersReturnCode prv_apply(
-    enum InputsSharedParameterID parameter_id,
-    uint8_t new_value) {
+EAGLETRT_STATIC enum ParametersReturnCode prv_parameters_api_apply_value(enum InputsSharedParameterID parameter_id, uint8_t new_value) {
     if (parameters_handler.values[parameter_id] == new_value) {
         return PARAMETERS_RC_OK;
     }
     parameters_handler.values[parameter_id] = new_value;
-    prv_apply_local_effect(parameter_id, new_value);
+    prv_parameters_api_apply_effect(parameter_id, new_value);
     if (!parameters_handler.on_change(parameter_id, new_value)) {
         return PARAMETERS_RC_ERROR;
     }
@@ -95,10 +96,13 @@ EAGLETRT_STATIC enum ParametersReturnCode prv_apply(
  *
  * \details PTT is active while either top paddle is held; it only goes
  *     back to 0 once both are released.
+ *
+ * \retval PARAMETERS_RC_OK if the value is unchanged or the on-change callback succeeded.
+ * \retval PARAMETERS_RC_ERROR if the on-change callback returned false.
  */
 EAGLETRT_STATIC enum ParametersReturnCode prv_recompute_ptt(void) {
     uint8_t desired = (parameters_handler.ptt_top_left_held || parameters_handler.ptt_top_right_held) ? 1U : 0U;
-    return prv_apply(INPUTS_SHARED_PARAMETER_ID_PTT, desired);
+    return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_PTT, desired);
 }
 
 enum ParametersReturnCode parameters_api_init(parameters_on_change_callback on_change) {
@@ -116,7 +120,7 @@ bool parameters_api_is_shared(enum InputsSharedParameterID parameter_id) {
     if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return false;
     }
-    return prv_meta[parameter_id].is_shared;
+    return parameters_api_meta[parameter_id].is_shared;
 }
 
 uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id) {
@@ -126,26 +130,24 @@ uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id) {
     return parameters_handler.values[parameter_id];
 }
 
-enum ParametersReturnCode parameters_api_set(
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value) {
+enum ParametersReturnCode parameters_api_set(enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return PARAMETERS_RC_ERROR;
     }
-    return prv_apply(parameter_id, prv_clamp(parameter_id, (int16_t)value));
+    return prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, (int16_t)value));
 }
 
 enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id) {
     switch (button_id) {
         case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT: {
             uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] ? 0U : 1U;
-            return prv_apply(INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG, next) == PARAMETERS_RC_OK
+            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG, next) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
         case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT: {
             uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] ? 0U : 1U;
-            return prv_apply(INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL, next) == PARAMETERS_RC_OK
+            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL, next) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
@@ -173,9 +175,7 @@ enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButt
     }
 }
 
-enum InputsReturnCode parameters_api_handle_knob(
-    enum InputsSharedKnobID knob_id,
-    int8_t delta) {
+enum InputsReturnCode parameters_api_handle_knob(enum InputsSharedKnobID knob_id, int8_t delta) {
     enum InputsSharedParameterID parameter_id;
     switch (knob_id) {
         case INPUTS_SHARED_KNOB_ID_FRONT_LEFT:
@@ -191,7 +191,7 @@ enum InputsReturnCode parameters_api_handle_knob(
             return INPUTS_RC_OK;
     }
     int16_t candidate = (int16_t)parameters_handler.values[parameter_id] + (int16_t)delta;
-    if (prv_apply(parameter_id, prv_clamp(parameter_id, candidate)) != PARAMETERS_RC_OK) {
+    if (prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, candidate)) != PARAMETERS_RC_OK) {
         return INPUTS_RC_ERROR;
     }
     return INPUTS_RC_OK;

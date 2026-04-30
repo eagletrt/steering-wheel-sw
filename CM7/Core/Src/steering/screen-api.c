@@ -7,7 +7,9 @@
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
 
-EAGLETRT_STATIC struct RasterLabel main_interface_labels[8] = {
+#define SCREEN_INTERFACE_BOX_COUNT (8U)
+
+EAGLETRT_STATIC struct RasterLabel main_interface_labels[SCREEN_INTERFACE_BOX_COUNT] = {
     { .type = LABEL_DATA_STRING, .data.text = "Box 1", .format.string_fmt = { .max_length = 0 }, .pos = { .x = 110, .y = 35 }, .font = FONT_KONEXY, .size = 16, .color = { .argb = 0xFFFFFFFF }, .align = FONT_ALIGN_CENTER },
     { .type = LABEL_DATA_STRING, .data.text = "Box 2", .format.string_fmt = { .max_length = 0 }, .pos = { .x = 110, .y = 95 }, .font = FONT_KONEXY, .size = 16, .color = { .argb = 0xFFFFFFFF }, .align = FONT_ALIGN_CENTER },
     { .type = LABEL_DATA_STRING, .data.text = "Box 3", .format.string_fmt = { .max_length = 0 }, .pos = { .x = 110, .y = 155 }, .font = FONT_KONEXY, .size = 16, .color = { .argb = 0xFFFFFFFF }, .align = FONT_ALIGN_CENTER },
@@ -19,7 +21,7 @@ EAGLETRT_STATIC struct RasterLabel main_interface_labels[8] = {
 };
 
 // example interface with 8 boxes, each with a different color and position (needs to define the final interface)
-EAGLETRT_STATIC struct RasterBox main_interface[8] = {
+EAGLETRT_STATIC struct RasterBox main_interface[SCREEN_INTERFACE_BOX_COUNT] = {
     { .updated = true, .id = 0, .rect = { .x = 10, .y = 10, .w = 200, .h = 50 }, .color = { .argb = 0xFF0000FF }, .label = &main_interface_labels[0] },
     { .updated = true, .id = 1, .rect = { .x = 10, .y = 70, .w = 200, .h = 50 }, .color = { .argb = 0xFF00FF00 }, .label = &main_interface_labels[1] },
     { .updated = true, .id = 2, .rect = { .x = 10, .y = 130, .w = 200, .h = 50 }, .color = { .argb = 0xFFFF0000 }, .label = &main_interface_labels[2] },
@@ -40,8 +42,7 @@ enum InputEventsReturnCode screen_on_parameter_change(enum InputsSharedParameter
 }
 
 enum ScreenReturnCode screen_init(font_draw_line_callback draw_line, raster_draw_rectangle_callback draw_rectangle) {
-    uint16_t len = sizeof(main_interface) / sizeof(main_interface[0]);
-    raster_api_init(&screen_handler.raster, main_interface, len, draw_line, draw_rectangle, NULL);
+    raster_api_init(&screen_handler.raster, main_interface, SCREEN_INTERFACE_BOX_COUNT, draw_line, draw_rectangle, NULL);
 
     if (popup_api_init(&screen_handler.popup) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
@@ -61,8 +62,7 @@ enum ScreenReturnCode screen_update(uint32_t tick) {
         raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT);
         screen_handler.popup_visible = true;
     } else if (!popup_active && screen_handler.popup_visible) {
-        uint16_t len = sizeof(main_interface) / sizeof(main_interface[0]);
-        raster_api_set_interface(&screen_handler.raster, main_interface, len);
+        raster_api_set_interface(&screen_handler.raster, main_interface, SCREEN_INTERFACE_BOX_COUNT);
         screen_handler.popup_visible = false;
     }
 

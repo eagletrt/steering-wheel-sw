@@ -36,9 +36,7 @@ enum ParametersReturnCode {
  * \retval true if the change was dispatched successfully.
  * \retval false on failure; the parameter value is still updated locally.
  */
-typedef bool (*parameters_on_change_callback)(
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value);
+typedef bool (*parameters_on_change_callback)(enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
  * \brief Parameters handler structure.

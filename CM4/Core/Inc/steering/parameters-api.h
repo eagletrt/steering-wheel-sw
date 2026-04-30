@@ -33,8 +33,7 @@
  * \retval PARAMETERS_RC_OK if initialization was successful.
  * \retval PARAMETERS_RC_ERROR if \p on_change is NULL.
  */
-enum ParametersReturnCode parameters_api_init(
-    parameters_on_change_callback on_change);
+enum ParametersReturnCode parameters_api_init(parameters_on_change_callback on_change);
 
 /*!
  * \brief Read the current value of a parameter.
@@ -61,9 +60,7 @@ uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id);
  * \retval PARAMETERS_RC_ERROR if \p parameter_id is invalid or the on-change
  *     callback reported failure.
  */
-enum ParametersReturnCode parameters_api_set(
-    enum InputsSharedParameterID parameter_id,
-    uint8_t value);
+enum ParametersReturnCode parameters_api_set(enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
  * \brief Whether a parameter's transitions should cross the core boundary.
@@ -91,8 +88,7 @@ bool parameters_api_is_shared(enum InputsSharedParameterID parameter_id);
  * \retval INPUTS_RC_OK on success (including "no mapping").
  * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
  */
-enum InputsReturnCode parameters_api_handle_button(
-    enum InputsSharedButtonID button_id);
+enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Map a button release to a parameter transition.
@@ -107,8 +103,7 @@ enum InputsReturnCode parameters_api_handle_button(
  * \retval INPUTS_RC_OK on success (including "no mapping").
  * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
  */
-enum InputsReturnCode parameters_api_handle_button_release(
-    enum InputsSharedButtonID button_id);
+enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Map a knob rotation to a parameter transition.
@@ -123,8 +118,6 @@ enum InputsReturnCode parameters_api_handle_button_release(
  * \retval INPUTS_RC_OK on success (including "no mapping").
  * \retval INPUTS_RC_ERROR if the on-change callback reported failure.
  */
-enum InputsReturnCode parameters_api_handle_knob(
-    enum InputsSharedKnobID knob_id,
-    int8_t delta);
+enum InputsReturnCode parameters_api_handle_knob(enum InputsSharedKnobID knob_id, int8_t delta);
 
 #endif // PARAMETERS_API_H
