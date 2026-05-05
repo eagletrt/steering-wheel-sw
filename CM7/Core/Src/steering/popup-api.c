@@ -26,6 +26,11 @@ EAGLETRT_STATIC const char *prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_COUNT
 
 /*!
  * \brief Returns true if the parameter uses an ON/OFF toggle semantic.
+ *
+ * \param parameter_id The parameter to check.
+ *
+ * \retval true if the parameter is a toggle
+ * \retval false if the parameter is a numeric value
  */
 EAGLETRT_STATIC bool prv_popup_is_toggle(enum InputsSharedParameterID parameter_id) {
     return parameter_id == INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG ||
