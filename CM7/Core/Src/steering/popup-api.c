@@ -9,7 +9,7 @@
 
 #include "popup-api.h"
 #include "screen.h"
-#include "eagletrt.h"
+#include "eagletrt-api.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -44,11 +44,11 @@ EAGLETRT_STATIC bool prv_popup_is_toggle(enum InputsSharedParameterID parameter_
  * \param parameter_id The parameter being displayed.
  * \param value The new parameter value.
  */
-EAGLETRT_STATIC void prv_popup_format_value(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value) {
+EAGLETRT_STATIC void prv_popup_format_value(struct PopupHandler *handler, const enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (prv_popup_is_toggle(parameter_id)) {
-        snprintf(handler->value_buffer, POPUP_VALUE_BUFFER_SIZE, "%s", value ? "ON" : "OFF");
+        EAGLETRT_API_UNUSED(snprintf(handler->value_buffer, POPUP_VALUE_BUFFER_SIZE, "%s", value ? "ON" : "OFF"));
     } else {
-        snprintf(handler->value_buffer, POPUP_VALUE_BUFFER_SIZE, "%u", (unsigned)value);
+        EAGLETRT_API_UNUSED(snprintf(handler->value_buffer, POPUP_VALUE_BUFFER_SIZE, "%u", (unsigned)value));
     }
 }
 

@@ -25,11 +25,7 @@
  *
  * \retval INPUTS_RC_OK on success.
  */
-enum InputsReturnCode inputs_api_init(
-    inputs_button_event_callback on_button_press,
-    inputs_button_event_callback on_button_long_press,
-    inputs_button_event_callback on_button_release,
-    inputs_knob_rotation_callback on_knob_rotation);
+enum InputsReturnCode inputs_api_init(inputs_button_event_callback on_button_press, inputs_button_event_callback on_button_long_press, inputs_button_event_callback on_button_release, inputs_knob_rotation_callback on_knob_rotation);
 
 /*!
  * \brief Feed a new raw button state into the handler.
@@ -41,10 +37,7 @@ enum InputsReturnCode inputs_api_init(
  * \retval INPUTS_RC_OK if the button state was updated successfully.
  * \retval INPUTS_RC_ERROR if the button ID is out of range or a callback reported failure.
  */
-enum InputsReturnCode inputs_api_update_button(
-    enum InputsSharedButtonID button_id,
-    bool pressed,
-    uint32_t current_tick_ms);
+enum InputsReturnCode inputs_api_update_button(enum InputsSharedButtonID button_id, bool pressed, uint32_t current_tick_ms);
 
 /*!
  * \brief Feed a new raw encoder position into the handler.
@@ -55,9 +48,7 @@ enum InputsReturnCode inputs_api_update_button(
  * \retval INPUTS_RC_OK if the knob state was updated successfully.
  * \retval INPUTS_RC_ERROR if the knob ID is out of range or a callback reported failure.
  */
-enum InputsReturnCode inputs_api_update_knob(
-    enum InputsSharedKnobID knob_id,
-    int16_t current_position);
+enum InputsReturnCode inputs_api_update_knob(enum InputsSharedKnobID knob_id, int16_t current_position);
 
 /*!
  * \brief Periodic tick used to emit long-press events.
@@ -67,7 +58,6 @@ enum InputsReturnCode inputs_api_update_knob(
  * \retval INPUTS_RC_OK if the update was successful.
  * \retval INPUTS_RC_ERROR if a callback reported failure.
  */
-enum InputsReturnCode inputs_api_poll_for_long_press(
-    uint32_t current_tick_ms);
+enum InputsReturnCode inputs_api_poll_for_long_press(uint32_t current_tick_ms);
 
 #endif // INPUTS_API_H

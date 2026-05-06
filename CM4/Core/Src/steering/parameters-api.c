@@ -43,7 +43,7 @@ EAGLETRT_STATIC const struct ParameterMeta parameters_api_meta[INPUTS_SHARED_PAR
  *
  * \return The clamped value, guaranteed to be within the parameter's valid range.
  */
-EAGLETRT_STATIC uint8_t prv_parameters_api_clamp_to_allowed(enum InputsSharedParameterID parameter_id, int16_t value) {
+EAGLETRT_STATIC uint8_t prv_parameters_api_clamp_to_allowed(const enum InputsSharedParameterID parameter_id, int16_t value) {
     int8_t max = parameters_api_meta[parameter_id].is_toggle ? 1 : INPUTS_SHARED_PARAMETER_NUMERIC_MAX;
     return (uint8_t)EAGLETRT_API_CLAMP(value, 0, max);
 }
@@ -54,7 +54,7 @@ EAGLETRT_STATIC uint8_t prv_parameters_api_clamp_to_allowed(enum InputsSharedPar
  * \param parameter_id The parameter that changed, used to determine what effect to apply.
  * \param new_value The new value of the parameter, already clamped to the valid range
  */
-EAGLETRT_STATIC void prv_parameters_api_apply_effect(enum InputsSharedParameterID parameter_id, uint8_t new_value) {
+EAGLETRT_STATIC void prv_parameters_api_apply_effect(const enum InputsSharedParameterID parameter_id, uint8_t new_value) {
     switch (parameter_id) {
         case INPUTS_SHARED_PARAMETER_ID_PTT: {
             if (new_value) {
@@ -79,7 +79,7 @@ EAGLETRT_STATIC void prv_parameters_api_apply_effect(enum InputsSharedParameterI
  * \retval PARAMETERS_RC_OK if the value is unchanged or the on-change callback succeeded.
  * \retval PARAMETERS_RC_ERROR if the on-change callback returned false.
  */
-EAGLETRT_STATIC enum ParametersReturnCode prv_parameters_api_apply_value(enum InputsSharedParameterID parameter_id, uint8_t new_value) {
+EAGLETRT_STATIC enum ParametersReturnCode prv_parameters_api_apply_value(const enum InputsSharedParameterID parameter_id, uint8_t new_value) {
     if (parameters_handler.values[parameter_id] == new_value) {
         return PARAMETERS_RC_OK;
     }
@@ -130,7 +130,7 @@ uint8_t parameters_api_get(enum InputsSharedParameterID parameter_id) {
     return parameters_handler.values[parameter_id];
 }
 
-enum ParametersReturnCode parameters_api_set(enum InputsSharedParameterID parameter_id, uint8_t value) {
+enum ParametersReturnCode parameters_api_set(const enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return PARAMETERS_RC_ERROR;
     }
@@ -139,24 +139,32 @@ enum ParametersReturnCode parameters_api_set(enum InputsSharedParameterID parame
 
 enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id) {
     switch (button_id) {
-        case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT: {
-            uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] ? 0U : 1U;
-            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG, next) == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
+        case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT:
         case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT: {
-            uint8_t next = parameters_handler.values[INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] ? 0U : 1U;
-            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL, next) == PARAMETERS_RC_OK
+            enum InputsSharedParameterID param =
+                (button_id == INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT)
+                    ? INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG
+                    : INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL;
+
+            uint8_t next = parameters_handler.values[param] ? 0U : 1U;
+
+            return prv_parameters_api_apply_value(param, next) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-            parameters_handler.ptt_top_left_held = true;
-            return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT:
-            parameters_handler.ptt_top_right_held = true;
-            return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
+        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT: {
+            bool *held =
+                (button_id == INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT)
+                    ? &parameters_handler.ptt_top_left_held
+                    : &parameters_handler.ptt_top_right_held;
+
+            *held = true;
+
+            return prv_recompute_ptt() == PARAMETERS_RC_OK
+                       ? INPUTS_RC_OK
+                       : INPUTS_RC_ERROR;
+        }
         default:
             return INPUTS_RC_OK;
     }
@@ -165,17 +173,24 @@ enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID but
 enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButtonID button_id) {
     switch (button_id) {
         case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-            parameters_handler.ptt_top_left_held = false;
-            return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT:
-            parameters_handler.ptt_top_right_held = false;
-            return prv_recompute_ptt() == PARAMETERS_RC_OK ? INPUTS_RC_OK : INPUTS_RC_ERROR;
+        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT: {
+            bool *released =
+                (button_id == INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT)
+                    ? &parameters_handler.ptt_top_left_held
+                    : &parameters_handler.ptt_top_right_held;
+
+            *released = false;
+
+            return prv_recompute_ptt() == PARAMETERS_RC_OK
+                       ? INPUTS_RC_OK
+                       : INPUTS_RC_ERROR;
+        }
         default:
             return INPUTS_RC_OK;
     }
 }
 
-enum InputsReturnCode parameters_api_handle_knob(enum InputsSharedKnobID knob_id, int8_t delta) {
+enum InputsReturnCode parameters_api_handle_knob(const enum InputsSharedKnobID knob_id, int8_t delta) {
     enum InputsSharedParameterID parameter_id;
     switch (knob_id) {
         case INPUTS_SHARED_KNOB_ID_FRONT_LEFT:

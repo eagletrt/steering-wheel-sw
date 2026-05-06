@@ -23,20 +23,14 @@ EAGLETRT_STATIC struct InputsHandler inputs_handler;
  * \retval INPUTS_RC_OK if the callback is NULL or returned OK.
  * \retval INPUTS_RC_ERROR if the callback returned an error.
  */
-EAGLETRT_STATIC enum InputsReturnCode prv_fire_button_callback(
-    inputs_button_event_callback callback,
-    enum InputsSharedButtonID button_id) {
+EAGLETRT_STATIC enum InputsReturnCode prv_fire_button_callback(inputs_button_event_callback callback, enum InputsSharedButtonID button_id) {
     if (callback == NULL) {
         return INPUTS_RC_OK;
     }
     return callback(button_id);
 }
 
-enum InputsReturnCode inputs_api_init(
-    inputs_button_event_callback on_button_press,
-    inputs_button_event_callback on_button_long_press,
-    inputs_button_event_callback on_button_release,
-    inputs_knob_rotation_callback on_knob_rotation) {
+enum InputsReturnCode inputs_api_init(inputs_button_event_callback on_button_press, inputs_button_event_callback on_button_long_press, inputs_button_event_callback on_button_release, inputs_knob_rotation_callback on_knob_rotation) {
     memset(&inputs_handler, 0, sizeof(inputs_handler));
 
     inputs_handler.on_button_press = on_button_press;
@@ -57,10 +51,7 @@ enum InputsReturnCode inputs_api_init(
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_api_update_button(
-    enum InputsSharedButtonID button_id,
-    bool pressed,
-    uint32_t current_tick_ms) {
+enum InputsReturnCode inputs_api_update_button(enum InputsSharedButtonID button_id, bool pressed, uint32_t current_tick_ms) {
     if (button_id >= INPUTS_SHARED_BUTTON_ID_COUNT) {
         return INPUTS_RC_ERROR;
     }
@@ -84,9 +75,7 @@ enum InputsReturnCode inputs_api_update_button(
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_api_update_knob(
-    enum InputsSharedKnobID knob_id,
-    int16_t current_position) {
+enum InputsReturnCode inputs_api_update_knob(const enum InputsSharedKnobID knob_id, int16_t current_position) {
     if (knob_id >= INPUTS_SHARED_KNOB_ID_COUNT) {
         return INPUTS_RC_ERROR;
     }
