@@ -101,6 +101,7 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     return POPUP_RC_OK;
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
     if (handler == NULL || parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return POPUP_RC_ERROR;

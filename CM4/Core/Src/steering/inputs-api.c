@@ -30,6 +30,7 @@ EAGLETRT_STATIC enum InputsReturnCode prv_fire_button_callback(inputs_button_eve
     return callback(button_id);
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 enum InputsReturnCode inputs_api_init(inputs_button_event_callback on_button_press, inputs_button_event_callback on_button_long_press, inputs_button_event_callback on_button_release, inputs_knob_rotation_callback on_knob_rotation) {
     memset(&inputs_handler, 0, sizeof(inputs_handler));
 
@@ -51,7 +52,7 @@ enum InputsReturnCode inputs_api_init(inputs_button_event_callback on_button_pre
     return INPUTS_RC_OK;
 }
 
-enum InputsReturnCode inputs_api_update_button(enum InputsSharedButtonID button_id, bool pressed, uint32_t current_tick_ms) {
+enum InputsReturnCode inputs_api_update_button(const enum InputsSharedButtonID button_id, bool pressed, const uint32_t current_tick_ms) {
     if (button_id >= INPUTS_SHARED_BUTTON_ID_COUNT) {
         return INPUTS_RC_ERROR;
     }
