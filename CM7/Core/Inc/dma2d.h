@@ -30,6 +30,8 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include "colors.h"
+
 /* USER CODE END Includes */
 
 extern DMA2D_HandleTypeDef hdma2d;
@@ -41,6 +43,9 @@ extern DMA2D_HandleTypeDef hdma2d;
 void MX_DMA2D_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+void dma2d_draw_line(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t length, struct Color color);
+void dma2d_draw_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color);
 
 /* USER CODE END Prototypes */
 

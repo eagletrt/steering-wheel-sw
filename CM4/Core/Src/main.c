@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "fsm.h"
+#include "parameters-api.h"
 #include "post.h"
 #include "ipc-queue-api.h"
 #include "shared.h"
@@ -67,7 +68,17 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-bool main_notify_event(struct InputsSharedEvent ev) {
+bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
+    // TODO: broadcast every transition on CAN
+
+    if (!parameters_api_is_shared(parameter_id)) {
+        return true;
+    }
+
+    struct InputsSharedEvent ev = {
+        .parameter_id = parameter_id,
+        .value = value,
+    };
     bool ret = ipc_queue_api_push_event(ev, __DMB);
     HAL_HSEM_FastTake(HSEM_INPUT_ID);
     HAL_HSEM_Release(HSEM_INPUT_ID, 0);
@@ -134,7 +145,7 @@ int main(void) {
 
     struct PostInitData data = {
         .leds_transmit = tim_leds_transmit,
-        .inputs_notify = main_notify_event,
+        .parameters_on_change = main_on_parameter_change,
     };
 
     current_state = fsm_run_state(current_state, &data);

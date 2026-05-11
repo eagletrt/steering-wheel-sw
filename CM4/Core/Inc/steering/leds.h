@@ -72,6 +72,7 @@ enum LedsIndex {
  */
 struct LedsHandler {
     struct LedColor colors[LEDS_INDEX_COUNT];                                /*!< Array of LedColor structures representing the colors of each LED. */
+    struct LedColor colors_backup[LEDS_INDEX_COUNT];                         /*!< Snapshot used by leds_api_save_pattern / leds_api_restore_pattern. */
     float brightness;                                                        /*!< Brightness level for the LEDs (0-1), where 0 is off and 1 is full brightness. (default: 1) */
     enum WS2812BDutyCycle buffer[WS2812B_API_BUFFER_SIZE(LEDS_INDEX_COUNT)]; /*!< Buffer for storing the encoded LED data to be transmitted to the hardware. The size is determined by the number of LEDs and the requirements of the hardware peripheral. */
     leds_transmit_callback transmit_callback;                                /*!< Callback function for transmitting the LED data to the hardware. */

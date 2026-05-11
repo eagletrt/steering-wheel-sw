@@ -51,16 +51,15 @@ void test_ipc_queue_input_queue_read_and_process_all_multiple(void) {
 
 void test_ipc_queue_input_queue_read_and_process_read_event(void) {
     struct InputsSharedEvent ev = {
-        .type = INPUTS_SHARED_EVENT_TYPE_BUTTON_LONG_PRESS,
-        .button = { .button_id = INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT }
+        .parameter_id = INPUTS_SHARED_PARAMETER_ID_POWER,
+        .value = 7
     };
     ipc_queue_api_push_event(ev, NULL);
     ipc_queue_api_read_and_process_all(read_and_process_callback);
     struct InputsSharedEvent last_event = read_and_process_callback_fake.arg0_val;
-    printf("Last event type: %d, button ID: %d\n", last_event.type, last_event.button.button_id);
     TEST_ASSERT_EQUAL_INT_MESSAGE(1, read_and_process_callback_fake.call_count, "Expected callback to be called once");
-    TEST_ASSERT_EQUAL_INT_MESSAGE(ev.type, last_event.type, "Event type mismatch");
-    TEST_ASSERT_EQUAL_INT_MESSAGE(ev.button.button_id, last_event.button.button_id, "Button ID mismatch");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(ev.parameter_id, last_event.parameter_id, "Parameter ID mismatch");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(ev.value, last_event.value, "Value mismatch");
 }
 
 /*! \} */

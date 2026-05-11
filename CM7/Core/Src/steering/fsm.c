@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "fsm_"
 
 #include "post-api.h"
 #include "eagletrt-api.h"
+#include "screen-api.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -65,7 +66,7 @@ bool fsm_is_event_triggered() {
 void fsm_event_trigger(fsm_event_data_t *event) {
     if (fsm_fired_event != NULL)
         return;
-    fsm_fired_event = event ? event : &(fsm_event_data_t){};
+    fsm_fired_event = event ? event : &(fsm_event_data_t){ .empty_for_warning = NULL };
 }
 
 /*  ____  _        _
@@ -88,9 +89,9 @@ fsm_state_t fsm_do_init(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_INIT ***/
 
-    EAGLETRT_API_UNUSED(data);
+    struct PostInitData *post_init_data = (struct PostInitData *)data;
 
-    if (post_api_do_init(NULL) != POST_RC_OK) {
+    if (post_api_do_init(post_init_data) != POST_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 
@@ -114,7 +115,11 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN DO_IDLE ***/
 
-    EAGLETRT_API_UNUSED(data);
+    struct FsmData *fsm_data = (struct FsmData *)data;
+
+    if (screen_update(fsm_data->tick) != SCREEN_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
 
     /*** USER CODE END DO_IDLE ***/
 
@@ -379,6 +384,8 @@ void fsm_autonomous_disable(fsm_state_data_t *data) {
 
     /*** USER CODE BEGIN AUTONOMOUS_DISABLE ***/
 
+    EAGLETRT_API_UNUSED(data);
+
     /*** USER CODE END AUTONOMOUS_DISABLE ***/
 }
 
@@ -413,7 +420,7 @@ fsm_state_t fsm_run_state(fsm_state_t cur_state, fsm_state_data_t *data) {
     if (transition)
         transition(data);
     return new_state;
-};
+}
 
 /*** USER CODE BEGIN FUNCTIONS ***/
 

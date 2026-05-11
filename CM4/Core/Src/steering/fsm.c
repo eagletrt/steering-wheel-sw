@@ -67,7 +67,7 @@ bool fsm_is_event_triggered() {
 void fsm_event_trigger(fsm_event_data_t *event) {
     if (fsm_fired_event != NULL)
         return;
-    fsm_fired_event = event ? event : &(fsm_event_data_t){};
+    fsm_fired_event = event ? event : &(fsm_event_data_t){ .empty_for_warning = NULL };
 }
 
 /*  ____  _        _
@@ -428,7 +428,7 @@ fsm_state_t fsm_run_state(fsm_state_t cur_state, fsm_state_data_t *data) {
     if (transition)
         transition(data);
     return new_state;
-};
+}
 
 /*** USER CODE BEGIN FUNCTIONS ***/
 

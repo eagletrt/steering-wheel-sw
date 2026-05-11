@@ -23,6 +23,7 @@
 #include "dma2d.h"
 #include "fatfs.h"
 #include "jpeg.h"
+#include "post.h"
 #include "usart.h"
 #include "ltdc.h"
 #include "sdmmc.h"
@@ -178,13 +179,22 @@ HSEM notification */
     MX_DAC1_Init();
     /* USER CODE BEGIN 2 */
 
+    struct PostInitData post_init_data = {
+        .draw_line = ltdc_draw_line,
+        .draw_rectangle = ltdc_draw_rectangle,
+    };
+
+    current_state = fsm_run_state(current_state, &post_init_data);
+
+    struct FsmData fsm_data = { 0 };
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-
-        current_state = fsm_run_state(current_state, NULL);
+        fsm_data.tick = HAL_GetTick();
+        current_state = fsm_run_state(current_state, &fsm_data);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "fsm_"
 #include <stdbool.h>
 
 /*** USER CODE BEGIN MACROS ***/
+#include <stdint.h>
 
 /*** USER CODE END MACROS ***/
 
@@ -34,6 +35,7 @@ typedef void fsm_state_data_t;
 typedef struct {
 
     /*** USER CODE BEGIN EVENT_DATA ***/
+    void *empty_for_warning;
 
     /*** USER CODE END EVENT_DATA ***/
 
@@ -62,6 +64,13 @@ typedef fsm_state_t fsm_state_func_t(fsm_state_data_t *data);
 typedef void transition_func_t(fsm_state_data_t *data);
 
 /*** USER CODE BEGIN TYPES ***/
+
+/*!
+ * \brief This struct contains the data needed by the FSM to operate and call other modules successfully. It is passed as an argument to all state and transition functions.
+ */
+struct FsmData {
+    uint32_t tick; /*!< Current tick. */
+};
 
 /*** USER CODE END TYPES ***/
 

@@ -1,0 +1,9 @@
+[
+    {
+        "name": "konexy",
+        "font": "KonexyFont.ttf",
+        "size": 150,
+        "edges": [0.2, 0.5],
+        "characters": "A-Za-z0-9 ."
+    }
+]
