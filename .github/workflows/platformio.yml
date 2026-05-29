@@ -41,11 +41,6 @@ jobs:
         working-directory: steering-wheel-bootloader-sw
         run: pio run
       
-      - name: Install GCC 14
-        uses: egor-tensin/setup-gcc@v2
-        with:
-          version: 14
-
       - name: Run Unit Tests
         run: pio test -e tests_cm4 -e tests_cm7 -e tests_common
 
