@@ -16,10 +16,10 @@
 #define ONE_LED_INPUT_SIZE (3U)
 #define ONE_LED_OUTPUT_SIZE (ONE_LED_INPUT_SIZE * 8 + WS2812B_RESET_SLOTS)
 
-extern const uint8_t WS2812BGammaCorrectionTable[256];
+extern const uint8_t WS2812B_gamma_correction_table[256];
 
 EAGLETRT_STATIC void encode_byte(uint8_t value, enum WS2812BDutyCycle *out, float brightness) {
-    uint8_t scaled_value = WS2812BGammaCorrectionTable[value] * brightness;
+    uint8_t scaled_value = WS2812B_gamma_correction_table[value] * brightness;
     for (int i = 7; i >= 0; i--) {
         out[7 - i] = EAGLETRT_API_BIT_GET(scaled_value, i) ? WS2812B_DUTY_CYCLE_1 : WS2812B_DUTY_CYCLE_0;
     }
@@ -160,7 +160,7 @@ void test_ws2812b_encode_reset_slots_are_zero(void) {
 void test_ws2812b_encode_brightness_scaling(void) {
     uint8_t input[3] = { 0xFF, 0xFF, 0xFF };
     float brightness = 0.5f; // 50% brightness
-    uint8_t expected_scaled_value = WS2812BGammaCorrectionTable[0xFF];
+    uint8_t expected_scaled_value = WS2812B_gamma_correction_table[0xFF];
     enum WS2812BDutyCycle expected_scaled_out[8] = { 0 };
     encode_byte(expected_scaled_value, expected_scaled_out, 0.5f);
     enum WS2812BDutyCycle output[ONE_LED_OUTPUT_SIZE];

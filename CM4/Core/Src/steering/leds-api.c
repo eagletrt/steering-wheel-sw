@@ -12,6 +12,8 @@
 #include "eagletrt-api.h"
 #include <string.h>
 
+#define LEDS_API_BRIGHTNESS_MAX (255U)
+
 EAGLETRT_STATIC struct LedsHandler leds_handler;
 
 enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
@@ -20,7 +22,7 @@ enum LedsReturnCode leds_api_init(leds_transmit_callback transmit) {
     }
 
     memset(&leds_handler, 0, sizeof(leds_handler));
-    leds_handler.brightness = 1.0f;
+    leds_handler.brightness = 1.0F;
     leds_handler.transmit_callback = transmit;
     return LEDS_RC_OK;
 }
@@ -46,7 +48,7 @@ void leds_api_clear(void) {
 }
 
 void leds_api_set_brightness(float brightness) {
-    leds_handler.brightness = EAGLETRT_API_CLAMP(brightness, 0.0f, 1.0f);
+    leds_handler.brightness = EAGLETRT_API_CLAMP(brightness, 0.0F, 1.0F);
 }
 
 enum LedsReturnCode leds_api_show() {
@@ -76,7 +78,7 @@ void leds_api_restore_pattern(void) {
 }
 
 void leds_api_set_ptt_pattern(void) {
-    struct LedColor blue = { .g = 0, .r = 0, .b = 255 };
+    struct LedColor blue = { .g = 0, .r = 0, .b = LEDS_API_BRIGHTNESS_MAX };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {
         leds_handler.colors[i] = blue;
     }
@@ -90,21 +92,21 @@ void leds_api_set_target_lap_pattern(void) {
 }
 
 void leds_api_set_fast_lap_pattern(void) {
-    struct LedColor green = { .g = 255, .r = 0, .b = 0 };
+    struct LedColor green = { .g = LEDS_API_BRIGHTNESS_MAX, .r = 0, .b = 0 };
     for (size_t i = LEDS_INDEX_TOP_LEFT_1; i < LEDS_INDEX_TOP_RIGHT_1 + 1; i++) {
         leds_handler.colors[i] = green;
     }
 }
 
 void leds_api_set_slow_lap_pattern(void) {
-    struct LedColor yellow = { .g = 255, .r = 255, .b = 0 };
+    struct LedColor yellow = { .g = LEDS_API_BRIGHTNESS_MAX, .r = LEDS_API_BRIGHTNESS_MAX, .b = 0 };
     for (size_t i = LEDS_INDEX_TOP_LEFT_1; i < LEDS_INDEX_TOP_RIGHT_1 + 1; i++) {
         leds_handler.colors[i] = yellow;
     }
 }
 
 void leds_api_set_error_pattern(void) {
-    struct LedColor red = { .g = 0, .r = 255, .b = 0 };
+    struct LedColor red = { .g = 0, .r = LEDS_API_BRIGHTNESS_MAX, .b = 0 };
     for (size_t i = LEDS_INDEX_CENTER_0; i < LEDS_INDEX_CENTER_4 + 1; i++) {
         leds_handler.colors[i] = red;
     }

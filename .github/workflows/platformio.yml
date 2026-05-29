@@ -40,6 +40,11 @@ jobs:
       - name: Build bootloader
         working-directory: steering-wheel-bootloader-sw
         run: pio run
+      
+      - name: Install GCC 14
+        uses: egor-tensin/setup-gcc@v2
+        with:
+          version: 14
 
       - name: Run Unit Tests
         run: pio test -e tests_cm4 -e tests_cm7 -e tests_common
@@ -47,11 +52,4 @@ jobs:
       - name: Static Code Analysis
         if: github.ref == 'refs/heads/dev'
         run: |
-          pio check \
-            --src-filters="+<CM7/Core/Src/*>" \
-            --src-filters="+<CM7/Core/Inc/*>" \
-            --src-filters="+<CM4/Core/Src/*>" \
-            --src-filters="+<CM4/Core/Inc/*>" \
-            --src-filters="-<Drivers/**>" \
-            --src-filters="-<Common/**>" \
-            --src-filters="-<Middlewares/**>" || true
+          pio check || true

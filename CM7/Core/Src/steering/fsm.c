@@ -64,8 +64,9 @@ bool fsm_is_event_triggered() {
 
 // Function to trigger an event
 void fsm_event_trigger(fsm_event_data_t *event) {
-    if (fsm_fired_event != NULL)
+    if (fsm_fired_event != NULL) {
         return;
+    }
     fsm_fired_event = event ? event : &(fsm_event_data_t){ .empty_for_warning = NULL };
 }
 
@@ -412,13 +413,16 @@ fsm_state_t fsm_run_state(fsm_state_t cur_state, fsm_state_data_t *data) {
     fsm_event_data_t *prev_ev = fsm_fired_event;
     fsm_state_t new_state = fsm_state_table[cur_state](data);
     // Reset event status
-    if (prev_ev != NULL)
+    if (prev_ev != NULL) {
         fsm_fired_event = NULL;
-    if (new_state == FSM_NO_CHANGE)
+    }
+    if (new_state == FSM_NO_CHANGE) {
         new_state = cur_state;
+    }
     transition_func_t *transition = fsm_transition_table[cur_state][new_state];
-    if (transition)
+    if (transition) {
         transition(data);
+    }
     return new_state;
 }
 

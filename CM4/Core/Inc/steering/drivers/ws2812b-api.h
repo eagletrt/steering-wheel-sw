@@ -21,7 +21,7 @@
  *
  * \return The total buffer size in terms of the number of duty cycle values required to encode the color data for the specified number of LEDs, including reset slots.
  */
-#define WS2812B_API_BUFFER_SIZE(LED_COUNT) ((LED_COUNT) * 24 + WS2812B_RESET_SLOTS)
+#define WS2812B_API_BUFFER_SIZE(LED_COUNT) (((LED_COUNT) * 24) + WS2812B_RESET_SLOTS)
 
 /*!
  * \brief Macro to calculate the duty cycle value for a given frequency and ratio.
@@ -32,7 +32,7 @@
  * \param RATIO The duty cycle ratio (e.g., WS2812B_DUTY_0_RATIO or WS2812B_DUTY_1_RATIO).
  * \return The calculated duty cycle value as a 16-bit unsigned integer.
  */
-#define WS2812B_API_CALCULATE_DUTY_VALUE(FREQ, RATIO) ((uint16_t)(((float)(FREQ) / WS2812B_FREQUENCY_HZ) * RATIO))
+#define WS2812B_API_CALCULATE_DUTY_VALUE(FREQ, RATIO) ((uint16_t)(((float)(FREQ) / WS2812B_FREQUENCY_HZ) * (RATIO)))
 
 /*!
  * \brief Encodes GRB color data into a PWM buffer suitable for WS2812B LEDs.
