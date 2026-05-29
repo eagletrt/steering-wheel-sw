@@ -31,9 +31,6 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Print gcc version
-        run: gcc --version
-
       - name: Install Generator Dependencies
         run: pip install Pillow numpy scipy jinja2
 
