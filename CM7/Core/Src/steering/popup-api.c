@@ -8,8 +8,12 @@
  */
 
 #include "popup-api.h"
+#include "font.h"
+#include "label-api.h"
+#include "box-api.h"
 #include "screen.h"
 #include "eagletrt-api.h"
+#include "raster-fonts.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -62,42 +66,18 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     handler->current_parameter = INPUTS_SHARED_PARAMETER_ID_POWER;
     handler->value_buffer[0] = '\0';
 
-    handler->labels[0] = (struct RasterLabel){
-        .type = LABEL_DATA_STRING,
-        .data.text = (char *)prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER],
-        .format.string_fmt = { .max_length = 0 },
-        .pos = { .x = SCREEN_WIDTH / 2, .y = SCREEN_HEIGHT / 4 },
-        .font = FONT_KONEXY,
-        .size = 48,
-        .color = { .argb = 0xFFFFFFFF },
-        .align = FONT_ALIGN_CENTER,
-    };
-    handler->labels[1] = (struct RasterLabel){
-        .type = LABEL_DATA_STRING,
-        .data.text = handler->value_buffer,
-        .format.string_fmt = { .max_length = 0 },
-        .pos = { .x = SCREEN_WIDTH / 2, .y = SCREEN_HEIGHT / 4 },
-        .font = FONT_KONEXY,
-        .size = 96,
-        .color = { .argb = 0xFFFFFFFF },
-        .align = FONT_ALIGN_CENTER,
-    };
-
-    handler->boxes[0] = (struct RasterBox){
-        .updated = true,
-        .id = 0,
-        .rect = { .x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT / 2 },
-        .color = { .argb = 0xFF101010 },
-        .label = &handler->labels[0],
-    };
-    handler->boxes[1] = (struct RasterBox){
-        .updated = true,
-        .id = 1,
-        .rect = { .x = 0, .y = SCREEN_HEIGHT / 2, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT / 2 },
-        .color = { .argb = 0xFF1E1E1E },
-        .label = &handler->labels[1],
-    };
-
+    if (label_api_init(&handler->labels[0], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, &font_konexy, 48, FONT_ALIGN_CENTER, (struct Color){ .argb = 0xFFFFFFFF }) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (label_api_init(&handler->labels[1], handler->value_buffer, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, &font_konexy, 96, FONT_ALIGN_CENTER, (struct Color){ .argb = 0xFFFFFFFF }) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (box_api_init(&handler->boxes[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_WIDTH, .height = SCREEN_HEIGHT / 2 }, (struct Color){ .argb = 0xFF101010 }, &handler->labels[0]) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (box_api_init(&handler->boxes[1], 1, (struct BoxRectangle){ .x = 0, .y = SCREEN_HEIGHT / 2, .width = SCREEN_WIDTH, .height = SCREEN_HEIGHT / 2 }, (struct Color){ .argb = 0xFF1E1E1E }, &handler->labels[1]) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
     return POPUP_RC_OK;
 }
 
@@ -111,7 +91,7 @@ enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSha
     handler->last_event_tick = tick;
     handler->current_parameter = parameter_id;
 
-    handler->labels[0].data.text = (char *)prv_parameter_names[parameter_id];
+    handler->labels[0].text = (char *)prv_parameter_names[parameter_id];
 
     prv_popup_format_value(handler, parameter_id, value);
 

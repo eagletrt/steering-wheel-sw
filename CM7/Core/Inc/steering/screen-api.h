@@ -25,13 +25,12 @@ enum InputEventsReturnCode screen_on_parameter_change(enum InputsSharedParameter
  * \details Sets up the raster interface and the popup overlay. The popup starts
  *     in the inactive state.
  *
- * \param draw_line Font rendering callback provided by the caller.
  * \param draw_rectangle Raster rendering callback provided by the caller.
  *
  * \retval SCREEN_RC_OK if initialization was successful.
  * \retval SCREEN_RC_ERROR if initialization failed.
  */
-enum ScreenReturnCode screen_init(font_draw_line_callback draw_line, raster_draw_rectangle_callback draw_rectangle);
+enum ScreenReturnCode screen_init(raster_draw_rectangle_callback draw_rectangle);
 
 /*!
  * \brief Update the screen state, including popup visibility and raster interface.

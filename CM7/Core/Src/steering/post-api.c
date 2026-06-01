@@ -14,7 +14,7 @@
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     enum PostReturnCode ret_code = POST_RC_OK;
 
-    if (post_init_data == NULL || post_init_data->draw_line == NULL || post_init_data->draw_rectangle == NULL) {
+    if (post_init_data == NULL || post_init_data->draw_rectangle == NULL) {
         return POST_RC_ERROR;
     }
 
@@ -22,7 +22,7 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         ret_code = POST_RC_ERROR;
     }
 
-    if (screen_init(post_init_data->draw_line, post_init_data->draw_rectangle) != SCREEN_RC_OK) {
+    if (screen_init(post_init_data->draw_rectangle) != SCREEN_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

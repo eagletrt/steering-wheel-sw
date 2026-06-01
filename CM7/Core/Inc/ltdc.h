@@ -21,6 +21,7 @@
 #ifndef __LTDC_H__
 #define __LTDC_H__
 
+#include "raster.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,8 +45,7 @@ void MX_LTDC_Init(void);
 /* USER CODE BEGIN Prototypes */
 
 void ltdc_swap_framebuffers(void);
-void ltdc_draw_line(uint16_t x, uint16_t y, uint16_t length, struct Color color);
-void ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color);
+enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color);
 
 /* USER CODE END Prototypes */
 

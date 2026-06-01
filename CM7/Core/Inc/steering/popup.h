@@ -16,7 +16,8 @@
 #define POPUP_H
 
 #include "inputs-shared.h"
-#include "raster.h"
+#include "box.h"
+#include "label.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -47,8 +48,8 @@ struct PopupHandler {
     uint32_t last_event_tick;                       /*!< Tick of the last parameter change, in milliseconds */
     enum InputsSharedParameterID current_parameter; /*!< Parameter currently displayed by the popup */
     char value_buffer[POPUP_VALUE_BUFFER_SIZE];     /*!< Buffer for the formatted value label */
-    struct RasterLabel labels[POPUP_BOX_COUNT];     /*!< Labels referenced by the popup boxes */
-    struct RasterBox boxes[POPUP_BOX_COUNT];        /*!< Boxes composing the popup interface */
+    struct Label labels[POPUP_BOX_COUNT];           /*!< Labels referenced by the popup boxes */
+    struct Box boxes[POPUP_BOX_COUNT];              /*!< Boxes composing the popup interface */
 };
 
 #endif // POPUP_H

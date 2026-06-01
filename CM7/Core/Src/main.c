@@ -180,7 +180,6 @@ HSEM notification */
     /* USER CODE BEGIN 2 */
 
     struct PostInitData post_init_data = {
-        .draw_line = ltdc_draw_line,
         .draw_rectangle = ltdc_draw_rectangle,
     };
 
