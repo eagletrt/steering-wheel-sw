@@ -11,7 +11,6 @@
 #define POPUP_API_H
 
 #include "popup.h"
-#include "screen.h"
 
 /*!
  * \brief Initialize the popup interface.
