@@ -21,7 +21,6 @@
 #ifndef __LTDC_H__
 #define __LTDC_H__
 
-#include "raster.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,6 +30,7 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 #include "colors.h"
+#include "raster.h"
 
 /* USER CODE END Includes */
 
