@@ -1,6 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include "dashboard.h"
 #include "popup.h"
 #include "raster.h"
 #include <stdbool.h>
@@ -26,8 +27,9 @@ struct ScreenHandler {
     uint32_t last_event_tick; /*!< Timestamp of the last screen event, in milliseconds */
     bool popup_visible;       /*!< Whether the popup interface is currently mounted on the raster */
 
-    struct RasterHandler raster; /*!< Handler for raster operations */
-    struct PopupHandler popup;   /*!< State of the parameter-change popup overlay */
+    struct RasterHandler raster;       /*!< Handler for raster operations */
+    struct DashboardHandler dashboard; /*!< Main always-on interface (telemetry, scenario, lap) */
+    struct PopupHandler popup;         /*!< State of the parameter-change popup overlay */
 };
 
 #endif // SCREEN_H

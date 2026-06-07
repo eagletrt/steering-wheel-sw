@@ -18,11 +18,11 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         return POST_RC_ERROR;
     }
 
-    if (input_events_api_init(screen_on_parameter_change) != INPUT_EVENTS_RC_OK) {
+    if (input_events_api_init(screen_api_on_parameter_change) != INPUT_EVENTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 
-    if (screen_init(post_init_data->draw_rectangle) != SCREEN_RC_OK) {
+    if (screen_api_init(post_init_data->draw_rectangle) != SCREEN_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

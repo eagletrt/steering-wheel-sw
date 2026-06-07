@@ -1,95 +1,24 @@
+/*!
+ * \file screen-api.c
+ * \date 2026-03-14
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM7_Core
+ *
+ * \brief Lifecycle wrapper around the main dashboard and the parameter-change
+ *     popup. The actual dashboard layout lives in dashboard-api.c; this file
+ *     only orchestrates init, raster swaps and the per-field setter facade.
+ */
+
 #include "screen-api.h"
-#include "box-api.h"
+#include "dashboard-api.h"
 #include "eagletrt.h"
-#include "raster-api.h"
-#include "inputs-shared.h"
 #include "popup-api.h"
-#include "label-api.h"
-#include "raster-fonts.h"
+#include "raster-api.h"
+#include <stddef.h>
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
 
-#define SCREEN_INTERFACE_BOX_COUNT (10U)
-#define SCREEN_LABEL_X_POS (100U)
-#define SCREEN_LABEL_Y_POS (50U)
-#define SCREEN_LABEL_X_POS_L (400U)
-#define SCREEN_LABEL_Y_POS_L (50U)
-#define SCREEN_LABEL_COLOR ((struct Color){ .argb = 0xFFFFFFFFU })
-#define SCREEN_LABEL_FONT_SIZE_M (22U)
-#define SCREEN_LABEL_FONT_SIZE_L (30U)
-#define SCREEN_BOX_WIDTH_M (200U)
-#define SCREEN_BOX_HEIGHT_M (150U)
-
-EAGLETRT_STATIC struct Label main_interface_labels[SCREEN_INTERFACE_BOX_COUNT];
-
-// example interface with 8 boxes, each with a different color and position (needs to define the final interface)
-EAGLETRT_STATIC struct Box main_interface[SCREEN_INTERFACE_BOX_COUNT];
-
-EAGLETRT_STATIC enum RasterReturnCode prv_init_labels(void) {
-    enum RasterReturnCode rc = RASTER_RC_OK;
-    if (label_api_init(&main_interface_labels[0], "Box 1", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[1], "Box 2", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[2], "Box 3", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[3], "Box 4", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[4], "Box 5", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[5], "Box 6", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[6], "Box 7", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[7], "Box 8", SCREEN_LABEL_X_POS, SCREEN_LABEL_Y_POS, &font_konexy, SCREEN_LABEL_FONT_SIZE_M, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (label_api_init(&main_interface_labels[8], "Main Area", SCREEN_LABEL_X_POS_L, SCREEN_LABEL_Y_POS_L, &font_konexy, SCREEN_LABEL_FONT_SIZE_L, FONT_ALIGN_CENTER, SCREEN_LABEL_COLOR) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    return rc;
-}
-
-EAGLETRT_STATIC enum RasterReturnCode prv_init_interface(void) {
-    enum RasterReturnCode rc = RASTER_RC_OK;
-    if (box_api_init(&main_interface[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFF0000FF }, &main_interface_labels[0]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[1], 1, (struct BoxRectangle){ .x = 200, .y = 0, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFF00FF00 }, &main_interface_labels[1]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[2], 2, (struct BoxRectangle){ .x = 400, .y = 0, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFFFF0000 }, &main_interface_labels[2]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[3], 3, (struct BoxRectangle){ .x = 600, .y = 0, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFFFFFF00 }, &main_interface_labels[3]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[4], 4, (struct BoxRectangle){ .x = 0, .y = 150, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFFFF00FF }, &main_interface_labels[4]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[5], 5, (struct BoxRectangle){ .x = 200, .y = 150, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFF00FFFF }, &main_interface_labels[5]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[6], 6, (struct BoxRectangle){ .x = 400, .y = 150, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFFFFFFFF }, &main_interface_labels[6]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[7], 7, (struct BoxRectangle){ .x = 600, .y = 150, .width = SCREEN_BOX_WIDTH_M, .height = SCREEN_BOX_HEIGHT_M }, (struct Color){ .argb = 0xFFCCCCCC }, &main_interface_labels[7]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    if (box_api_init(&main_interface[8], 8, (struct BoxRectangle){ .x = 0, .y = 300, .width = 180, .height = 800 }, (struct Color){ .argb = 0xFFCCCCCC }, &main_interface_labels[8]) != RASTER_RC_OK) {
-        rc = RASTER_RC_ERROR;
-    }
-    return rc;
-}
-
-enum InputEventsReturnCode screen_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value) {
+enum InputEventsReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value) {
     // Called from the HSEM ISR: only update the popup state here.
     // The raster interface swap is performed by screen_update in the main loop.
     if (popup_api_show(&screen_handler.popup, parameter_id, value, screen_handler.last_event_tick) != POPUP_RC_OK) {
@@ -98,17 +27,13 @@ enum InputEventsReturnCode screen_on_parameter_change(const enum InputsSharedPar
     return INPUT_EVENTS_RC_OK;
 }
 
-enum ScreenReturnCode screen_init(raster_draw_rectangle_callback draw_rectangle) {
-    if (prv_init_labels() != RASTER_RC_OK) {
+enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectangle) {
+    if (dashboard_api_init(&screen_handler.dashboard) != DASHBOARD_RC_OK) {
         return SCREEN_RC_ERROR;
     }
-    if (prv_init_interface() != RASTER_RC_OK) {
+    if (raster_api_init(&screen_handler.raster, screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT, draw_rectangle, NULL) != RASTER_RC_OK) {
         return SCREEN_RC_ERROR;
     }
-    if (raster_api_init(&screen_handler.raster, main_interface, SCREEN_INTERFACE_BOX_COUNT, draw_rectangle, NULL) != RASTER_RC_OK) {
-        return SCREEN_RC_ERROR;
-    }
-
     if (popup_api_init(&screen_handler.popup) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
     }
@@ -118,19 +43,156 @@ enum ScreenReturnCode screen_init(raster_draw_rectangle_callback draw_rectangle)
     return SCREEN_RC_OK;
 }
 
-enum ScreenReturnCode screen_update(uint32_t tick) {
+enum ScreenReturnCode screen_api_update(uint32_t tick) {
     screen_handler.last_event_tick = tick;
 
     bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
 
     if (popup_active && !screen_handler.popup_visible) {
-        raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT);
+        if (raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT) != RASTER_RC_OK) {
+            return SCREEN_RC_ERROR;
+        }
         screen_handler.popup_visible = true;
     } else if (!popup_active && screen_handler.popup_visible) {
-        raster_api_set_interface(&screen_handler.raster, main_interface, SCREEN_INTERFACE_BOX_COUNT);
+        if (raster_api_set_interface(&screen_handler.raster, screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT) != RASTER_RC_OK) {
+            return SCREEN_RC_ERROR;
+        }
         screen_handler.popup_visible = false;
     }
 
-    raster_api_render(&screen_handler.raster);
+    if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
     return SCREEN_RC_OK;
+}
+
+/*!
+ * \brief Translate a DashboardReturnCode into a ScreenReturnCode.
+ */
+EAGLETRT_STATIC enum ScreenReturnCode prv_forward(enum DashboardReturnCode rc) {
+    return (rc == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
+}
+
+enum ScreenReturnCode screen_api_set_state(const char *text) {
+    return prv_forward(dashboard_api_set_state(&screen_handler.dashboard, text));
+}
+
+enum ScreenReturnCode screen_api_set_power(uint8_t value) {
+    return prv_forward(dashboard_api_set_power(&screen_handler.dashboard, value));
+}
+
+enum ScreenReturnCode screen_api_set_regen(uint8_t value) {
+    return prv_forward(dashboard_api_set_regen(&screen_handler.dashboard, value));
+}
+
+enum ScreenReturnCode screen_api_set_torque(uint8_t value) {
+    return prv_forward(dashboard_api_set_torque(&screen_handler.dashboard, value));
+}
+
+enum ScreenReturnCode screen_api_set_slip(bool on) {
+    return prv_forward(dashboard_api_set_slip(&screen_handler.dashboard, on));
+}
+
+enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
+    return prv_forward(dashboard_api_set_soc(&screen_handler.dashboard, percent));
+}
+
+enum ScreenReturnCode screen_api_set_hv_temp(int16_t celsius) {
+    return prv_forward(dashboard_api_set_hv_temp(&screen_handler.dashboard, celsius));
+}
+
+enum ScreenReturnCode screen_api_set_inv_temp(int16_t celsius) {
+    return prv_forward(dashboard_api_set_inv_temp(&screen_handler.dashboard, celsius));
+}
+
+enum ScreenReturnCode screen_api_set_lap(uint8_t current, uint8_t total) {
+    return prv_forward(dashboard_api_set_lap(&screen_handler.dashboard, current, total));
+}
+
+enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms) {
+    return prv_forward(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
+}
+
+enum ScreenReturnCode screen_api_set_tire_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+    return prv_forward(dashboard_api_set_tire_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+}
+
+enum ScreenReturnCode screen_api_set_motor_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+    return prv_forward(dashboard_api_set_motor_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+}
+
+/*!
+ * \brief Human-readable name for an IPCUIVehicleState value.
+ *
+ * \details Unknown / out-of-range values fall back to "----" so the dashboard
+ *     never shows a NULL pointer.
+ */
+EAGLETRT_STATIC const char *prv_vehicle_state_name(uint8_t state) {
+    switch ((enum IPCUIVehicleState)state) {
+        case IPC_UI_VEHICLE_STATE_IDLE:
+            return "IDLE";
+        case IPC_UI_VEHICLE_STATE_READY:
+            return "READY";
+        case IPC_UI_VEHICLE_STATE_DRIVE:
+            return "DRIVE";
+        case IPC_UI_VEHICLE_STATE_AUTONOMOUS:
+            return "AUTO";
+        case IPC_UI_VEHICLE_STATE_FLASH:
+            return "FLASH";
+        case IPC_UI_VEHICLE_STATE_ERROR:
+            return "ERROR";
+        case IPC_UI_VEHICLE_STATE_COUNT:
+        default:
+            return "----";
+    }
+}
+
+enum ScreenReturnCode screen_api_sync(const struct IPCUIData *ui_data) {
+    if (ui_data == NULL) {
+        return SCREEN_RC_ERROR;
+    }
+
+    enum ScreenReturnCode rc = SCREEN_RC_OK;
+
+    if (screen_api_set_state(prv_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK)
+        rc = SCREEN_RC_ERROR;
+
+    if (screen_api_set_power(ui_data->power) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_regen(ui_data->regen) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_torque(ui_data->torque) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_slip(ui_data->slip_on != 0U) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+
+    if (screen_api_set_soc(ui_data->soc) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_hv_temp(ui_data->hv_temp) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_inv_temp(ui_data->inverter_temp) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+
+    if (screen_api_set_lap(ui_data->lap_current, ui_data->lap_total) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_lap_delta_ms(ui_data->lap_delta_ms) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+
+    if (screen_api_set_tire_temps(ui_data->tire_fl_temp, ui_data->tire_fr_temp, ui_data->tire_rl_temp, ui_data->tire_rr_temp) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_motor_temps(ui_data->motor_fl_temp, ui_data->motor_fr_temp, ui_data->motor_rl_temp, ui_data->motor_rr_temp) != SCREEN_RC_OK) {
+        rc = SCREEN_RC_ERROR;
+    }
+
+    return rc;
 }

@@ -1,0 +1,274 @@
+/*!
+ * \file dashboard-api.c
+ * \date 2026-06-07
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ * \ingroup CM7_Core
+ *
+ * \brief Implementation of the dashboard layout and setters.
+ *
+ * \details The layout table drives initialization: each entry pins one
+ *     field to a screen rectangle, a font size and a text color. Setters
+ *     each touch exactly one field's value buffer and flag its box as
+ *     updated. Adding a new field is a row in the table + (if needed) a
+ *     setter; no other module needs to change.
+ */
+
+#include "dashboard-api.h"
+#include "box-api.h"
+#include "label-api.h"
+#include "raster-fonts.h"
+#include "eagletrt.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+#define DASHBOARD_COLOR_BG (0xFF1E1E1EU)
+#define DASHBOARD_COLOR_TEXT (0xFFFFFFFFU)
+#define DASHBOARD_COLOR_ACCENT (0xFFFF00FFU)  /* magenta lap delta */
+#define DASHBOARD_COLOR_WARNING (0xFFFF3333U) /* red HV temp       */
+
+#define DASHBOARD_FONT_SIZE_HEADER (22U)
+#define DASHBOARD_FONT_SIZE_VALUE (28U)
+#define DASHBOARD_FONT_SIZE_STATE (36U)
+#define DASHBOARD_FONT_SIZE_DELTA (40U)
+#define DASHBOARD_FONT_SIZE_SOC (88U)
+
+/* ----- layout table -----
+ *
+ * The 800x480 surface is split into three vertical strips:
+ *   left   ( 0..220) — scenario presets and toggles
+ *   center (220..520) — vehicle state and HV/INV telemetry
+ *   right  (520..800) — lap counter and tire/motor temperatures
+ */
+
+struct DashboardFieldLayout {
+    struct BoxRectangle rect; /*!< Where the box sits on the 800x480 canvas */
+    uint16_t font_size;       /*!< Pixel height of the rendered text */
+    uint32_t text_argb;       /*!< Foreground color of the label, ARGB */
+    const char *initial_text; /*!< Placeholder shown until the first setter call */
+};
+
+// clang-format off
+
+EAGLETRT_STATIC const struct DashboardFieldLayout prv_layout[DASHBOARD_FIELD_COUNT] = {
+    /* left strip */
+    [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "SCENARIO" },
+    [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "RGN --"   },
+    [DASHBOARD_FIELD_TORQUE]          = { {   0, 180, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "TQ --"    },
+    [DASHBOARD_FIELD_POWER]           = { {   0, 280, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "POW --"   },
+    [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "SLIP --"  },
+
+    /* center strip */
+    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TEXT,    "----"     },
+    [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "HV"       },
+    [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_TEXT,    "--%"      },
+    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_WARNING, "--C"      },
+    [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "INV --C"  },
+
+    /* right strip */
+    [DASHBOARD_FIELD_LAP]             = { { 520,   0, 280,  80 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "LAP -/-"  },
+    [DASHBOARD_FIELD_LAP_DELTA]       = { { 520,  80, 280,  60 }, DASHBOARD_FONT_SIZE_DELTA,  DASHBOARD_COLOR_ACCENT,  "0.000"    },
+    [DASHBOARD_FIELD_TRS_HEADER]      = { { 520, 140, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "TRS"      },
+    [DASHBOARD_FIELD_TRS_FL]          = { { 520, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_TRS_FR]          = { { 660, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RL]          = { { 520, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RR]          = { { 660, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_MTR_HEADER]      = { { 520, 310, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "MTR"      },
+    [DASHBOARD_FIELD_MTR_FL]          = { { 520, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_MTR_FR]          = { { 660, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RL]          = { { 520, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RR]          = { { 660, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+};
+// clang-format on
+
+/*!
+ * \brief Pixel offset from a box's top-left to its label anchor.
+ *
+ * \details With FONT_ALIGN_CENTER the X anchor is the horizontal middle of
+ *     the box; the Y anchor is the top of the rendered glyphs, so we center
+ *     the line vertically against the box height.
+ */
+EAGLETRT_STATIC int16_t prv_label_offset_y(uint16_t box_height, uint16_t font_size) {
+    if (box_height <= font_size) {
+        return 0;
+    }
+    return (int16_t)((box_height - font_size) / 2U);
+}
+
+/*!
+ * \brief Refresh one field's text buffer and mark its box dirty if it changed.
+ *
+ * \details Formats into a scratch buffer first and compares to the current
+ *     content: if identical we leave the box's \c updated flag alone so the
+ *     raster stays in partial mode when the consumer calls every setter each
+ *     tick. The label keeps the per-field buffer pointer set at init, so
+ *     updating it in place is enough to drive the next render.
+ */
+EAGLETRT_STATIC void prv_format_field(
+    struct DashboardHandler *handler,
+    enum DashboardFieldId id,
+    const char *fmt,
+    ...) {
+    char scratch[DASHBOARD_TEXT_BUFFER_SIZE];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(scratch, sizeof(scratch), fmt, args);
+    va_end(args);
+
+    if (strncmp(scratch, handler->text[id], DASHBOARD_TEXT_BUFFER_SIZE) == 0) {
+        return;
+    }
+    memcpy(handler->text[id], scratch, sizeof(scratch));
+    handler->boxes[id].updated = true;
+}
+
+enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+
+    memset(handler, 0, sizeof(*handler));
+
+    const struct Color bg_color = { .argb = DASHBOARD_COLOR_BG };
+
+    for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
+        const struct DashboardFieldLayout *l = &prv_layout[i];
+
+        (void)snprintf(handler->text[i], DASHBOARD_TEXT_BUFFER_SIZE, "%s", l->initial_text);
+
+        const int16_t offset_x = (int16_t)(l->rect.width / 2U);
+        const int16_t offset_y = prv_label_offset_y(l->rect.height, l->font_size);
+        const struct Color text_color = { .argb = l->text_argb };
+
+        if (label_api_init(&handler->labels[i], handler->text[i], offset_x, offset_y, &font_konexy, l->font_size, FONT_ALIGN_CENTER, text_color) != RASTER_RC_OK) {
+            return DASHBOARD_RC_ERROR;
+        }
+        if (box_api_init(&handler->boxes[i], i, l->rect, bg_color, &handler->labels[i]) != RASTER_RC_OK) {
+            return DASHBOARD_RC_ERROR;
+        }
+    }
+
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_state(struct DashboardHandler *handler, const char *text) {
+    if (handler == NULL || text == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_STATE, "%s", text);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_power(struct DashboardHandler *handler, uint8_t value) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_POWER, "POW %u", (unsigned)value);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_regen(struct DashboardHandler *handler, uint8_t value) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_REGEN, "RGN %u", (unsigned)value);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handler, uint8_t value) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_TORQUE, "TQ %u", (unsigned)value);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool on) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_SLIP, "SLIP %s", on ? "ON" : "OFF");
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler, uint8_t percent) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    if (percent > 100U) {
+        percent = 100U;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%u%%", (unsigned)percent);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *handler, int16_t celsius) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_HV_TEMP, "%dC", (int)celsius);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *handler, int16_t celsius) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_INV, "INV %dC", (int)celsius);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_lap(struct DashboardHandler *handler, uint8_t current, uint8_t total) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_format_field(handler, DASHBOARD_FIELD_LAP, "LAP %u/%u", (unsigned)current, (unsigned)total);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler *handler, int32_t delta_ms) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    const char sign = (delta_ms < 0) ? '-' : '+';
+    int32_t magnitude = (delta_ms < 0) ? -delta_ms : delta_ms;
+    int32_t whole = magnitude / 1000;
+    int32_t millis = magnitude % 1000;
+    prv_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%c%ld.%03ld", sign, (long)whole, (long)millis);
+    return DASHBOARD_RC_OK;
+}
+
+/*!
+ * \brief Shared helper for the TRS / MTR 4-temperature blocks.
+ */
+EAGLETRT_STATIC void prv_set_temp_quad(
+    struct DashboardHandler *handler,
+    enum DashboardFieldId fl_id,
+    enum DashboardFieldId fr_id,
+    enum DashboardFieldId rl_id,
+    enum DashboardFieldId rr_id,
+    int16_t fl,
+    int16_t fr,
+    int16_t rl,
+    int16_t rr) {
+    prv_format_field(handler, fl_id, "%dC", (int)fl);
+    prv_format_field(handler, fr_id, "%dC", (int)fr);
+    prv_format_field(handler, rl_id, "%dC", (int)rl);
+    prv_format_field(handler, rr_id, "%dC", (int)rr);
+}
+
+enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_set_temp_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, fl, fr, rl, rr);
+    return DASHBOARD_RC_OK;
+}
+
+enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_ERROR;
+    }
+    prv_set_temp_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, fl, fr, rl, rr);
+    return DASHBOARD_RC_OK;
+}
