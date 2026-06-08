@@ -149,7 +149,7 @@ EAGLETRT_STATIC const char *prv_screen_api_vehicle_state_name(uint8_t state) {
 
 enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
     if (ui_data == NULL) {
-        return SCREEN_RC_ERROR;
+        return SCREEN_RC_NULL_POINTER;
     }
 
     enum ScreenReturnCode rc = SCREEN_RC_OK;
