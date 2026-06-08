@@ -120,11 +120,11 @@ enum ScreenReturnCode screen_api_set_torque(uint8_t value);
 /*!
  * \brief Update the slip/TC toggle in the left strip.
  *
- * \param on Whether slip/TC is active (on) or not (off).
+ * \param slip_on Whether slip/TC is active (on) or not (off).
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_slip(bool on);
+enum ScreenReturnCode screen_api_set_slip(bool slip_on);
 
 /*!
  * \brief Update the HV state-of-charge percentage (large center value).
@@ -174,25 +174,25 @@ enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms);
 /*!
  * \brief Update the four tire temperatures shown under the TRS header.
  *
- * \param fl Front-left temperature in °C.
- * \param fr Front-right temperature in °C.
- * \param rl Rear-left temperature in °C.
- * \param rr Rear-right temperature in °C.
+ * \param front_left  Front-left temperature in °C.
+ * \param front_right Front-right temperature in °C.
+ * \param rear_left   Rear-left temperature in °C.
+ * \param rear_right  Rear-right temperature in °C.
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_tire_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr);
+enum ScreenReturnCode screen_api_set_tire_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 /*!
  * \brief Update the four motor temperatures shown under the MTR header.
  *
- * \param fl Front-left temperature in °C.
- * \param fr Front-right temperature in °C.
- * \param rl Rear-left temperature in °C.
- * \param rr Rear-right temperature in °C.
+ * \param front_left  Front-left temperature in °C.
+ * \param front_right Front-right temperature in °C.
+ * \param rear_left   Rear-left temperature in °C.
+ * \param rear_right  Rear-right temperature in °C.
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_motor_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr);
+enum ScreenReturnCode screen_api_set_motor_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 #endif // SCREEN_API_H

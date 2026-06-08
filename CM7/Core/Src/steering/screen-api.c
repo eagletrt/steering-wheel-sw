@@ -69,8 +69,8 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
 /*!
  * \brief Translate a DashboardReturnCode into a ScreenReturnCode.
  */
-EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_forward_return_code(enum DashboardReturnCode rc) {
-    return (rc == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
+EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_forward_return_code(enum DashboardReturnCode return_code) {
+    return (return_code == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
 enum ScreenReturnCode screen_api_set_state(const char *text) {
@@ -89,8 +89,8 @@ enum ScreenReturnCode screen_api_set_torque(uint8_t value) {
     return prv_screen_api_forward_return_code(dashboard_api_set_torque(&screen_handler.dashboard, value));
 }
 
-enum ScreenReturnCode screen_api_set_slip(bool on) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_slip(&screen_handler.dashboard, on));
+enum ScreenReturnCode screen_api_set_slip(bool slip_on) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_slip(&screen_handler.dashboard, slip_on));
 }
 
 enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
@@ -113,12 +113,12 @@ enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms) {
     return prv_screen_api_forward_return_code(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
 }
 
-enum ScreenReturnCode screen_api_set_tire_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+enum ScreenReturnCode screen_api_set_tire_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temps(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
 }
 
-enum ScreenReturnCode screen_api_set_motor_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+enum ScreenReturnCode screen_api_set_motor_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temps(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
 }
 
 /*!
@@ -152,47 +152,48 @@ enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
         return SCREEN_RC_NULL_POINTER;
     }
 
-    enum ScreenReturnCode rc = SCREEN_RC_OK;
+    enum ScreenReturnCode return_code = SCREEN_RC_OK;
 
-    if (screen_api_set_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK)
-        rc = SCREEN_RC_ERROR;
+    if (screen_api_set_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK) {
+        return_code = SCREEN_RC_ERROR;
+    }
 
     if (screen_api_set_power(ui_data->power) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_regen(ui_data->regen) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_torque(ui_data->torque) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_slip(ui_data->slip_on != 0U) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
 
     if (screen_api_set_soc(ui_data->soc) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_hv_temp(ui_data->hv_temp) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_inv_temp(ui_data->inverter_temp) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
 
     if (screen_api_set_lap(ui_data->lap_current, ui_data->lap_total) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_lap_delta_ms(ui_data->lap_delta_ms) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
 
     if (screen_api_set_tire_temps(ui_data->tire_fl_temp, ui_data->tire_fr_temp, ui_data->tire_rl_temp, ui_data->tire_rr_temp) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_motor_temps(ui_data->motor_fl_temp, ui_data->motor_fr_temp, ui_data->motor_rl_temp, ui_data->motor_rr_temp) != SCREEN_RC_OK) {
-        rc = SCREEN_RC_ERROR;
+        return_code = SCREEN_RC_ERROR;
     }
 
-    return rc;
+    return return_code;
 }

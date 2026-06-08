@@ -82,13 +82,13 @@ enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handl
 /*!
  * \brief Update the slip toggle in the left strip.
  *
- * \param[in,out] handler Dashboard storage.
- * \param[in]     on      true → "SLIP ON", false → "SLIP OFF".
+ * \param[in,out] handler  Dashboard storage.
+ * \param[in]     slip_on  true → "SLIP ON", false → "SLIP OFF".
  *
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool on);
+enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool slip_on);
 
 /*!
  * \brief Update the HV state-of-charge percentage (large center value).
@@ -149,29 +149,29 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
 /*!
  * \brief Update the four tire temperatures shown under the TRS header.
  *
- * \param[in,out] handler Dashboard storage.
- * \param[in]     fl      Front-left in °C.
- * \param[in]     fr      Front-right in °C.
- * \param[in]     rl      Rear-left in °C.
- * \param[in]     rr      Rear-right in °C.
+ * \param[in,out] handler      Dashboard storage.
+ * \param[in]     front_left   Front-left in °C.
+ * \param[in]     front_right  Front-right in °C.
+ * \param[in]     rear_left    Rear-left in °C.
+ * \param[in]     rear_right   Rear-right in °C.
  *
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr);
+enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 /*!
  * \brief Update the four motor temperatures shown under the MTR header.
  *
- * \param[in,out] handler Dashboard storage.
- * \param[in]     fl      Front-left in °C.
- * \param[in]     fr      Front-right in °C.
- * \param[in]     rl      Rear-left in °C.
- * \param[in]     rr      Rear-right in °C.
+ * \param[in,out] handler      Dashboard storage.
+ * \param[in]     front_left   Front-left in °C.
+ * \param[in]     front_right  Front-right in °C.
+ * \param[in]     rear_left    Rear-left in °C.
+ * \param[in]     rear_right   Rear-right in °C.
  *
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr);
+enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 #endif // DASHBOARD_API_H

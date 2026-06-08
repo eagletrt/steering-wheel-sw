@@ -17,7 +17,7 @@
 #include "box-api.h"
 #include "label-api.h"
 #include "raster-fonts.h"
-#include "eagletrt.h"
+#include "eagletrt-api.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -51,7 +51,7 @@ struct DashboardFieldLayout {
 
 // clang-format off
 
-EAGLETRT_STATIC const struct DashboardFieldLayout prv_layout[DASHBOARD_FIELD_COUNT] = {
+EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_layout[DASHBOARD_FIELD_COUNT] = {
     /* left strip */
     [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "SCENARIO" },
     [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "RGN --"   },
@@ -105,18 +105,22 @@ EAGLETRT_STATIC int16_t prv_dashboard_api_label_offset_y(uint16_t box_height, ui
  *     tick. The label keeps the per-field buffer pointer set at init, so
  *     updating it in place is enough to drive the next render.
  */
-EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *handler, enum DashboardFieldId id, const char *fmt, ...) {
+EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *handler, enum DashboardFieldId field_id, const char *fmt, ...) {
     char scratch[DASHBOARD_TEXT_BUFFER_SIZE];
     va_list args;
     va_start(args, fmt);
-    vsnprintf(scratch, sizeof(scratch), fmt, args);
-    va_end(args);
-
-    if (strncmp(scratch, handler->text[id], DASHBOARD_TEXT_BUFFER_SIZE) == 0) {
+    if (vsnprintf(scratch, sizeof(scratch), fmt, args) < 0) {
+        /* Formatting error, leave the field unchanged. */
+        va_end(args);
         return;
     }
-    memcpy(handler->text[id], scratch, sizeof(scratch));
-    handler->boxes[id].updated = true;
+    va_end(args);
+
+    if (strncmp(scratch, handler->text[field_id], DASHBOARD_TEXT_BUFFER_SIZE) == 0) {
+        return;
+    }
+    memcpy(handler->text[field_id], scratch, sizeof(scratch));
+    handler->boxes[field_id].updated = true;
 }
 
 enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
@@ -129,18 +133,18 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
     const struct Color bg_color = { .argb = DASHBOARD_COLOR_BG };
 
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        const struct DashboardFieldLayout *l = &prv_layout[i];
+        const struct DashboardFieldLayout *field_layout = &prv_dashboard_layout[i];
 
-        (void)snprintf(handler->text[i], DASHBOARD_TEXT_BUFFER_SIZE, "%s", l->initial_text);
+        (void)snprintf(handler->text[i], DASHBOARD_TEXT_BUFFER_SIZE, "%s", field_layout->initial_text);
 
-        const int16_t offset_x = (int16_t)(l->rect.width / 2U);
-        const int16_t offset_y = prv_dashboard_api_label_offset_y(l->rect.height, l->font_size);
-        const struct Color text_color = { .argb = l->text_argb };
+        const int16_t offset_x = (int16_t)(field_layout->rect.width / 2U);
+        const int16_t offset_y = prv_dashboard_api_label_offset_y(field_layout->rect.height, field_layout->font_size);
+        const struct Color text_color = { .argb = field_layout->text_argb };
 
-        if (label_api_init(&handler->labels[i], handler->text[i], offset_x, offset_y, &font_konexy, l->font_size, FONT_ALIGN_CENTER, text_color) != RASTER_RC_OK) {
+        if (label_api_init(&handler->labels[i], handler->text[i], offset_x, offset_y, &font_konexy, field_layout->font_size, FONT_ALIGN_CENTER, text_color) != RASTER_RC_OK) {
             return DASHBOARD_RC_ERROR;
         }
-        if (box_api_init(&handler->boxes[i], i, l->rect, bg_color, &handler->labels[i]) != RASTER_RC_OK) {
+        if (box_api_init(&handler->boxes[i], i, field_layout->rect, bg_color, &handler->labels[i]) != RASTER_RC_OK) {
             return DASHBOARD_RC_ERROR;
         }
     }
@@ -180,11 +184,11 @@ enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handl
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool on) {
+enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool slip_on) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SLIP, "SLIP %s", on ? "ON" : "OFF");
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SLIP, "SLIP %s", slip_on ? "ON" : "OFF");
     return DASHBOARD_RC_OK;
 }
 
@@ -192,9 +196,7 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    if (percent > 100U) {
-        percent = 100U;
-    }
+    percent = EAGLETRT_API_CLAMP(percent, 0U, 100U);
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%u%%", (unsigned)percent);
     return DASHBOARD_RC_OK;
 }
@@ -238,44 +240,44 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
 /*!
  * \brief Shared helper for the TRS / MTR 4-temperature blocks.
  *
- * \param[in,out] handler Dashboard storage.
- * \param[in]     fl_id   Field ID for the front-left temperature.
- * \param[in]     fr_id   Field ID for the front-right temperature.
- * \param[in]     rl_id   Field ID for the rear-left temperature.
- * \param[in]     rr_id   Field ID for the rear-right temperature.
- * \param[in]     fl      Front-left temperature in °C.
- * \param[in]     fr      Front-right temperature in °C.
- * \param[in]     rl      Rear-left temperature in °C.
- * \param[in]     rr      Rear-right temperature in °C.
+ * \param[in,out] handler         Dashboard storage.
+ * \param[in]     front_left_id   Field ID for the front-left temperature.
+ * \param[in]     front_right_id  Field ID for the front-right temperature.
+ * \param[in]     rear_left_id    Field ID for the rear-left temperature.
+ * \param[in]     rear_right_id   Field ID for the rear-right temperature.
+ * \param[in]     front_left      Front-left temperature in °C.
+ * \param[in]     front_right     Front-right temperature in °C.
+ * \param[in]     rear_left       Rear-left temperature in °C.
+ * \param[in]     rear_right      Rear-right temperature in °C.
  */
 EAGLETRT_STATIC void prv_dashboard_api_set_temp_quad(
     struct DashboardHandler *handler,
-    enum DashboardFieldId fl_id,
-    enum DashboardFieldId fr_id,
-    enum DashboardFieldId rl_id,
-    enum DashboardFieldId rr_id,
-    int16_t fl,
-    int16_t fr,
-    int16_t rl,
-    int16_t rr) {
-    prv_dashboard_api_format_field(handler, fl_id, "%dC", (int)fl);
-    prv_dashboard_api_format_field(handler, fr_id, "%dC", (int)fr);
-    prv_dashboard_api_format_field(handler, rl_id, "%dC", (int)rl);
-    prv_dashboard_api_format_field(handler, rr_id, "%dC", (int)rr);
+    enum DashboardFieldId front_left_id,
+    enum DashboardFieldId front_right_id,
+    enum DashboardFieldId rear_left_id,
+    enum DashboardFieldId rear_right_id,
+    int16_t front_left,
+    int16_t front_right,
+    int16_t rear_left,
+    int16_t rear_right) {
+    prv_dashboard_api_format_field(handler, front_left_id, "%dC", (int)front_left);
+    prv_dashboard_api_format_field(handler, front_right_id, "%dC", (int)front_right);
+    prv_dashboard_api_format_field(handler, rear_left_id, "%dC", (int)rear_left);
+    prv_dashboard_api_format_field(handler, rear_right_id, "%dC", (int)rear_right);
 }
 
-enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, fl, fr, rl, rr);
+    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, front_left, front_right, rear_left, rear_right);
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
+enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, fl, fr, rl, rr);
+    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, front_left, front_right, rear_left, rear_right);
     return DASHBOARD_RC_OK;
 }
