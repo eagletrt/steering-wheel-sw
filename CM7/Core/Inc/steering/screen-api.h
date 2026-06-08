@@ -67,15 +67,16 @@ enum ScreenReturnCode screen_api_update(uint32_t tick);
  * \brief Pull every dashboard value from the shared IPC snapshot.
  *
  * \details Reads each field of \p ui_data and forwards it to the matching
- *     screen_set_* call. Setters are no-ops when the formatted text didn't
- *     change, so calling screen_sync every tick is cheap.
+ *     screen_api_set_* call. Setters are no-ops when the formatted text didn't
+ *     change, so calling screen_api_sync_data every tick is cheap.
  *
  * \param ui_data Pointer to the shared IPCUIData living in AXI SRAM.
  *
  * \retval SCREEN_RC_OK on success.
- * \retval SCREEN_RC_ERROR if \p ui_data is NULL or any setter failed.
+ * \retval SCREEN_RC_NULL_POINTER if \p ui_data is NULL.
+ * \retval SCREEN_RC_ERROR if any setter failed.
  */
-enum ScreenReturnCode screen_api_sync(const struct IPCUIData *ui_data);
+enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data);
 
 /* ----- dashboard field setters ----- */
 
@@ -85,7 +86,7 @@ enum ScreenReturnCode screen_api_sync(const struct IPCUIData *ui_data);
  * \param text NUL-terminated text to display (truncated to fit).
  *
  * \retval SCREEN_RC_OK on success.
- * \retval SCREEN_RC_ERROR if \p text is NULL.
+ * \retval SCREEN_RC_NULL_POINTER if \p text is NULL.
  */
 enum ScreenReturnCode screen_api_set_state(const char *text);
 

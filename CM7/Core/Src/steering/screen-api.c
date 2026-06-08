@@ -69,56 +69,56 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
 /*!
  * \brief Translate a DashboardReturnCode into a ScreenReturnCode.
  */
-EAGLETRT_STATIC enum ScreenReturnCode prv_forward(enum DashboardReturnCode rc) {
+EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_forward_return_code(enum DashboardReturnCode rc) {
     return (rc == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
 enum ScreenReturnCode screen_api_set_state(const char *text) {
-    return prv_forward(dashboard_api_set_state(&screen_handler.dashboard, text));
+    return prv_screen_api_forward_return_code(dashboard_api_set_state(&screen_handler.dashboard, text));
 }
 
 enum ScreenReturnCode screen_api_set_power(uint8_t value) {
-    return prv_forward(dashboard_api_set_power(&screen_handler.dashboard, value));
+    return prv_screen_api_forward_return_code(dashboard_api_set_power(&screen_handler.dashboard, value));
 }
 
 enum ScreenReturnCode screen_api_set_regen(uint8_t value) {
-    return prv_forward(dashboard_api_set_regen(&screen_handler.dashboard, value));
+    return prv_screen_api_forward_return_code(dashboard_api_set_regen(&screen_handler.dashboard, value));
 }
 
 enum ScreenReturnCode screen_api_set_torque(uint8_t value) {
-    return prv_forward(dashboard_api_set_torque(&screen_handler.dashboard, value));
+    return prv_screen_api_forward_return_code(dashboard_api_set_torque(&screen_handler.dashboard, value));
 }
 
 enum ScreenReturnCode screen_api_set_slip(bool on) {
-    return prv_forward(dashboard_api_set_slip(&screen_handler.dashboard, on));
+    return prv_screen_api_forward_return_code(dashboard_api_set_slip(&screen_handler.dashboard, on));
 }
 
 enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
-    return prv_forward(dashboard_api_set_soc(&screen_handler.dashboard, percent));
+    return prv_screen_api_forward_return_code(dashboard_api_set_soc(&screen_handler.dashboard, percent));
 }
 
 enum ScreenReturnCode screen_api_set_hv_temp(int16_t celsius) {
-    return prv_forward(dashboard_api_set_hv_temp(&screen_handler.dashboard, celsius));
+    return prv_screen_api_forward_return_code(dashboard_api_set_hv_temp(&screen_handler.dashboard, celsius));
 }
 
 enum ScreenReturnCode screen_api_set_inv_temp(int16_t celsius) {
-    return prv_forward(dashboard_api_set_inv_temp(&screen_handler.dashboard, celsius));
+    return prv_screen_api_forward_return_code(dashboard_api_set_inv_temp(&screen_handler.dashboard, celsius));
 }
 
 enum ScreenReturnCode screen_api_set_lap(uint8_t current, uint8_t total) {
-    return prv_forward(dashboard_api_set_lap(&screen_handler.dashboard, current, total));
+    return prv_screen_api_forward_return_code(dashboard_api_set_lap(&screen_handler.dashboard, current, total));
 }
 
 enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms) {
-    return prv_forward(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
+    return prv_screen_api_forward_return_code(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
 }
 
 enum ScreenReturnCode screen_api_set_tire_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
-    return prv_forward(dashboard_api_set_tire_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temps(&screen_handler.dashboard, fl, fr, rl, rr));
 }
 
 enum ScreenReturnCode screen_api_set_motor_temps(int16_t fl, int16_t fr, int16_t rl, int16_t rr) {
-    return prv_forward(dashboard_api_set_motor_temps(&screen_handler.dashboard, fl, fr, rl, rr));
+    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temps(&screen_handler.dashboard, fl, fr, rl, rr));
 }
 
 /*!
@@ -127,7 +127,7 @@ enum ScreenReturnCode screen_api_set_motor_temps(int16_t fl, int16_t fr, int16_t
  * \details Unknown / out-of-range values fall back to "----" so the dashboard
  *     never shows a NULL pointer.
  */
-EAGLETRT_STATIC const char *prv_vehicle_state_name(uint8_t state) {
+EAGLETRT_STATIC const char *prv_screen_api_vehicle_state_name(uint8_t state) {
     switch ((enum IPCUIVehicleState)state) {
         case IPC_UI_VEHICLE_STATE_IDLE:
             return "IDLE";
@@ -147,14 +147,14 @@ EAGLETRT_STATIC const char *prv_vehicle_state_name(uint8_t state) {
     }
 }
 
-enum ScreenReturnCode screen_api_sync(const struct IPCUIData *ui_data) {
+enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
     if (ui_data == NULL) {
         return SCREEN_RC_ERROR;
     }
 
     enum ScreenReturnCode rc = SCREEN_RC_OK;
 
-    if (screen_api_set_state(prv_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK)
+    if (screen_api_set_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK)
         rc = SCREEN_RC_ERROR;
 
     if (screen_api_set_power(ui_data->power) != SCREEN_RC_OK) {

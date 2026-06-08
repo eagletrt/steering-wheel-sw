@@ -34,7 +34,7 @@ void test_dashboard_init_success(void) {
 
 void test_dashboard_init_null_handler(void) {
     enum DashboardReturnCode rc = dashboard_api_init(NULL);
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_ERROR, rc);
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
 }
 
 void test_dashboard_init_populates_every_box(void) {
@@ -82,12 +82,12 @@ void test_dashboard_set_state_writes_text_and_flags_updated(void) {
 
 void test_dashboard_set_state_null_handler(void) {
     enum DashboardReturnCode rc = dashboard_api_set_state(NULL, "DRIVE");
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_ERROR, rc);
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
 }
 
 void test_dashboard_set_state_null_text(void) {
     enum DashboardReturnCode rc = dashboard_api_set_state(&dashboard_handler, NULL);
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_ERROR, rc);
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
 }
 
 /*! \} */
@@ -116,7 +116,7 @@ void test_dashboard_set_torque_formats_value(void) {
 }
 
 void test_dashboard_set_power_null_handler(void) {
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_ERROR, dashboard_api_set_power(NULL, 5U));
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_set_power(NULL, 5U));
 }
 
 /*! \} */
@@ -139,7 +139,7 @@ void test_dashboard_set_slip_off(void) {
 }
 
 void test_dashboard_set_slip_null_handler(void) {
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_ERROR, dashboard_api_set_slip(NULL, true));
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_set_slip(NULL, true));
 }
 
 /*! \} */

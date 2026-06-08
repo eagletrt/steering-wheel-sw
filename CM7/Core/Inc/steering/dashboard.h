@@ -24,8 +24,9 @@
  * \brief Return codes for dashboard operations.
  */
 enum DashboardReturnCode {
-    DASHBOARD_RC_OK,    /*!< Operation completed successfully */
-    DASHBOARD_RC_ERROR, /*!< NULL pointer or libraster failure */
+    DASHBOARD_RC_OK,           /*!< Operation completed successfully */
+    DASHBOARD_RC_NULL_POINTER, /*!< A required pointer argument was NULL */
+    DASHBOARD_RC_ERROR,        /*!< General error */
 };
 
 /*!

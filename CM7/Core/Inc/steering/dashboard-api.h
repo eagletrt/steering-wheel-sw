@@ -29,7 +29,8 @@
  * \param[out] handler Storage to populate.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL or libraster reports a
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
+ * \retval DASHBOARD_RC_ERROR if libraster reports a
  *     failure while initializing a box or label.
  */
 enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler);
@@ -41,7 +42,7 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler);
  * \param[in]     text    NUL-terminated text to display (truncated to fit).
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler or \p text is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler or \p text is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_state(struct DashboardHandler *handler, const char *text);
 
@@ -52,7 +53,7 @@ enum DashboardReturnCode dashboard_api_set_state(struct DashboardHandler *handle
  * \param[in]     value   Level value, expected in the 0..10 range; printed as-is.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_power(struct DashboardHandler *handler, uint8_t value);
 
@@ -63,7 +64,7 @@ enum DashboardReturnCode dashboard_api_set_power(struct DashboardHandler *handle
  * \param[in]     value   Level value, expected in the 0..10 range; printed as-is.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_regen(struct DashboardHandler *handler, uint8_t value);
 
@@ -74,7 +75,7 @@ enum DashboardReturnCode dashboard_api_set_regen(struct DashboardHandler *handle
  * \param[in]     value   Level value, expected in the 0..10 range; printed as-is.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handler, uint8_t value);
 
@@ -85,7 +86,7 @@ enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handl
  * \param[in]     on      true → "SLIP ON", false → "SLIP OFF".
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool on);
 
@@ -96,7 +97,7 @@ enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler
  * \param[in]     percent SoC in 0..100, clamped on display.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler, uint8_t percent);
 
@@ -107,7 +108,7 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
  * \param[in]     celsius Temperature in °C; negative values are rendered with a sign.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *handler, int16_t celsius);
 
@@ -118,7 +119,7 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
  * \param[in]     celsius Temperature in °C; negative values are rendered with a sign.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *handler, int16_t celsius);
 
@@ -130,7 +131,7 @@ enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *han
  * \param[in]     total   Total number of laps for the session.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_lap(struct DashboardHandler *handler, uint8_t current, uint8_t total);
 
@@ -141,7 +142,7 @@ enum DashboardReturnCode dashboard_api_set_lap(struct DashboardHandler *handler,
  * \param[in]     delta_ms Signed delta relative to the reference lap, in ms.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler *handler, int32_t delta_ms);
 
@@ -149,10 +150,13 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
  * \brief Update the four tire temperatures shown under the TRS header.
  *
  * \param[in,out] handler Dashboard storage.
- * \param[in]     fl, fr, rl, rr Front-left/right and rear-left/right, in °C.
+ * \param[in]     fl      Front-left in °C.
+ * \param[in]     fr      Front-right in °C.
+ * \param[in]     rl      Rear-left in °C.
+ * \param[in]     rr      Rear-right in °C.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr);
 
@@ -160,10 +164,13 @@ enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *h
  * \brief Update the four motor temperatures shown under the MTR header.
  *
  * \param[in,out] handler Dashboard storage.
- * \param[in]     fl, fr, rl, rr Front-left/right and rear-left/right, in °C.
+ * \param[in]     fl      Front-left in °C.
+ * \param[in]     fr      Front-right in °C.
+ * \param[in]     rl      Rear-left in °C.
+ * \param[in]     rr      Rear-right in °C.
  *
  * \retval DASHBOARD_RC_OK on success.
- * \retval DASHBOARD_RC_ERROR if \p handler is NULL.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
 enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t fl, int16_t fr, int16_t rl, int16_t rr);
 
