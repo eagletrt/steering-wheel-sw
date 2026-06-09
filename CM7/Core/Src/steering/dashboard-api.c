@@ -22,18 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// TODO: color based on value thresholds for each field
-#define DASHBOARD_COLOR_BG (0xFF1E1E1EU)
-#define DASHBOARD_COLOR_TEXT (0xFFFFFFFFU)
-#define DASHBOARD_COLOR_ACCENT (0xFFFF00FFU)  /* magenta lap delta */
-#define DASHBOARD_COLOR_WARNING (0xFFFF3333U) /* red HV temp       */
-
-#define DASHBOARD_FONT_SIZE_HEADER (22U)
-#define DASHBOARD_FONT_SIZE_VALUE (28U)
-#define DASHBOARD_FONT_SIZE_STATE (36U)
-#define DASHBOARD_FONT_SIZE_DELTA (40U)
-#define DASHBOARD_FONT_SIZE_SOC (88U)
-
 /* ----- layout table -----
  *
  * The 800x480 surface is split into three vertical strips:
@@ -53,32 +41,32 @@ struct DashboardFieldLayout {
 
 EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_layout[DASHBOARD_FIELD_COUNT] = {
     /* left strip */
-    [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "SCENARIO" },
-    [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "RGN --"   },
-    [DASHBOARD_FIELD_TORQUE]          = { {   0, 180, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "TQ --"    },
-    [DASHBOARD_FIELD_POWER]           = { {   0, 280, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "POW --"   },
-    [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "SLIP --"  },
+    [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "SCENARIO" },
+    [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "RGN --"   },
+    [DASHBOARD_FIELD_TORQUE]          = { {   0, 180, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "TQ --"    },
+    [DASHBOARD_FIELD_POWER]           = { {   0, 280, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "POW --"   },
+    [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "SLIP --"  },
 
     /* center strip */
-    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TEXT,    "----"     },
-    [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "HV"       },
-    [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_TEXT,    "--%"      },
-    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_WARNING, "--C"      },
-    [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "INV --C"  },
+    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TERTIARY,    "----"     },
+    [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "HV"       },
+    [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_TERTIARY,    "--%"      },
+    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_WARNING,     "--C"      },
+    [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "INV --C"  },
 
     /* right strip */
-    [DASHBOARD_FIELD_LAP]             = { { 520,   0, 280,  80 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "LAP -/-"  },
-    [DASHBOARD_FIELD_LAP_DELTA]       = { { 520,  80, 280,  60 }, DASHBOARD_FONT_SIZE_DELTA,  DASHBOARD_COLOR_ACCENT,  "0.000"    },
-    [DASHBOARD_FIELD_TRS_HEADER]      = { { 520, 140, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "TRS"      },
-    [DASHBOARD_FIELD_TRS_FL]          = { { 520, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_TRS_FR]          = { { 660, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_TRS_RL]          = { { 520, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_TRS_RR]          = { { 660, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_MTR_HEADER]      = { { 520, 310, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TEXT,    "MTR"      },
-    [DASHBOARD_FIELD_MTR_FL]          = { { 520, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_MTR_FR]          = { { 660, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_MTR_RL]          = { { 520, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
-    [DASHBOARD_FIELD_MTR_RR]          = { { 660, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TEXT,    "--C"      },
+    [DASHBOARD_FIELD_LAP]             = { { 520,   0, 280,  80 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "LAP -/-"  },
+    [DASHBOARD_FIELD_LAP_DELTA]       = { { 520,  80, 280,  60 }, DASHBOARD_FONT_SIZE_DELTA,  DASHBOARD_COLOR_TERTIARY,    "0.000"    },
+    [DASHBOARD_FIELD_TRS_HEADER]      = { { 520, 140, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "TRS"      },
+    [DASHBOARD_FIELD_TRS_FL]          = { { 520, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_FR]          = { { 660, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RL]          = { { 520, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RR]          = { { 660, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_HEADER]      = { { 520, 310, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "MTR"      },
+    [DASHBOARD_FIELD_MTR_FL]          = { { 520, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_FR]          = { { 660, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RL]          = { { 520, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RR]          = { { 660, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
 };
 // clang-format on
 
@@ -130,7 +118,7 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
 
     memset(handler, 0, sizeof(*handler));
 
-    const struct Color bg_color = { .argb = DASHBOARD_COLOR_BG };
+    const struct Color bg_color = { .argb = DASHBOARD_COLOR_PRIMARY };
 
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
         const struct DashboardFieldLayout *field_layout = &prv_dashboard_layout[i];
@@ -198,6 +186,17 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     }
     percent = EAGLETRT_API_CLAMP(percent, 0U, 100U);
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%u%%", (unsigned)percent);
+
+    uint32_t color;
+    if (percent <= DASHBOARD_THRESHOLD_HW_SOC_ERROR) {
+        color = DASHBOARD_COLOR_ERROR;
+    } else if (percent <= DASHBOARD_THRESHOLD_HW_SOC_WARNING) {
+        color = DASHBOARD_COLOR_WARNING;
+    } else {
+        color = DASHBOARD_COLOR_TERTIARY;
+    }
+    handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = color;
+
     return DASHBOARD_RC_OK;
 }
 
@@ -206,6 +205,17 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
         return DASHBOARD_RC_NULL_POINTER;
     }
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMP, "%dC", (int)celsius);
+
+    uint32_t color;
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_ERROR) {
+        color = DASHBOARD_COLOR_ERROR;
+    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_WARNING) {
+        color = DASHBOARD_COLOR_WARNING;
+    } else {
+        color = DASHBOARD_COLOR_TERTIARY;
+    }
+    handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = color;
+
     return DASHBOARD_RC_OK;
 }
 
@@ -214,6 +224,17 @@ enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *han
         return DASHBOARD_RC_NULL_POINTER;
     }
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INV, "INV %dC", (int)celsius);
+
+    uint32_t color;
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_ERROR) {
+        color = DASHBOARD_COLOR_ERROR;
+    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_WARNING) {
+        color = DASHBOARD_COLOR_WARNING;
+    } else {
+        color = DASHBOARD_COLOR_TERTIARY;
+    }
+    handler->labels[DASHBOARD_FIELD_INV].color.argb = color;
+
     return DASHBOARD_RC_OK;
 }
 
@@ -266,11 +287,54 @@ EAGLETRT_STATIC void prv_dashboard_api_set_temp_quad(
     prv_dashboard_api_format_field(handler, rear_right_id, "%dC", (int)rear_right);
 }
 
+/*!
+ * \brief Helper to determine the color for a tire temperature value based on thresholds.
+ *
+ * \param temp Tire temperature in °C.
+ *
+ * \return ARGB color code corresponding to the temperature thresholds:
+ */
+EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t temp) {
+    if (temp <= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_LOW) {
+        return DASHBOARD_COLOR_COLD_TIRES;
+    }
+    if (temp >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_ERROR) {
+        return DASHBOARD_COLOR_ERROR;
+    }
+    if (temp >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_WARNING) {
+        return DASHBOARD_COLOR_WARNING;
+    }
+    return DASHBOARD_COLOR_TERTIARY;
+}
+
+/*!
+ * \brief Helper to determine the color for a motor temperature value based on thresholds.
+ *
+ * \param temp Motor temperature in °C.
+ *
+ * \return ARGB color code corresponding to the temperature thresholds:
+ */
+EAGLETRT_STATIC uint32_t prv_dashboard_api_motor_temp_color(int16_t temp) {
+    if (temp >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_ERROR) {
+        return DASHBOARD_COLOR_ERROR;
+    }
+    if (temp >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_WARNING) {
+        return DASHBOARD_COLOR_WARNING;
+    }
+    return DASHBOARD_COLOR_TERTIARY;
+}
+
 enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
     prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, front_left, front_right, rear_left, rear_right);
+
+    handler->labels[DASHBOARD_FIELD_TRS_FL].color.argb = prv_dashboard_api_tire_temp_color(front_left);
+    handler->labels[DASHBOARD_FIELD_TRS_FR].color.argb = prv_dashboard_api_tire_temp_color(front_right);
+    handler->labels[DASHBOARD_FIELD_TRS_RL].color.argb = prv_dashboard_api_tire_temp_color(rear_left);
+    handler->labels[DASHBOARD_FIELD_TRS_RR].color.argb = prv_dashboard_api_tire_temp_color(rear_right);
+
     return DASHBOARD_RC_OK;
 }
 
@@ -279,5 +343,11 @@ enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *
         return DASHBOARD_RC_NULL_POINTER;
     }
     prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, front_left, front_right, rear_left, rear_right);
+
+    handler->labels[DASHBOARD_FIELD_MTR_FL].color.argb = prv_dashboard_api_motor_temp_color(front_left);
+    handler->labels[DASHBOARD_FIELD_MTR_FR].color.argb = prv_dashboard_api_motor_temp_color(front_right);
+    handler->labels[DASHBOARD_FIELD_MTR_RL].color.argb = prv_dashboard_api_motor_temp_color(rear_left);
+    handler->labels[DASHBOARD_FIELD_MTR_RR].color.argb = prv_dashboard_api_motor_temp_color(rear_right);
+
     return DASHBOARD_RC_OK;
 }

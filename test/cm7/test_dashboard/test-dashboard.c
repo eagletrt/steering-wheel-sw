@@ -152,17 +152,20 @@ void test_dashboard_set_slip_null_handler(void) {
 void test_dashboard_set_soc_formats_percent(void) {
     dashboard_api_set_soc(&dashboard_handler, 69U);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "SoC must format as '<percent>%'");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated, "SoC box must be flagged updated");
 }
 
 void test_dashboard_set_soc_clamps_above_100(void) {
     dashboard_api_set_soc(&dashboard_handler, 200U);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("100%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "Values above 100 must clamp to '100%%'");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
 }
 
 void test_dashboard_set_soc_zero(void) {
     dashboard_api_set_soc(&dashboard_handler, 0U);
     TEST_ASSERT_EQUAL_STRING("0%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC]);
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to red");
 }
 
 /*! \} */
@@ -175,17 +178,20 @@ void test_dashboard_set_soc_zero(void) {
 void test_dashboard_set_hv_temp_positive(void) {
     dashboard_api_set_hv_temp(&dashboard_handler, 104);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("104C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must format as '<value>C'");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "Motor color must be set to red");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_TEMP].updated, "HV temp box must be flagged updated");
 }
 
 void test_dashboard_set_hv_temp_negative(void) {
     dashboard_api_set_hv_temp(&dashboard_handler, -5);
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "Motor color must be set to white");
     TEST_ASSERT_EQUAL_STRING("-5C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP]);
 }
 
 void test_dashboard_set_inv_temp_formats_value(void) {
     dashboard_api_set_inv_temp(&dashboard_handler, 22);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("INV 22C", dashboard_handler.text[DASHBOARD_FIELD_INV], "Inverter temp must format as 'INV <value>C'");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_INV].color.argb, "Motor color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_INV].updated, "INV box must be flagged updated");
 }
 
@@ -231,16 +237,24 @@ void test_dashboard_set_tire_temps_updates_all_four(void) {
     TEST_ASSERT_EQUAL_STRING_MESSAGE("60C", dashboard_handler.text[DASHBOARD_FIELD_TRS_FR], "Front-right tire reads the FR argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("10C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RL], "Rear-left tire reads the RL argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("40C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RR], "Rear-right tire reads the RR argument");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FL].color.argb, "Front left tyre color must be set to yellow");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FR].color.argb, "Front right tyre color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_COLD_TIRES, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RL].color.argb, "Rear left tyre color must be set to cyan");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RR].color.argb, "Rear right tyre color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TRS_FL].updated, "FL tire box must be flagged updated");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TRS_RR].updated, "RR tire box must be flagged updated");
 }
 
 void test_dashboard_set_motor_temps_updates_all_four(void) {
-    dashboard_api_set_motor_temps(&dashboard_handler, 22, 23, 24, 25);
+    dashboard_api_set_motor_temps(&dashboard_handler, 22, 23, 81, 105);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FL], "Front-left motor reads the FL argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("23C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FR], "Front-right motor reads the FR argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("24C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RL], "Rear-left motor reads the RL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("25C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RR], "Rear-right motor reads the RR argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("81C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RL], "Rear-left motor reads the RL argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("105C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RR], "Rear-right motor reads the RR argument");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FL].color.argb, "Front left motor color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FR].color.argb, "Front left motor color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_MTR_RL].color.argb, "Front left motor color must be set to yellow");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_MTR_RR].color.argb, "Front left motor color must be set to red");
 }
 
 /*! \} */

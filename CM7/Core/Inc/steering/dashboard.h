@@ -20,6 +20,32 @@
 #include "box.h"
 #include "label.h"
 
+#define DASHBOARD_COLOR_PRIMARY (0xFF1E1E1EU)    /* dark gray */
+#define DASHBOARD_COLOR_TERTIARY (0xFFFFFFFFU)   /* white */
+#define DASHBOARD_COLOR_ALL_OK (0xFF39D103U)     /* bright green */
+#define DASHBOARD_COLOR_WARNING (0xFFFFFA14U)    /* yellow */
+#define DASHBOARD_COLOR_ERROR (0xFFFF0000U)      /* red */
+#define DASHBOARD_COLOR_FAST_LAP (0xFFFF00E6U)   /* magenta */
+#define DASHBOARD_COLOR_COLD_TIRES (0xFF00CAE9U) /* cyan */
+
+#define DASHBOARD_THRESHOLD_HW_SOC_WARNING (30U)    /* % and below is a warning */
+#define DASHBOARD_THRESHOLD_HW_SOC_ERROR (15U)      /* % and below is an error */
+#define DASHBOARD_THRESHOLD_HV_TEMP_WARNING (45U)   /* °C and above is a warning */
+#define DASHBOARD_THRESHOLD_HV_TEMP_ERROR (50U)     /* °C and above is an error */
+#define DASHBOARD_THRESHOLD_INV_TEMP_WARNING (60U)  /* °C and above is a warning */
+#define DASHBOARD_THRESHOLD_INV_TEMP_ERROR (70U)    /* °C and above is an error */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_LOW (30U)     /* °C and below is low */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_WARNING (80U) /* °C and above is high */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_ERROR (100U)  /* °C and above is an error */
+#define DASHBOARD_THRESHOLD_MTR_TEMP_WARNING (80U)  /* °C and above is high */
+#define DASHBOARD_THRESHOLD_MTR_TEMP_ERROR (100U)   /* °C and above is an error */
+
+#define DASHBOARD_FONT_SIZE_HEADER (22U)
+#define DASHBOARD_FONT_SIZE_VALUE (28U)
+#define DASHBOARD_FONT_SIZE_STATE (36U)
+#define DASHBOARD_FONT_SIZE_DELTA (40U)
+#define DASHBOARD_FONT_SIZE_SOC (88U)
+
 /*!
  * \brief Return codes for dashboard operations.
  */
