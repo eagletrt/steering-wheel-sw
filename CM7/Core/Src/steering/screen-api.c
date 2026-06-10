@@ -43,6 +43,21 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
     return SCREEN_RC_OK;
 }
 
+/*!
+ * \brief Flag every box of an interface as updated.
+ *
+ * \details The raster clears \c updated after rendering. When we swap from
+ *     one interface to another the new boxes carry whatever flags were left
+ *     behind by the previous render (usually all false), so without this
+ *     pass the freshly-mounted interface would not be redrawn until each
+ *     individual box is touched again.
+ */
+EAGLETRT_STATIC void prv_screen_api_dirty_all(struct Box *boxes, uint16_t count) {
+    for (uint16_t i = 0U; i < count; i++) {
+        boxes[i].updated = true;
+    }
+}
+
 enum ScreenReturnCode screen_api_update(uint32_t tick) {
     screen_handler.last_event_tick = tick;
 
@@ -52,11 +67,13 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
         if (raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT) != RASTER_RC_OK) {
             return SCREEN_RC_ERROR;
         }
+        prv_screen_api_dirty_all(screen_handler.popup.boxes, POPUP_BOX_COUNT);
         screen_handler.popup_visible = true;
     } else if (!popup_active && screen_handler.popup_visible) {
         if (raster_api_set_interface(&screen_handler.raster, screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT) != RASTER_RC_OK) {
             return SCREEN_RC_ERROR;
         }
+        prv_screen_api_dirty_all(screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT);
         screen_handler.popup_visible = false;
     }
 

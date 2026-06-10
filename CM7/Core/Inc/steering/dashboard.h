@@ -21,7 +21,7 @@
 #include "label.h"
 
 #define DASHBOARD_COLOR_PRIMARY (0xFF1E1E1EU)    /* dark gray */
-#define DASHBOARD_COLOR_TERTIARY (0xFFFFFFFFU)   /* white */
+#define DASHBOARD_COLOR_SECONDARY (0xFFFFFFFFU)  /* white */
 #define DASHBOARD_COLOR_ALL_OK (0xFF39D103U)     /* bright green */
 #define DASHBOARD_COLOR_WARNING (0xFFFFFA14U)    /* yellow */
 #define DASHBOARD_COLOR_ERROR (0xFFFF0000U)      /* red */

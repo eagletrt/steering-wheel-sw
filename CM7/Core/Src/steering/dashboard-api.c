@@ -41,32 +41,32 @@ struct DashboardFieldLayout {
 
 EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_layout[DASHBOARD_FIELD_COUNT] = {
     /* left strip */
-    [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "SCENARIO" },
-    [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "RGN --"   },
-    [DASHBOARD_FIELD_TORQUE]          = { {   0, 180, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "TQ --"    },
-    [DASHBOARD_FIELD_POWER]           = { {   0, 280, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "POW --"   },
-    [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "SLIP --"  },
+    [DASHBOARD_FIELD_SCENARIO_HEADER] = { {   0,   0, 220,  80 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_SECONDARY,    "SCENARIO" },
+    [DASHBOARD_FIELD_REGEN]           = { {   0,  80, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "RGN --"   },
+    [DASHBOARD_FIELD_TORQUE]          = { {   0, 180, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "TQ --"    },
+    [DASHBOARD_FIELD_POWER]           = { {   0, 280, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "POW --"   },
+    [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "SLIP --"  },
 
     /* center strip */
-    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TERTIARY,    "----"     },
-    [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "HV"       },
-    [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_TERTIARY,    "--%"      },
-    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_WARNING,     "--C"      },
-    [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "INV --C"  },
+    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_SECONDARY,    "----"     },
+    [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_SECONDARY,    "HV"       },
+    [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_SECONDARY,    "--%"      },
+    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "INV --C"  },
 
     /* right strip */
-    [DASHBOARD_FIELD_LAP]             = { { 520,   0, 280,  80 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "LAP -/-"  },
-    [DASHBOARD_FIELD_LAP_DELTA]       = { { 520,  80, 280,  60 }, DASHBOARD_FONT_SIZE_DELTA,  DASHBOARD_COLOR_TERTIARY,    "0.000"    },
-    [DASHBOARD_FIELD_TRS_HEADER]      = { { 520, 140, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "TRS"      },
-    [DASHBOARD_FIELD_TRS_FL]          = { { 520, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_TRS_FR]          = { { 660, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_TRS_RL]          = { { 520, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_TRS_RR]          = { { 660, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_MTR_HEADER]      = { { 520, 310, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "MTR"      },
-    [DASHBOARD_FIELD_MTR_FL]          = { { 520, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_MTR_FR]          = { { 660, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_MTR_RL]          = { { 520, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
-    [DASHBOARD_FIELD_MTR_RR]          = { { 660, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
+    [DASHBOARD_FIELD_LAP]             = { { 520,   0, 280,  80 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "LAP -/-"  },
+    [DASHBOARD_FIELD_LAP_DELTA]       = { { 520,  80, 280,  60 }, DASHBOARD_FONT_SIZE_DELTA,  DASHBOARD_COLOR_SECONDARY,    "0.000"    },
+    [DASHBOARD_FIELD_TRS_HEADER]      = { { 520, 140, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_SECONDARY,    "TRS"      },
+    [DASHBOARD_FIELD_TRS_FL]          = { { 520, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_FR]          = { { 660, 180, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RL]          = { { 520, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_TRS_RR]          = { { 660, 245, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_HEADER]      = { { 520, 310, 280,  40 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_SECONDARY,    "MTR"      },
+    [DASHBOARD_FIELD_MTR_FL]          = { { 520, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_FR]          = { { 660, 350, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RL]          = { { 520, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
+    [DASHBOARD_FIELD_MTR_RR]          = { { 660, 415, 140,  65 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_SECONDARY,    "--C"      },
 };
 // clang-format on
 
@@ -192,7 +192,7 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     } else if (percent <= DASHBOARD_THRESHOLD_HW_SOC_WARNING) {
         handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_SECONDARY;
     }
 
     return DASHBOARD_RC_OK;
@@ -209,7 +209,7 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_WARNING) {
         handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_SECONDARY;
     }
 
     return DASHBOARD_RC_OK;
@@ -226,7 +226,7 @@ enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *han
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_WARNING) {
         handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_SECONDARY;
     }
 
     return DASHBOARD_RC_OK;
@@ -298,7 +298,7 @@ EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t temp) {
     if (temp >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_WARNING) {
         return DASHBOARD_COLOR_WARNING;
     }
-    return DASHBOARD_COLOR_TERTIARY;
+    return DASHBOARD_COLOR_SECONDARY;
 }
 
 /*!
@@ -315,7 +315,7 @@ EAGLETRT_STATIC uint32_t prv_dashboard_api_motor_temp_color(int16_t temp) {
     if (temp >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_WARNING) {
         return DASHBOARD_COLOR_WARNING;
     }
-    return DASHBOARD_COLOR_TERTIARY;
+    return DASHBOARD_COLOR_SECONDARY;
 }
 
 enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
