@@ -187,15 +187,13 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     percent = EAGLETRT_API_CLAMP(percent, 0U, 100U);
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%u%%", (unsigned)percent);
 
-    uint32_t color;
     if (percent <= DASHBOARD_THRESHOLD_HW_SOC_ERROR) {
-        color = DASHBOARD_COLOR_ERROR;
+        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_ERROR;
     } else if (percent <= DASHBOARD_THRESHOLD_HW_SOC_WARNING) {
-        color = DASHBOARD_COLOR_WARNING;
+        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        color = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_TERTIARY;
     }
-    handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = color;
 
     return DASHBOARD_RC_OK;
 }
@@ -206,15 +204,13 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
     }
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMP, "%dC", (int)celsius);
 
-    uint32_t color;
     if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_ERROR) {
-        color = DASHBOARD_COLOR_ERROR;
+        handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_ERROR;
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_WARNING) {
-        color = DASHBOARD_COLOR_WARNING;
+        handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        color = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_TERTIARY;
     }
-    handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = color;
 
     return DASHBOARD_RC_OK;
 }
@@ -225,15 +221,13 @@ enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *han
     }
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INV, "INV %dC", (int)celsius);
 
-    uint32_t color;
     if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_ERROR) {
-        color = DASHBOARD_COLOR_ERROR;
+        handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_ERROR;
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_WARNING) {
-        color = DASHBOARD_COLOR_WARNING;
+        handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
-        color = DASHBOARD_COLOR_TERTIARY;
+        handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_TERTIARY;
     }
-    handler->labels[DASHBOARD_FIELD_INV].color.argb = color;
 
     return DASHBOARD_RC_OK;
 }
