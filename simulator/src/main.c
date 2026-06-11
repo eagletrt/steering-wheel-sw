@@ -34,10 +34,17 @@
 #include "ipc-queue-api.h"
 #include "ipc-ui-data-api.h"
 
+#include "cm4-fsm.h"
+
 #include "tigr.h"
 
-#define SIMULATOR_WIDTH  (800)
-#define SIMULATOR_HEIGHT (480)
+#define SIMULATOR_DASHBOARD_WIDTH (800)
+#define SIMULATOR_DASHBOARD_HEIGHT (480)
+#define SIMULATOR_LED_STRIP_HEIGHT (60)
+#define SIMULATOR_WIDTH (SIMULATOR_DASHBOARD_WIDTH)
+#define SIMULATOR_HEIGHT (SIMULATOR_DASHBOARD_HEIGHT + SIMULATOR_LED_STRIP_HEIGHT)
+
+extern struct LedsHandler leds_handler;
 
 static Tigr *window;
 
@@ -216,25 +223,90 @@ static void simulator_handle_keyboard(uint32_t tick) {
 }
 
 /*!
- * \brief Run CM4's init sequence the same way CM4/post-api would on hardware.
+ * \brief Position and identity of each LED in the simulator strip.
  *
- * \retval true if all CM4 APIs initialized successfully
- * \retval false if any CM4 API failed to initialize
+ * \details Laid out left-to-right exactly the way the LEDs sit on the
+ *     steering wheel: outer-left pair, the five centre LEDs, the outer-right
+ *     pair. The x coordinates fit the 800px-wide window with comfortable
+ *     spacing; the y coordinate lives in the strip below the dashboard.
  */
-static bool simulator_init_cm4(void) {
-    if (parameters_api_init(simulator_on_parameter_change) != PARAMETERS_RC_OK) {
-        fprintf(stderr, "CM4 parameters init failed\n");
-        return false;
+struct SimulatorLedSlot {
+    enum LedsIndex index;
+    uint16_t x;
+};
+
+static const struct SimulatorLedSlot simulator_led_slots[LEDS_INDEX_COUNT] = {
+    { LEDS_INDEX_TOP_LEFT_1, 60U },
+    { LEDS_INDEX_TOP_LEFT_0, 160U },
+    { LEDS_INDEX_CENTER_0, 260U },
+    { LEDS_INDEX_CENTER_1, 330U },
+    { LEDS_INDEX_CENTER_2, 400U },
+    { LEDS_INDEX_CENTER_3, 470U },
+    { LEDS_INDEX_CENTER_4, 540U },
+    { LEDS_INDEX_TOP_RIGHT_0, 640U },
+    { LEDS_INDEX_TOP_RIGHT_1, 740U },
+};
+
+#define SIMULATOR_LED_RADIUS (18)
+#define SIMULATOR_LED_CENTER_Y (SIMULATOR_DASHBOARD_HEIGHT + (SIMULATOR_LED_STRIP_HEIGHT / 2))
+#define SIMULATOR_LED_STRIP_COLOR_R (10)
+#define SIMULATOR_LED_STRIP_COLOR_G (10)
+#define SIMULATOR_LED_STRIP_COLOR_B (10)
+
+/*!
+ * \brief Paint a uniform dark background under the LED strip.
+ */
+static void simulator_clear_led_strip(void) {
+    const TPixel bg = {
+        .r = SIMULATOR_LED_STRIP_COLOR_R,
+        .g = SIMULATOR_LED_STRIP_COLOR_G,
+        .b = SIMULATOR_LED_STRIP_COLOR_B,
+        .a = 255,
+    };
+    for (int y = SIMULATOR_DASHBOARD_HEIGHT; y < SIMULATOR_HEIGHT; y++) {
+        for (int x = 0; x < SIMULATOR_WIDTH; x++) {
+            window->pix[(y * window->w) + x] = bg;
+        }
     }
-    if (inputs_api_init(parameters_api_handle_button, NULL, parameters_api_handle_button_release, parameters_api_handle_knob) != INPUTS_RC_OK) {
-        fprintf(stderr, "CM4 inputs init failed\n");
-        return false;
+}
+
+/*!
+ * \brief Render each LED as a filled circle scaled by the global brightness.
+ */
+static void simulator_draw_led_strip(void) {
+    simulator_clear_led_strip();
+
+    float brightness = leds_handler.brightness;
+    if (brightness < 0.0f)
+        brightness = 0.0f;
+    if (brightness > 1.0f)
+        brightness = 1.0f;
+
+    for (size_t i = 0; i < (sizeof(simulator_led_slots) / sizeof(simulator_led_slots[0])); i++) {
+        const struct SimulatorLedSlot slot = simulator_led_slots[i];
+        const struct LedColor color = leds_handler.colors[slot.index];
+        const TPixel pixel = {
+            .r = (uint8_t)((float)color.r * brightness),
+            .g = (uint8_t)((float)color.g * brightness),
+            .b = (uint8_t)((float)color.b * brightness),
+            .a = 255,
+        };
+        const int center_x = (int)slot.x;
+        const int center_y = SIMULATOR_LED_CENTER_Y;
+        for (int dy = -SIMULATOR_LED_RADIUS; dy <= SIMULATOR_LED_RADIUS; dy++) {
+            for (int dx = -SIMULATOR_LED_RADIUS; dx <= SIMULATOR_LED_RADIUS; dx++) {
+                if ((dx * dx + dy * dy) > (SIMULATOR_LED_RADIUS * SIMULATOR_LED_RADIUS)) {
+                    continue;
+                }
+                const int px = center_x + dx;
+                const int py = center_y + dy;
+                if (px < 0 || px >= window->w || py < 0 || py >= window->h) {
+                    continue;
+                }
+                window->pix[(py * window->w) + px] = pixel;
+            }
+        }
     }
-    if (leds_api_init(simulator_leds_transmit) != LEDS_RC_OK) {
-        fprintf(stderr, "CM4 leds init failed\n");
-        return false;
-    }
-    return true;
 }
 
 /*!
@@ -254,39 +326,55 @@ static void simulator_seed_ui_snapshot(void) {
 int main(void) {
     window = tigrWindow(SIMULATOR_WIDTH, SIMULATOR_HEIGHT, "Steering wheel simulator", 0);
 
-    fsm_state_t state = FSM_STATE_INIT;
-    struct PostInitData post_init_data = {
+    fsm_state_t cm7_state = FSM_STATE_INIT;
+    struct PostInitData cm7_post = {
         .draw_rectangle = simulator_draw_rectangle,
     };
-    state = fsm_run_state(state, &post_init_data);
-    if (state == FSM_STATE_ERROR) {
+    cm7_state = fsm_run_state(cm7_state, &cm7_post);
+    if (cm7_state == FSM_STATE_ERROR) {
         fprintf(stderr, "CM7 init failed\n");
         tigrFree(window);
         return 1;
     }
 
-    if (!simulator_init_cm4()) {
+    fsm_state_t cm4_state = FSM_STATE_INIT;
+    struct CM4PostInitData cm4_post = {
+        .leds_transmit = simulator_leds_transmit,
+        .parameters_on_change = simulator_on_parameter_change,
+    };
+    cm4_state = cm4_fsm_run_state(cm4_state, &cm4_post);
+    if (cm4_state == FSM_STATE_ERROR) {
+        fprintf(stderr, "CM4 init failed\n");
         tigrFree(window);
         return 1;
     }
+
     simulator_seed_ui_snapshot();
 
     struct FsmData fsm_data;
 
     while (!tigrClosed(window)) {
         const uint32_t tick = simulator_tick_ms();
+        fsm_data.tick = tick;
 
         simulator_handle_keyboard(tick);
-        (void)inputs_api_poll_for_long_press(tick);
+
+        /* CM4 idle: poll long-press + push LED buffer (no-op transmit). */
+        cm4_state = cm4_fsm_run_state(cm4_state, &fsm_data);
+        if (cm4_state == FSM_STATE_ERROR) {
+            fprintf(stderr, "CM4 FSM entered ERROR state\n");
+            break;
+        }
 
         ipc_queue_api_read_and_process_all(input_events_api_handle_event);
 
-        fsm_data.tick = tick;
-        state = fsm_run_state(state, &fsm_data);
-        if (state == FSM_STATE_ERROR) {
-            fprintf(stderr, "FSM entered ERROR state\n");
+        cm7_state = fsm_run_state(cm7_state, &fsm_data);
+        if (cm7_state == FSM_STATE_ERROR) {
+            fprintf(stderr, "CM7 FSM entered ERROR state\n");
             break;
         }
+
+        simulator_draw_led_strip();
         tigrUpdate(window);
     }
 
