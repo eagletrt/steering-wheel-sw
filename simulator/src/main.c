@@ -35,8 +35,10 @@
 #include "ipc-ui-data-api.h"
 
 #include "cm4-fsm.h"
+#include "simulator-leds.h"
 
 #include "tigr.h"
+#include "eagletrt.h"
 
 #define SIMULATOR_DASHBOARD_WIDTH (800)
 #define SIMULATOR_DASHBOARD_HEIGHT (480)
@@ -44,12 +46,10 @@
 #define SIMULATOR_WIDTH (SIMULATOR_DASHBOARD_WIDTH)
 #define SIMULATOR_HEIGHT (SIMULATOR_DASHBOARD_HEIGHT + SIMULATOR_LED_STRIP_HEIGHT)
 
-extern struct LedsHandler leds_handler;
+EAGLETRT_STATIC Tigr *window;
 
-static Tigr *window;
-
-static int16_t simulator_knob_positions[INPUTS_SHARED_KNOB_ID_COUNT];
-static bool simulator_paddle_held[INPUTS_SHARED_BUTTON_ID_COUNT];
+EAGLETRT_STATIC int16_t simulator_knob_positions[INPUTS_SHARED_KNOB_ID_COUNT];
+EAGLETRT_STATIC bool simulator_paddle_held[INPUTS_SHARED_BUTTON_ID_COUNT];
 
 /*!
  * \brief Raster rectangle callback backed by the Tigr framebuffer.
@@ -67,7 +67,7 @@ static bool simulator_paddle_held[INPUTS_SHARED_BUTTON_ID_COUNT];
  * \retval RASTER_RC_OK if the rectangle was drawn successfully
  * \retval RASTER_RC_ERROR if an error occurred (e.g. invalid parameters)
  */
-static enum RasterReturnCode simulator_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+EAGLETRT_STATIC enum RasterReturnCode simulator_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
     if (x >= SIMULATOR_WIDTH || y >= SIMULATOR_HEIGHT) {
         return RASTER_RC_OK;
     }
@@ -87,14 +87,15 @@ static enum RasterReturnCode simulator_draw_rectangle(uint16_t x, uint16_t y, ui
 }
 
 /*!
- * \brief No-op WS2812B transmit callback for the simulator.
+ * \brief WS2812B "transmit" for the simulator.
  *
  * \param buffer Array of duty cycles for each LED in the strip.
  * \param length Number of duty cycles in \c buffer (length of the buffer).
+ *
+ * \retval LEDS_RC_OK always, since the simulator does not have a real LED strip to fail on.
  */
-static enum LedsReturnCode simulator_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t length) {
-    (void)buffer;
-    (void)length;
+EAGLETRT_STATIC enum LedsReturnCode simulator_leds_transmit(const enum WS2812BDutyCycle *buffer, uint16_t length) {
+    simulator_leds_decode(buffer, length);
     return LEDS_RC_OK;
 }
 
@@ -112,7 +113,7 @@ static enum LedsReturnCode simulator_leds_transmit(const enum WS2812BDutyCycle *
  * \retval true if the parameter change was handled successfully (e.g. valid parameter_id)
  * \retval false if the parameter change was invalid and should be rejected
  */
-static bool simulator_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
+EAGLETRT_STATIC bool simulator_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (!parameters_api_is_shared(parameter_id)) {
         return true;
     }
@@ -132,7 +133,7 @@ static bool simulator_on_parameter_change(enum InputsSharedParameterID parameter
  *
  * \returns Current tick in milliseconds.
  */
-static uint32_t simulator_tick_ms(void) {
+EAGLETRT_STATIC uint32_t simulator_tick_ms(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint32_t)((uint64_t)ts.tv_sec * 1000U + (uint64_t)ts.tv_nsec / 1000000U);
@@ -148,7 +149,7 @@ static uint32_t simulator_tick_ms(void) {
  * \param button_id ID of the button to click.
  * \param tick Current tick in milliseconds, used for both press and release events.
  */
-static void simulator_click_button(enum InputsSharedButtonID button_id, uint32_t tick) {
+EAGLETRT_STATIC void simulator_click_button(enum InputsSharedButtonID button_id, uint32_t tick) {
     (void)inputs_api_update_button(button_id, true, tick);
     (void)inputs_api_update_button(button_id, false, tick);
 }
@@ -164,7 +165,7 @@ static void simulator_click_button(enum InputsSharedButtonID button_id, uint32_t
  * \param knob_id ID of the knob to bump.
  * \param delta Amount to change the knob position by (positive or negative).
  */
-static void simulator_bump_knob(enum InputsSharedKnobID knob_id, int16_t delta) {
+EAGLETRT_STATIC void simulator_bump_knob(enum InputsSharedKnobID knob_id, int16_t delta) {
     simulator_knob_positions[knob_id] = (int16_t)(simulator_knob_positions[knob_id] + delta);
     (void)inputs_api_update_knob(knob_id, simulator_knob_positions[knob_id]);
 }
@@ -180,7 +181,7 @@ static void simulator_bump_knob(enum InputsSharedKnobID knob_id, int16_t delta) 
  * \param held Whether the corresponding key is currently held down.
  * \param tick Current tick in milliseconds, used for the button event.
  */
-static void simulator_track_paddle(enum InputsSharedButtonID button_id, bool held, uint32_t tick) {
+EAGLETRT_STATIC void simulator_track_paddle(enum InputsSharedButtonID button_id, bool held, uint32_t tick) {
     if (held == simulator_paddle_held[button_id]) {
         return;
     }
@@ -193,7 +194,7 @@ static void simulator_track_paddle(enum InputsSharedButtonID button_id, bool hel
  *
  * \param tick Current tick in milliseconds, used for button events and long-press tracking.
  */
-static void simulator_handle_keyboard(uint32_t tick) {
+EAGLETRT_STATIC void simulator_handle_keyboard(uint32_t tick) {
     if (tigrKeyDown(window, 'Q')) {
         simulator_bump_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, -1);
     }
@@ -235,7 +236,7 @@ struct SimulatorLedSlot {
     uint16_t x;
 };
 
-static const struct SimulatorLedSlot simulator_led_slots[LEDS_INDEX_COUNT] = {
+EAGLETRT_STATIC const struct SimulatorLedSlot simulator_led_slots[LEDS_INDEX_COUNT] = {
     { LEDS_INDEX_TOP_LEFT_1, 60U },
     { LEDS_INDEX_TOP_LEFT_0, 160U },
     { LEDS_INDEX_CENTER_0, 260U },
@@ -256,7 +257,7 @@ static const struct SimulatorLedSlot simulator_led_slots[LEDS_INDEX_COUNT] = {
 /*!
  * \brief Paint a uniform dark background under the LED strip.
  */
-static void simulator_clear_led_strip(void) {
+EAGLETRT_STATIC void simulator_clear_led_strip(void) {
     const TPixel bg = {
         .r = SIMULATOR_LED_STRIP_COLOR_R,
         .g = SIMULATOR_LED_STRIP_COLOR_G,
@@ -271,24 +272,20 @@ static void simulator_clear_led_strip(void) {
 }
 
 /*!
- * \brief Render each LED as a filled circle scaled by the global brightness.
+ * \brief Render each LED as a filled circle.
  */
-static void simulator_draw_led_strip(void) {
+EAGLETRT_STATIC void simulator_draw_led_strip(void) {
     simulator_clear_led_strip();
 
-    float brightness = leds_handler.brightness;
-    if (brightness < 0.0f)
-        brightness = 0.0f;
-    if (brightness > 1.0f)
-        brightness = 1.0f;
+    const struct LedColor *colors = simulator_leds_get_colors();
 
     for (size_t i = 0; i < (sizeof(simulator_led_slots) / sizeof(simulator_led_slots[0])); i++) {
         const struct SimulatorLedSlot slot = simulator_led_slots[i];
-        const struct LedColor color = leds_handler.colors[slot.index];
+        const struct LedColor color = colors[slot.index];
         const TPixel pixel = {
-            .r = (uint8_t)((float)color.r * brightness),
-            .g = (uint8_t)((float)color.g * brightness),
-            .b = (uint8_t)((float)color.b * brightness),
+            .r = color.r,
+            .g = color.g,
+            .b = color.b,
             .a = 255,
         };
         const int center_x = (int)slot.x;
@@ -313,7 +310,7 @@ static void simulator_draw_led_strip(void) {
  * \brief Seed a few telemetry fields so the dashboard does not show all dashes
  *     when the window first appears.
  */
-static void simulator_seed_ui_snapshot(void) {
+EAGLETRT_STATIC void simulator_seed_ui_snapshot(void) {
     struct IPCUIData *ui = ipc_ui_data_api_get();
     ui->vehicle_state = IPC_UI_VEHICLE_STATE_IDLE;
     ui->soc = 80U;
