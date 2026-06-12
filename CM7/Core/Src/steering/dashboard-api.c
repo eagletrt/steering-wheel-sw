@@ -18,6 +18,7 @@
 #include "label-api.h"
 #include "raster-fonts.h"
 #include "eagletrt-api.h"
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,7 +26,7 @@
 /* ----- layout table -----
  *
  * The 800x480 surface is split into three vertical strips:
- *   left   ( 0..220) — scenario presets and toggles
+ *   left   (  0..220) — scenario presets and toggles
  *   center (220..520) — vehicle state and HV/INV telemetry
  *   right  (520..800) — lap counter and tire/motor temperatures
  */
@@ -48,10 +49,10 @@ EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_layout[DASHBOARD
     [DASHBOARD_FIELD_SLIP]            = { {   0, 380, 220, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "SLIP --"  },
 
     /* center strip */
-    [DASHBOARD_FIELD_STATE]           = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TERTIARY,    "----"     },
+    [DASHBOARD_FIELD_CAR_STATE]       = { { 220,   0, 300,  80 }, DASHBOARD_FONT_SIZE_STATE,  DASHBOARD_COLOR_TERTIARY,    "----"     },
     [DASHBOARD_FIELD_HV_HEADER]       = { { 220,  80, 300,  60 }, DASHBOARD_FONT_SIZE_HEADER, DASHBOARD_COLOR_TERTIARY,    "HV"       },
     [DASHBOARD_FIELD_HV_SOC]          = { { 220, 140, 300, 180 }, DASHBOARD_FONT_SIZE_SOC,    DASHBOARD_COLOR_TERTIARY,    "--%"      },
-    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_WARNING,     "--C"      },
+    [DASHBOARD_FIELD_HV_TEMP]         = { { 220, 320, 300,  60 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "--C"      },
     [DASHBOARD_FIELD_INV]             = { { 220, 380, 300, 100 }, DASHBOARD_FONT_SIZE_VALUE,  DASHBOARD_COLOR_TERTIARY,    "INV --C"  },
 
     /* right strip */
@@ -140,11 +141,11 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_state(struct DashboardHandler *handler, const char *text) {
+enum DashboardReturnCode dashboard_api_set_car_state(struct DashboardHandler *handler, const char *text) {
     if (handler == NULL || text == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_STATE, "%s", text);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_CAR_STATE, "%s", text);
     return DASHBOARD_RC_OK;
 }
 
@@ -187,9 +188,9 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     percent = EAGLETRT_API_CLAMP(percent, 0U, 100U);
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%u%%", (unsigned)percent);
 
-    if (percent <= DASHBOARD_THRESHOLD_HW_SOC_ERROR) {
+    if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR) {
         handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_ERROR;
-    } else if (percent <= DASHBOARD_THRESHOLD_HW_SOC_WARNING) {
+    } else if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING) {
         handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
         handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_TERTIARY;
@@ -198,15 +199,15 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *handler, int16_t celsius) {
+enum DashboardReturnCode dashboard_api_set_hv_temperature(struct DashboardHandler *handler, int16_t celsius) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMP, "%dC", (int)celsius);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMP, "%" PRId16 "C", celsius);
 
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_ERROR) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_ERROR) {
         handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_ERROR;
-    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_WARNING) {
+    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_WARNING) {
         handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
         handler->labels[DASHBOARD_FIELD_HV_TEMP].color.argb = DASHBOARD_COLOR_TERTIARY;
@@ -215,15 +216,15 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *handler, int16_t celsius) {
+enum DashboardReturnCode dashboard_api_set_inverter_temperature(struct DashboardHandler *handler, int16_t celsius) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INV, "INV %dC", (int)celsius);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INV, "INV %" PRId16 "C", celsius);
 
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_ERROR) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_CELSIUS_ERROR) {
         handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_ERROR;
-    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_WARNING) {
+    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INV_TEMP_CELSIUS_WARNING) {
         handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_WARNING;
     } else {
         handler->labels[DASHBOARD_FIELD_INV].color.argb = DASHBOARD_COLOR_TERTIARY;
@@ -246,9 +247,9 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
     }
     const char sign = (delta_ms < 0) ? '-' : '+';
     int32_t magnitude = (delta_ms < 0) ? -delta_ms : delta_ms;
-    int32_t whole = magnitude / 1000;
-    int32_t millis = magnitude % 1000;
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%c%ld.%03ld", sign, (long)whole, (long)millis);
+    int32_t integer = magnitude / 1000;
+    int32_t decimal = magnitude % 1000;
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%c%" PRId32 ".%03" PRId32, sign, integer, decimal);
     return DASHBOARD_RC_OK;
 }
 
@@ -265,7 +266,7 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
  * \param[in]     rear_left       Rear-left temperature in °C.
  * \param[in]     rear_right      Rear-right temperature in °C.
  */
-EAGLETRT_STATIC void prv_dashboard_api_set_temp_quad(
+EAGLETRT_STATIC void prv_dashboard_api_set_temperature_quad(
     struct DashboardHandler *handler,
     enum DashboardFieldId front_left_id,
     enum DashboardFieldId front_right_id,
@@ -275,10 +276,10 @@ EAGLETRT_STATIC void prv_dashboard_api_set_temp_quad(
     int16_t front_right,
     int16_t rear_left,
     int16_t rear_right) {
-    prv_dashboard_api_format_field(handler, front_left_id, "%dC", (int)front_left);
-    prv_dashboard_api_format_field(handler, front_right_id, "%dC", (int)front_right);
-    prv_dashboard_api_format_field(handler, rear_left_id, "%dC", (int)rear_left);
-    prv_dashboard_api_format_field(handler, rear_right_id, "%dC", (int)rear_right);
+    prv_dashboard_api_format_field(handler, front_left_id, "%" PRId16 "C", front_left);
+    prv_dashboard_api_format_field(handler, front_right_id, "%" PRId16 "C", front_right);
+    prv_dashboard_api_format_field(handler, rear_left_id, "%" PRId16 "C", rear_left);
+    prv_dashboard_api_format_field(handler, rear_right_id, "%" PRId16 "C", rear_right);
 }
 
 /*!
@@ -288,14 +289,14 @@ EAGLETRT_STATIC void prv_dashboard_api_set_temp_quad(
  *
  * \return ARGB color code corresponding to the temperature thresholds:
  */
-EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t temp) {
-    if (temp <= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_LOW) {
+EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t celsius) {
+    if (celsius <= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_LOW) {
         return DASHBOARD_COLOR_COLD_TIRES;
     }
-    if (temp >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_ERROR) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_ERROR) {
         return DASHBOARD_COLOR_ERROR;
     }
-    if (temp >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_WARNING) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_WARNING) {
         return DASHBOARD_COLOR_WARNING;
     }
     return DASHBOARD_COLOR_TERTIARY;
@@ -308,21 +309,21 @@ EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t temp) {
  *
  * \return ARGB color code corresponding to the temperature thresholds:
  */
-EAGLETRT_STATIC uint32_t prv_dashboard_api_motor_temp_color(int16_t temp) {
-    if (temp >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_ERROR) {
+EAGLETRT_STATIC uint32_t prv_dashboard_api_motor_temp_color(int16_t celsius) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_ERROR) {
         return DASHBOARD_COLOR_ERROR;
     }
-    if (temp >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_WARNING) {
+    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_WARNING) {
         return DASHBOARD_COLOR_WARNING;
     }
     return DASHBOARD_COLOR_TERTIARY;
 }
 
-enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+enum DashboardReturnCode dashboard_api_set_tire_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, front_left, front_right, rear_left, rear_right);
+    prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_TRS_FL, DASHBOARD_FIELD_TRS_FR, DASHBOARD_FIELD_TRS_RL, DASHBOARD_FIELD_TRS_RR, front_left, front_right, rear_left, rear_right);
 
     handler->labels[DASHBOARD_FIELD_TRS_FL].color.argb = prv_dashboard_api_tire_temp_color(front_left);
     handler->labels[DASHBOARD_FIELD_TRS_FR].color.argb = prv_dashboard_api_tire_temp_color(front_right);
@@ -332,11 +333,11 @@ enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *h
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+enum DashboardReturnCode dashboard_api_set_motor_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_set_temp_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, front_left, front_right, rear_left, rear_right);
+    prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_MTR_FL, DASHBOARD_FIELD_MTR_FR, DASHBOARD_FIELD_MTR_RL, DASHBOARD_FIELD_MTR_RR, front_left, front_right, rear_left, rear_right);
 
     handler->labels[DASHBOARD_FIELD_MTR_FL].color.argb = prv_dashboard_api_motor_temp_color(front_left);
     handler->labels[DASHBOARD_FIELD_MTR_FR].color.argb = prv_dashboard_api_motor_temp_color(front_right);

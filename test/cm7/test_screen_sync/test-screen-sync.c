@@ -97,28 +97,28 @@ void test_screen_api_sync_state_idle(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_IDLE;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("IDLE", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("IDLE", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_drive(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_DRIVE;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("DRIVE", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("DRIVE", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_error(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_ERROR;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("ERROR", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("ERROR", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_unknown_falls_back(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = 200U; /* out of range */
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("----", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE], "Unknown state must fall back to '----' rather than show garbage");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("----", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE], "Unknown state must fall back to '----' rather than show garbage");
 }
 
 void test_screen_api_sync_pushes_hv_block(void) {
@@ -170,10 +170,13 @@ void test_screen_api_sync_called_twice_keeps_dashboard_clean(void) {
 
     enum ScreenReturnCode rc = screen_api_sync_data(&snapshot);
 
-    TEST_ASSERT_EQUAL_MESSAGE(SCREEN_RC_OK, rc, "Second sync must still succeed");
+    uint8_t updated_after_replay[DASHBOARD_FIELD_COUNT];
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[i].updated, "Replaying the same snapshot must not dirty any box");
+        updated_after_replay[i] = screen_handler.dashboard.boxes[i].updated ? 1U : 0U;
     }
+
+    TEST_ASSERT_EQUAL_MESSAGE(SCREEN_RC_OK, rc, "Second sync must still succeed");
+    TEST_ASSERT_EACH_EQUAL_UINT8_MESSAGE(0U, updated_after_replay, DASHBOARD_FIELD_COUNT, "Replaying the same snapshot must not dirty any box");
 }
 
 void test_screen_api_sync_flags_only_changed_fields(void) {

@@ -20,25 +20,34 @@
 #include "box.h"
 #include "label.h"
 
-#define DASHBOARD_COLOR_PRIMARY (0xFF1E1E1EU)    /* dark gray */
-#define DASHBOARD_COLOR_TERTIARY (0xFFFFFFFFU)   /* white */
-#define DASHBOARD_COLOR_ALL_OK (0xFF39D103U)     /* bright green */
-#define DASHBOARD_COLOR_WARNING (0xFFFFFA14U)    /* yellow */
-#define DASHBOARD_COLOR_ERROR (0xFFFF0000U)      /* red */
-#define DASHBOARD_COLOR_FAST_LAP (0xFFFF00E6U)   /* magenta */
-#define DASHBOARD_COLOR_COLD_TIRES (0xFF00CAE9U) /* cyan */
+#define DASHBOARD_COLOR_DARK_GRAY (0xFF1E1E1EU)
+#define DASHBOARD_COLOR_WHITE (0xFFFFFFFFU)
+#define DASHBOARD_COLOR_GREEN (0xFF39D103U)
+#define DASHBOARD_COLOR_YELLOW (0xFFFFFA14U)
+#define DASHBOARD_COLOR_RED (0xFFFF0000U)
+#define DASHBOARD_COLOR_MAGENTA (0xFFFF00E6U)
+#define DASHBOARD_COLOR_CYAN (0xFF00CAE9U)
 
-#define DASHBOARD_THRESHOLD_HW_SOC_WARNING (30U)    /* % and below is a warning */
-#define DASHBOARD_THRESHOLD_HW_SOC_ERROR (15U)      /* % and below is an error */
-#define DASHBOARD_THRESHOLD_HV_TEMP_WARNING (45U)   /* °C and above is a warning */
-#define DASHBOARD_THRESHOLD_HV_TEMP_ERROR (50U)     /* °C and above is an error */
-#define DASHBOARD_THRESHOLD_INV_TEMP_WARNING (60U)  /* °C and above is a warning */
-#define DASHBOARD_THRESHOLD_INV_TEMP_ERROR (70U)    /* °C and above is an error */
-#define DASHBOARD_THRESHOLD_TIRE_TEMP_LOW (30U)     /* °C and below is low */
-#define DASHBOARD_THRESHOLD_TIRE_TEMP_WARNING (80U) /* °C and above is high */
-#define DASHBOARD_THRESHOLD_TIRE_TEMP_ERROR (100U)  /* °C and above is an error */
-#define DASHBOARD_THRESHOLD_MTR_TEMP_WARNING (80U)  /* °C and above is high */
-#define DASHBOARD_THRESHOLD_MTR_TEMP_ERROR (100U)   /* °C and above is an error */
+#define DASHBOARD_COLOR_PRIMARY (DASHBOARD_COLOR_DARK_GRAY)
+#define DASHBOARD_COLOR_TERTIARY (DASHBOARD_COLOR_WHITE)
+#define DASHBOARD_COLOR_ALL_OK (DASHBOARD_COLOR_GREEN)
+#define DASHBOARD_COLOR_WARNING (DASHBOARD_COLOR_YELLOW)
+#define DASHBOARD_COLOR_ERROR (DASHBOARD_COLOR_RED)
+#define DASHBOARD_COLOR_FAST_LAP (DASHBOARD_COLOR_MAGENTA)
+#define DASHBOARD_COLOR_COLD_TIRES (DASHBOARD_COLOR_CYAN)
+
+// TODO: tune these data (and integrate S.P.E.C.)
+#define DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING (30U)    /* at or below this SoC is a warning */
+#define DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR (15U)      /* at or below this SoC is an error */
+#define DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_WARNING (45U)   /* at or above this HV pack temp is a warning */
+#define DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_ERROR (50U)     /* at or above this HV pack temp is an error */
+#define DASHBOARD_THRESHOLD_INV_TEMP_CELSIUS_WARNING (60U)  /* at or above this inverter temp is a warning */
+#define DASHBOARD_THRESHOLD_INV_TEMP_CELSIUS_ERROR (70U)    /* at or above this inverter temp is an error */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_LOW (30U)     /* at or below this tire temp is "cold tires" */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_WARNING (80U) /* at or above this tire temp is a warning */
+#define DASHBOARD_THRESHOLD_TIRE_TEMP_CELSIUS_ERROR (100U)  /* at or above this tire temp is an error */
+#define DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_WARNING (80U)  /* at or above this motor temp is a warning */
+#define DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_ERROR (100U)   /* at or above this motor temp is an error */
 
 #define DASHBOARD_FONT_SIZE_HEADER (22U)
 #define DASHBOARD_FONT_SIZE_VALUE (28U)
@@ -69,7 +78,7 @@ enum DashboardFieldId {
     DASHBOARD_FIELD_POWER,           /*!< "POW 5" */
     DASHBOARD_FIELD_SLIP,            /*!< "SLIP ON/OFF" */
 
-    DASHBOARD_FIELD_STATE,     /*!< Vehicle FSM state, center top */
+    DASHBOARD_FIELD_CAR_STATE, /*!< Vehicle state, center top */
     DASHBOARD_FIELD_HV_HEADER, /*!< "HV" header */
     DASHBOARD_FIELD_HV_SOC,    /*!< "69%" large state-of-charge value */
     DASHBOARD_FIELD_HV_TEMP,   /*!< "104°C" pack temperature */
@@ -99,10 +108,11 @@ enum DashboardFieldId {
 /*!
  * \brief Total number of boxes composing the dashboard.
  *
- * \details Mirrors DASHBOARD_FIELD_COUNT for use in array sizing and raster
- *     calls without depending on the enum's underlying type.
+ * \details Mirrors DASHBOARD_FIELD_COUNT. Callers that need a specific
+ *     integer width (e.g. raster_api_init's uint16_t) cast at the call site
+ *     rather than baking the cast into the macro.
  */
-#define DASHBOARD_BOX_COUNT ((uint16_t)DASHBOARD_FIELD_COUNT)
+#define DASHBOARD_BOX_COUNT (DASHBOARD_FIELD_COUNT)
 
 /*!
  * \brief Self-contained storage for the dashboard interface.

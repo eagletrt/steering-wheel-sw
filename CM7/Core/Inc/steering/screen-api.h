@@ -78,17 +78,15 @@ enum ScreenReturnCode screen_api_update(uint32_t tick);
  */
 enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data);
 
-/* ----- dashboard field setters ----- */
-
 /*!
- * \brief Update the FSM-state text shown in the center-top box.
+ * \brief Update the car state text shown in the center-top box.
  *
- * \param text NUL-terminated text to display (truncated to fit).
+ * \param text NULL-terminated text to display (truncated to fit).
  *
  * \retval SCREEN_RC_OK on success.
  * \retval SCREEN_RC_NULL_POINTER if \p text is NULL.
  */
-enum ScreenReturnCode screen_api_set_state(const char *text);
+enum ScreenReturnCode screen_api_set_car_state(const char *text);
 
 /*!
  * \brief Update the power level (0..10) in the left strip.
@@ -142,7 +140,7 @@ enum ScreenReturnCode screen_api_set_soc(uint8_t percent);
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_hv_temp(int16_t celsius);
+enum ScreenReturnCode screen_api_set_hv_temperature(int16_t celsius);
 
 /*!
  * \brief Update the inverter temperature shown at center-bottom.
@@ -151,7 +149,7 @@ enum ScreenReturnCode screen_api_set_hv_temp(int16_t celsius);
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_inv_temp(int16_t celsius);
+enum ScreenReturnCode screen_api_set_inv_temperature(int16_t celsius);
 
 /*!
  * \brief Update the current / total lap counter shown at right-top.
@@ -181,7 +179,7 @@ enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms);
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_tire_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
+enum ScreenReturnCode screen_api_set_tire_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 /*!
  * \brief Update the four motor temperatures shown under the MTR header.
@@ -193,6 +191,6 @@ enum ScreenReturnCode screen_api_set_tire_temps(int16_t front_left, int16_t fron
  *
  * \retval SCREEN_RC_OK on success.
  */
-enum ScreenReturnCode screen_api_set_motor_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
+enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 #endif // SCREEN_API_H

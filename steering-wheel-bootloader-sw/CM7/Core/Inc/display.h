@@ -4,6 +4,6 @@
 #include "raster.h"
 
 enum RasterReturnCode display_init();
-void display_draw();
+enum RasterReturnCode display_draw();
 
 #endif // DISPLAY_H

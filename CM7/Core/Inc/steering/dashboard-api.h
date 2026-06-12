@@ -36,15 +36,15 @@
 enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler);
 
 /*!
- * \brief Update the FSM-state text shown in the center-top box.
+ * \brief Update the car state text shown in the center-top box.
  *
  * \param[in,out] handler Dashboard storage.
- * \param[in]     text    NUL-terminated text to display (truncated to fit).
+ * \param[in]     text    NULL-terminated text to display (truncated to fit).
  *
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler or \p text is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_state(struct DashboardHandler *handler, const char *text);
+enum DashboardReturnCode dashboard_api_set_car_state(struct DashboardHandler *handler, const char *text);
 
 /*!
  * \brief Update the power level (0..10) in the left strip.
@@ -110,7 +110,7 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *handler, int16_t celsius);
+enum DashboardReturnCode dashboard_api_set_hv_temperature(struct DashboardHandler *handler, int16_t celsius);
 
 /*!
  * \brief Update the inverter temperature shown at center-bottom.
@@ -121,7 +121,7 @@ enum DashboardReturnCode dashboard_api_set_hv_temp(struct DashboardHandler *hand
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_inv_temp(struct DashboardHandler *handler, int16_t celsius);
+enum DashboardReturnCode dashboard_api_set_inverter_temperature(struct DashboardHandler *handler, int16_t celsius);
 
 /*!
  * \brief Update the current / total lap counter shown at right-top.
@@ -158,7 +158,7 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
+enum DashboardReturnCode dashboard_api_set_tire_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 /*!
  * \brief Update the four motor temperatures shown under the MTR header.
@@ -172,6 +172,6 @@ enum DashboardReturnCode dashboard_api_set_tire_temps(struct DashboardHandler *h
  * \retval DASHBOARD_RC_OK on success.
  * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
  */
-enum DashboardReturnCode dashboard_api_set_motor_temps(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
+enum DashboardReturnCode dashboard_api_set_motor_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
 #endif // DASHBOARD_API_H
