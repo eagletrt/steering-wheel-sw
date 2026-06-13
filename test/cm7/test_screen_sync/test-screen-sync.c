@@ -80,17 +80,17 @@ void test_screen_api_sync_empty_snapshot_succeeds(void) {
 void test_screen_api_sync_pushes_scenario_strip(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW 5", screen_handler.dashboard.text[DASHBOARD_FIELD_POWER], "power field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("RGN 10", screen_handler.dashboard.text[DASHBOARD_FIELD_REGEN], "regen field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("TQ 6", screen_handler.dashboard.text[DASHBOARD_FIELD_TORQUE], "torque field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP ON", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP], "slip on translates to 'SLIP ON'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5", screen_handler.dashboard.text[DASHBOARD_FIELD_POWER], "power value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10", screen_handler.dashboard.text[DASHBOARD_FIELD_REGEN], "regen value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("6", screen_handler.dashboard.text[DASHBOARD_FIELD_TORQUE], "torque value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("ON", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP], "slip on translates to 'ON' (label box says 'SLIP')");
 }
 
 void test_screen_api_sync_slip_off_when_zero(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     snapshot.slip_on = 0U;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("SLIP OFF", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP]);
+    TEST_ASSERT_EQUAL_STRING("OFF", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP]);
 }
 
 void test_screen_api_sync_state_idle(void) {
@@ -126,13 +126,13 @@ void test_screen_api_sync_pushes_hv_block(void) {
     screen_api_sync_data(&snapshot);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_SOC], "SoC must reflect the snapshot");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("104C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("INV 22C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp value carries the temperature without the 'INV' prefix");
 }
 
 void test_screen_api_sync_pushes_lap_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("LAP 9/11", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP], "Lap counter must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("9/11", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP], "Lap value carries only 'current/total' (label box says 'LAP')");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("-0.420", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP_DELTA], "Lap delta must reflect the snapshot");
 }
 

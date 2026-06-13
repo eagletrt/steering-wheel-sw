@@ -29,7 +29,7 @@
 #define DASHBOARD_COLOR_CYAN (0xFF00CAE9U)
 
 #define DASHBOARD_COLOR_PRIMARY (DASHBOARD_COLOR_DARK_GRAY)
-#define DASHBOARD_COLOR_TERTIARY (DASHBOARD_COLOR_WHITE)
+#define DASHBOARD_COLOR_SECONDARY (DASHBOARD_COLOR_WHITE)
 #define DASHBOARD_COLOR_ALL_OK (DASHBOARD_COLOR_GREEN)
 #define DASHBOARD_COLOR_WARNING (DASHBOARD_COLOR_YELLOW)
 #define DASHBOARD_COLOR_ERROR (DASHBOARD_COLOR_RED)
@@ -49,11 +49,13 @@
 #define DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_WARNING (80U)  /* at or above this motor temp is a warning */
 #define DASHBOARD_THRESHOLD_MTR_TEMP_CELSIUS_ERROR (100U)   /* at or above this motor temp is an error */
 
-#define DASHBOARD_FONT_SIZE_HEADER (22U)
-#define DASHBOARD_FONT_SIZE_VALUE (28U)
-#define DASHBOARD_FONT_SIZE_STATE (36U)
-#define DASHBOARD_FONT_SIZE_DELTA (40U)
-#define DASHBOARD_FONT_SIZE_SOC (88U)
+#define DASHBOARD_FONT_SIZE_HEADER (40U)      /* section headers (SCENARIO, HV, TRS, MTR) */
+#define DASHBOARD_FONT_SIZE_FIELD_LABEL (30U) /* per-row labels (RGN, TQ, POW, SLIP, INV, LAP) */
+#define DASHBOARD_FONT_SIZE_VALUE (50U)       /* readable value text shown beside its label */
+#define DASHBOARD_FONT_SIZE_MTR (35U)         /* tire/motor temperature cells */
+#define DASHBOARD_FONT_SIZE_STATE (35U)       /* FSM-state text */
+#define DASHBOARD_FONT_SIZE_DELTA (45U)       /* lap delta */
+#define DASHBOARD_FONT_SIZE_SOC (120U)        /* big SoC value */
 
 /*!
  * \brief Return codes for dashboard operations.
@@ -72,30 +74,46 @@ enum DashboardReturnCode {
  *     never index by raw integer.
  */
 enum DashboardFieldId {
-    DASHBOARD_FIELD_SCENARIO_HEADER, /*!< "SCENARIO" header, left strip top */
-    DASHBOARD_FIELD_REGEN,           /*!< "RGN 10" */
-    DASHBOARD_FIELD_TORQUE,          /*!< "TQ 6" */
-    DASHBOARD_FIELD_POWER,           /*!< "POW 5" */
-    DASHBOARD_FIELD_SLIP,            /*!< "SLIP ON/OFF" */
+    DASHBOARD_FIELD_DASHBOARD_BACKGROUND, /*!< Background box covering the whole dashboard */
+    DASHBOARD_FIELD_SCENARIO_HEADER,      /*!< "SCENARIO" header, left strip top */
+    DASHBOARD_FIELD_REGEN_BACKGROUND,     /*!< Background box for the regen slot */
+    DASHBOARD_FIELD_REGEN_LABEL,          /*!< "RGN" inline label */
+    DASHBOARD_FIELD_REGEN,                /*!< Regen level value, e.g. "10" */
+    DASHBOARD_FIELD_TORQUE_BACKGROUND,    /*!< Background box for the torque slot */
+    DASHBOARD_FIELD_TORQUE_LABEL,         /*!< "TQ" inline label */
+    DASHBOARD_FIELD_TORQUE,               /*!< Torque level value, e.g. "6" */
+    DASHBOARD_FIELD_POWER_BACKGROUND,     /*!< Background box for the power slot */
+    DASHBOARD_FIELD_POWER_LABEL,          /*!< "POW" inline label */
+    DASHBOARD_FIELD_POWER,                /*!< Power level value, e.g. "5" */
+    DASHBOARD_FIELD_SLIP_BACKGROUND,      /*!< Background box for the slip slot */
+    DASHBOARD_FIELD_SLIP_LABEL,           /*!< "SLIP" inline label */
+    DASHBOARD_FIELD_SLIP,                 /*!< Slip toggle value, "ON" or "OFF" */
 
-    DASHBOARD_FIELD_CAR_STATE, /*!< Vehicle state, center top */
-    DASHBOARD_FIELD_HV_HEADER, /*!< "HV" header */
-    DASHBOARD_FIELD_HV_SOC,    /*!< "69%" large state-of-charge value */
-    DASHBOARD_FIELD_HV_TEMP,   /*!< "104°C" pack temperature */
-    DASHBOARD_FIELD_INV,       /*!< "INV 22°C" inverter temperature */
+    DASHBOARD_FIELD_CAR_STATE,      /*!< Vehicle state, center top */
+    DASHBOARD_FIELD_HV_BACKGROUND,  /*!< Background box for the HV block */
+    DASHBOARD_FIELD_HV_HEADER,      /*!< "HV" header */
+    DASHBOARD_FIELD_HV_SOC,         /*!< "69%" large state-of-charge value */
+    DASHBOARD_FIELD_HV_TEMP,        /*!< "104°C" pack temperature */
+    DASHBOARD_FIELD_INV_BACKGROUND, /*!< Background box for the inverter block */
+    DASHBOARD_FIELD_INV_LABEL,      /*!< "INV" inline label */
+    DASHBOARD_FIELD_INV,            /*!< Inverter temperature value, e.g. "22C" */
 
-    DASHBOARD_FIELD_LAP,        /*!< "LAP 9/11" lap counter */
-    DASHBOARD_FIELD_LAP_DELTA,  /*!< "-0.420" lap delta in seconds */
-    DASHBOARD_FIELD_TRS_HEADER, /*!< "TRS" tire-temps header */
-    DASHBOARD_FIELD_TRS_FL,     /*!< Front-left tire temperature */
-    DASHBOARD_FIELD_TRS_FR,     /*!< Front-right tire temperature */
-    DASHBOARD_FIELD_TRS_RL,     /*!< Rear-left tire temperature */
-    DASHBOARD_FIELD_TRS_RR,     /*!< Rear-right tire temperature */
-    DASHBOARD_FIELD_MTR_HEADER, /*!< "MTR" motor-temps header */
-    DASHBOARD_FIELD_MTR_FL,     /*!< Front-left motor temperature */
-    DASHBOARD_FIELD_MTR_FR,     /*!< Front-right motor temperature */
-    DASHBOARD_FIELD_MTR_RL,     /*!< Rear-left motor temperature */
-    DASHBOARD_FIELD_MTR_RR,     /*!< Rear-right motor temperature */
+    DASHBOARD_FIELD_LAP_BACKGROUND, /*!< Background box for the lap counter and delta */
+    DASHBOARD_FIELD_LAP_LABEL,      /*!< "LAP" inline label */
+    DASHBOARD_FIELD_LAP,            /*!< Lap counter value, e.g. "9/11" */
+    DASHBOARD_FIELD_LAP_DELTA,      /*!< "-0.420" lap delta in seconds */
+    DASHBOARD_FIELD_TRS_BACKGROUND, /*!< Background box for the tire/motor temp blocks */
+    DASHBOARD_FIELD_TRS_HEADER,     /*!< "TRS" tire-temps header */
+    DASHBOARD_FIELD_TRS_FL,         /*!< Front-left tire temperature */
+    DASHBOARD_FIELD_TRS_FR,         /*!< Front-right tire temperature */
+    DASHBOARD_FIELD_TRS_RL,         /*!< Rear-left tire temperature */
+    DASHBOARD_FIELD_TRS_RR,         /*!< Rear-right tire temperature */
+    DASHBOARD_FIELD_MTR_BACKGROUND, /*!< Background box for the motor temp block */
+    DASHBOARD_FIELD_MTR_HEADER,     /*!< "MTR" motor-temps header */
+    DASHBOARD_FIELD_MTR_FL,         /*!< Front-left motor temperature */
+    DASHBOARD_FIELD_MTR_FR,         /*!< Front-right motor temperature */
+    DASHBOARD_FIELD_MTR_RL,         /*!< Rear-left motor temperature */
+    DASHBOARD_FIELD_MTR_RR,         /*!< Rear-right motor temperature */
 
     DASHBOARD_FIELD_COUNT, /*!< Total number of fields, also the box count */
 };

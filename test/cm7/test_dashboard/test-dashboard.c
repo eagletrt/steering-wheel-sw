@@ -77,6 +77,12 @@ void test_dashboard_init_seeds_placeholder_text(void) {
     TEST_ASSERT_EQUAL_STRING_MESSAGE("HV", dashboard_handler.text[DASHBOARD_FIELD_HV_HEADER], "HV header carries its static label");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("TRS", dashboard_handler.text[DASHBOARD_FIELD_TRS_HEADER], "TRS header carries its static label");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("MTR", dashboard_handler.text[DASHBOARD_FIELD_MTR_HEADER], "MTR header carries its static label");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("RGN", dashboard_handler.text[DASHBOARD_FIELD_REGEN_LABEL], "Regen inline label is initialised once");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("TQ", dashboard_handler.text[DASHBOARD_FIELD_TORQUE_LABEL], "Torque inline label is initialised once");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW", dashboard_handler.text[DASHBOARD_FIELD_POWER_LABEL], "Power inline label is initialised once");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP", dashboard_handler.text[DASHBOARD_FIELD_SLIP_LABEL], "Slip inline label is initialised once");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("INV", dashboard_handler.text[DASHBOARD_FIELD_INV_LABEL], "Inverter inline label is initialised once");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("LAP", dashboard_handler.text[DASHBOARD_FIELD_LAP_LABEL], "Lap inline label is initialised once");
 }
 
 void test_dashboard_init_box_count_matches_field_count(void) {
@@ -116,19 +122,19 @@ void test_dashboard_set_car_fsm_state_null_text(void) {
 
 void test_dashboard_set_power_formats_value(void) {
     dashboard_api_set_power(&dashboard_handler, 7U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW 7", dashboard_handler.text[DASHBOARD_FIELD_POWER], "Power field must read 'POW <value>'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("7", dashboard_handler.text[DASHBOARD_FIELD_POWER], "Power value field holds only the number; the 'POW' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "Power box must be flagged updated");
 }
 
 void test_dashboard_set_regen_formats_value(void) {
     dashboard_api_set_regen(&dashboard_handler, 3U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("RGN 3", dashboard_handler.text[DASHBOARD_FIELD_REGEN], "Regen field must read 'RGN <value>'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("3", dashboard_handler.text[DASHBOARD_FIELD_REGEN], "Regen value field holds only the number; the 'RGN' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_REGEN].updated, "Regen box must be flagged updated");
 }
 
 void test_dashboard_set_torque_formats_value(void) {
     dashboard_api_set_torque(&dashboard_handler, 10U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("TQ 10", dashboard_handler.text[DASHBOARD_FIELD_TORQUE], "Torque field must read 'TQ <value>'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10", dashboard_handler.text[DASHBOARD_FIELD_TORQUE], "Torque value field holds only the number; the 'TQ' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TORQUE].updated, "Torque box must be flagged updated");
 }
 
@@ -145,13 +151,13 @@ void test_dashboard_set_power_null_handler(void) {
 
 void test_dashboard_set_slip_on(void) {
     dashboard_api_set_slip(&dashboard_handler, true);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP ON", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip ON must format as 'SLIP ON'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("ON", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip value holds only 'ON'; the 'SLIP' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SLIP].updated, "Slip box must be flagged updated");
 }
 
 void test_dashboard_set_slip_off(void) {
     dashboard_api_set_slip(&dashboard_handler, false);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP OFF", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip OFF must format as 'SLIP OFF'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("OFF", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip value holds only 'OFF'; the 'SLIP' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SLIP].updated, "Slip box must be flagged updated");
 }
 
@@ -169,14 +175,14 @@ void test_dashboard_set_slip_null_handler(void) {
 void test_dashboard_set_soc_formats_percent(void) {
     dashboard_api_set_soc(&dashboard_handler, 69U);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "SoC must format as '<percent>%'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated, "SoC box must be flagged updated");
 }
 
 void test_dashboard_set_soc_clamps_above_100(void) {
     dashboard_api_set_soc(&dashboard_handler, 200U);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("100%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "Values above 100 must clamp to '100%%'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
 }
 
 void test_dashboard_set_soc_zero(void) {
@@ -201,14 +207,14 @@ void test_dashboard_set_hv_temperature_positive(void) {
 
 void test_dashboard_set_hv_temperature_negative(void) {
     dashboard_api_set_hv_temperature(&dashboard_handler, -5);
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "HV temp color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "HV temp color must be set to white");
     TEST_ASSERT_EQUAL_STRING("-5C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP]);
 }
 
 void test_dashboard_set_inverter_temperature_formats_value(void) {
     dashboard_api_set_inverter_temperature(&dashboard_handler, 22);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("INV 22C", dashboard_handler.text[DASHBOARD_FIELD_INV], "Inverter temp must format as 'INV <value>C'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_INV].color.argb, "Inverter temp color must be set to white");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", dashboard_handler.text[DASHBOARD_FIELD_INV], "Inverter value field holds only the temperature; the 'INV' label is its own box");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_INV].color.argb, "Inverter temp color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_INV].updated, "INV box must be flagged updated");
 }
 
@@ -221,7 +227,7 @@ void test_dashboard_set_inverter_temperature_formats_value(void) {
 
 void test_dashboard_set_lap_formats_current_over_total(void) {
     dashboard_api_set_lap(&dashboard_handler, 9U, 11U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("LAP 9/11", dashboard_handler.text[DASHBOARD_FIELD_LAP], "Lap must format as 'LAP current/total'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("9/11", dashboard_handler.text[DASHBOARD_FIELD_LAP], "Lap value field holds only 'current/total'; the 'LAP' label is its own box");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_LAP].updated, "Lap box must be flagged updated");
 }
 
@@ -255,9 +261,9 @@ void test_dashboard_set_tire_temperatures_updates_all_four(void) {
     TEST_ASSERT_EQUAL_STRING_MESSAGE("10C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RL], "Rear-left tire reads the RL argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("40C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RR], "Rear-right tire reads the RR argument");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FL].color.argb, "Front left tire color must be set to yellow");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FR].color.argb, "Front right tire color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FR].color.argb, "Front right tire color must be set to white");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_COLD_TIRES, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RL].color.argb, "Rear left tire color must be set to cyan");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RR].color.argb, "Rear right tire color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RR].color.argb, "Rear right tire color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TRS_FL].updated, "FL tire box must be flagged updated");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TRS_RR].updated, "RR tire box must be flagged updated");
 }
@@ -268,8 +274,8 @@ void test_dashboard_set_motor_temperatures_updates_all_four(void) {
     TEST_ASSERT_EQUAL_STRING_MESSAGE("23C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FR], "Front-right motor reads the FR argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("81C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RL], "Rear-left motor reads the RL argument");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("105C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RR], "Rear-right motor reads the RR argument");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FL].color.argb, "Front left motor color must be set to white");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_TERTIARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FR].color.argb, "Front right motor color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FL].color.argb, "Front left motor color must be set to white");
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FR].color.argb, "Front right motor color must be set to white");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_MTR_RL].color.argb, "Rear left motor color must be set to yellow");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_MTR_RR].color.argb, "Rear right motor color must be set to red");
 }
@@ -288,7 +294,7 @@ void test_dashboard_setter_does_not_re_flag_when_value_unchanged(void) {
     dashboard_api_set_power(&dashboard_handler, 5U);
 
     TEST_ASSERT_FALSE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "Setting the same value twice must not re-flag the box");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW 5", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must still hold the previous value");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must still hold the previous value");
 }
 
 void test_dashboard_setter_flags_on_real_change(void) {
@@ -298,7 +304,7 @@ void test_dashboard_setter_flags_on_real_change(void) {
     dashboard_api_set_power(&dashboard_handler, 6U);
 
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "A genuine change must flag the box as updated");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW 6", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must hold the new value");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("6", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must hold the new value");
 }
 
 void test_dashboard_setter_only_touches_target_box(void) {

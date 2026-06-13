@@ -52,8 +52,8 @@ void test_popup_api_show_success(void) {
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(50, popup_handler.last_event_tick, "last_event_tick should be updated to the provided tick");
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_SHARED_PARAMETER_ID_POWER, popup_handler.current_parameter, "current_parameter should be updated to the provided parameter ID");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("4", popup_handler.value_buffer, "value_buffer should be updated to the formatted parameter value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POWER", popup_handler.labels[0].text, "The first label should display the parameter name");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("4", popup_handler.labels[1].text, "The second label should display the parameter value");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("4", popup_handler.labels[0].text, "The first label should display the parameter value");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("POWER", popup_handler.labels[1].text, "The second label should display the parameter name");
     
 }
 
