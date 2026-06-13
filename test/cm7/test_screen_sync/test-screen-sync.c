@@ -125,8 +125,8 @@ void test_screen_api_sync_pushes_hv_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_SOC], "SoC must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("104C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp value carries the temperature without the 'INV' prefix");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("104\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp value carries the temperature without the 'INV' prefix");
 }
 
 void test_screen_api_sync_pushes_lap_block(void) {
@@ -139,19 +139,19 @@ void test_screen_api_sync_pushes_lap_block(void) {
 void test_screen_api_sync_pushes_tire_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("95C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FL], "FL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("60C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FR], "FR tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RL], "RL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("40C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RR], "RR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("95\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FL], "FL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("60\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FR], "FR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RL], "RL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("40\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RR], "RR tire must reflect the snapshot");
 }
 
 void test_screen_api_sync_pushes_motor_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FL], "FL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("23C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FR], "FR motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("24C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RL], "RL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("25C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RR], "RR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FL], "FL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("23\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FR], "FR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("24\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RL], "RL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("25\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RR], "RR motor must reflect the snapshot");
 }
 
 /*! \} */

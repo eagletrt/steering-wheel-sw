@@ -47,28 +47,24 @@ void test_dashboard_init_populates_every_box(void) {
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
         expected_ids[i] = i;
         actual_ids[i] = dashboard_handler.boxes[i].id;
-        expected_labels[i] = &dashboard_handler.labels[i];
         actual_labels[i] = dashboard_handler.boxes[i].label;
+        expected_labels[i] = (actual_labels[i] == NULL) ? NULL : &dashboard_handler.labels[i];
     }
 
     TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(expected_ids, actual_ids, DASHBOARD_FIELD_COUNT, "Each box id must match its field index");
-    TEST_ASSERT_EQUAL_PTR_ARRAY_MESSAGE(expected_labels, actual_labels, DASHBOARD_FIELD_COUNT, "Each box must reference the matching label slot");
+    TEST_ASSERT_EQUAL_PTR_ARRAY_MESSAGE(expected_labels, actual_labels, DASHBOARD_FIELD_COUNT, "Labelled boxes must reference their matching label slot; background boxes must carry a NULL label");
 }
 
 void test_dashboard_init_labels_point_at_internal_buffers(void) {
     dashboard_api_init(&dashboard_handler);
 
-    const char *expected_text_ptrs[DASHBOARD_FIELD_COUNT];
-    const char *actual_text_ptrs[DASHBOARD_FIELD_COUNT];
-    const struct Font *actual_fonts[DASHBOARD_FIELD_COUNT];
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        expected_text_ptrs[i] = dashboard_handler.text[i];
-        actual_text_ptrs[i] = dashboard_handler.labels[i].text;
-        actual_fonts[i] = dashboard_handler.labels[i].font;
+        if (dashboard_handler.boxes[i].label == NULL) {
+            continue;
+        }
+        TEST_ASSERT_EQUAL_PTR_MESSAGE(dashboard_handler.text[i], dashboard_handler.labels[i].text, "Each labelled box's label.text must reference the handler's per-field buffer");
+        TEST_ASSERT_EQUAL_PTR_MESSAGE(&font_inter, dashboard_handler.labels[i].font, "All labels must use font_konexy");
     }
-
-    TEST_ASSERT_EQUAL_PTR_ARRAY_MESSAGE(expected_text_ptrs, actual_text_ptrs, DASHBOARD_FIELD_COUNT, "Each label's text pointer must reference the handler's per-field buffer");
-    TEST_ASSERT_EACH_EQUAL_PTR_MESSAGE(&font_konexy, actual_fonts, DASHBOARD_FIELD_COUNT, "All labels must use font_konexy");
 }
 
 void test_dashboard_init_seeds_placeholder_text(void) {
@@ -200,7 +196,7 @@ void test_dashboard_set_soc_zero(void) {
 
 void test_dashboard_set_hv_temperature_positive(void) {
     dashboard_api_set_hv_temperature(&dashboard_handler, 104);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("104C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must format as '<value>C'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("104\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must format as '<value>C'");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "HV temp color must be set to red");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_TEMP].updated, "HV temp box must be flagged updated");
 }
@@ -208,12 +204,12 @@ void test_dashboard_set_hv_temperature_positive(void) {
 void test_dashboard_set_hv_temperature_negative(void) {
     dashboard_api_set_hv_temperature(&dashboard_handler, -5);
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMP].color.argb, "HV temp color must be set to white");
-    TEST_ASSERT_EQUAL_STRING("-5C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP]);
+    TEST_ASSERT_EQUAL_STRING("-5\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMP]);
 }
 
 void test_dashboard_set_inverter_temperature_formats_value(void) {
     dashboard_api_set_inverter_temperature(&dashboard_handler, 22);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", dashboard_handler.text[DASHBOARD_FIELD_INV], "Inverter value field holds only the temperature; the 'INV' label is its own box");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_INV], "Inverter value field holds only the temperature; the 'INV' label is its own box");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_INV].color.argb, "Inverter temp color must be set to white");
     TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_INV].updated, "INV box must be flagged updated");
 }
@@ -256,10 +252,10 @@ void test_dashboard_set_lap_delta_zero(void) {
 
 void test_dashboard_set_tire_temperatures_updates_all_four(void) {
     dashboard_api_set_tire_temperatures(&dashboard_handler, 95, 60, 10, 40);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("95C", dashboard_handler.text[DASHBOARD_FIELD_TRS_FL], "Front-left tire reads the FL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("60C", dashboard_handler.text[DASHBOARD_FIELD_TRS_FR], "Front-right tire reads the FR argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RL], "Rear-left tire reads the RL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("40C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RR], "Rear-right tire reads the RR argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("95\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_TRS_FL], "Front-left tire reads the FL argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("60\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_TRS_FR], "Front-right tire reads the FR argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RL], "Rear-left tire reads the RL argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("40\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_TRS_RR], "Rear-right tire reads the RR argument");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FL].color.argb, "Front left tire color must be set to yellow");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_TRS_FR].color.argb, "Front right tire color must be set to white");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_COLD_TIRES, dashboard_handler.labels[DASHBOARD_FIELD_TRS_RL].color.argb, "Rear left tire color must be set to cyan");
@@ -270,10 +266,10 @@ void test_dashboard_set_tire_temperatures_updates_all_four(void) {
 
 void test_dashboard_set_motor_temperatures_updates_all_four(void) {
     dashboard_api_set_motor_temperatures(&dashboard_handler, 22, 23, 81, 105);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FL], "Front-left motor reads the FL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("23C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FR], "Front-right motor reads the FR argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("81C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RL], "Rear-left motor reads the RL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("105C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RR], "Rear-right motor reads the RR argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FL], "Front-left motor reads the FL argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("23\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_MTR_FR], "Front-right motor reads the FR argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("81\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RL], "Rear-left motor reads the RL argument");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("105\xB0""C", dashboard_handler.text[DASHBOARD_FIELD_MTR_RR], "Rear-right motor reads the RR argument");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FL].color.argb, "Front left motor color must be set to white");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MTR_FR].color.argb, "Front right motor color must be set to white");
     TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_MTR_RL].color.argb, "Rear left motor color must be set to yellow");

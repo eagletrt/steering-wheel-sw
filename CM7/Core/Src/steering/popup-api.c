@@ -28,8 +28,8 @@ EAGLETRT_STATIC const char *prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_COUNT
     [INPUTS_SHARED_PARAMETER_ID_POWER] = "POWER",
     [INPUTS_SHARED_PARAMETER_ID_REGEN] = "REGEN",
     [INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING] = "TORQUE",
-    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "TELEMETRY LOG",
-    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "LAUNCH CONTROL",
+    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "LOG",
+    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "SLIP",
 };
 
 /*!
@@ -77,10 +77,10 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     const struct Color foreground = { .argb = POPUP_COLOR_FOREGROUND };
     const struct Color background = { .argb = POPUP_COLOR_BACKGROUND };
 
-    if (label_api_init(&handler->labels[0], handler->value_buffer, center_offset_x, value_offset_y, &font_konexy, POPUP_VALUE_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
+    if (label_api_init(&handler->labels[0], handler->value_buffer, center_offset_x, value_offset_y, &font_inter, POPUP_VALUE_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
-    if (label_api_init(&handler->labels[1], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], center_offset_x, name_offset_y, &font_konexy, POPUP_NAME_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
+    if (label_api_init(&handler->labels[1], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], center_offset_x, name_offset_y, &font_inter, POPUP_NAME_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
     if (box_api_init(&handler->boxes[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_WIDTH, .height = POPUP_VALUE_BOX_HEIGHT }, background, &handler->labels[0]) != RASTER_RC_OK) {
