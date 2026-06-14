@@ -18,6 +18,7 @@
 #include "inputs-shared.h"
 #include "box.h"
 #include "label.h"
+#include "style.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -40,11 +41,8 @@ enum PopupReturnCode {
  */
 #define POPUP_VALUE_BUFFER_SIZE (8U)
 
-#define POPUP_COLOR_WHITE (0xFFFFFFFFU)
-#define POPUP_COLOR_BLACK (0xFF000000U)
-
-#define POPUP_COLOR_BACKGROUND (POPUP_COLOR_WHITE)
-#define POPUP_COLOR_FOREGROUND (POPUP_COLOR_BLACK)
+#define POPUP_COLOR_BACKGROUND (STYLE_WHITE)
+#define POPUP_COLOR_FOREGROUND (STYLE_BLACK)
 
 #define POPUP_NAME_FONT_SIZE (80U)
 #define POPUP_VALUE_FONT_SIZE (150U)

@@ -125,8 +125,8 @@ void test_screen_api_sync_pushes_hv_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_SOC], "SoC must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("104\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp value carries the temperature without the 'INV' prefix");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("104°C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMPERATURE], "HV temp must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", screen_handler.dashboard.text[DASHBOARD_FIELD_INVERTER], "Inverter temp value carries the temperature without the 'INV' prefix");
 }
 
 void test_screen_api_sync_pushes_lap_block(void) {
@@ -139,19 +139,19 @@ void test_screen_api_sync_pushes_lap_block(void) {
 void test_screen_api_sync_pushes_tire_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("95\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FL], "FL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("60\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FR], "FR tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RL], "RL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("40\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RR], "RR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("95°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_FRONT_LEFT], "FL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("60°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_FRONT_RIGHT], "FR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_REAR_LEFT], "RL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("40°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_REAR_RIGHT], "RR tire must reflect the snapshot");
 }
 
 void test_screen_api_sync_pushes_motor_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FL], "FL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("23\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FR], "FR motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("24\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RL], "RL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("25\xB0""C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RR], "RR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_FRONT_LEFT], "FL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("23°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_FRONT_RIGHT], "FR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("24°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_REAR_LEFT], "RL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("25°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_REAR_RIGHT], "RR motor must reflect the snapshot");
 }
 
 /*! \} */
@@ -191,7 +191,7 @@ void test_screen_api_sync_flags_only_changed_fields(void) {
 
     TEST_ASSERT_TRUE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_SOC].updated, "Changed field must be flagged");
     TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_POWER].updated, "Unchanged power must stay clean");
-    TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_TEMP].updated, "Unchanged HV temp must stay clean");
+    TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_TEMPERATURE].updated, "Unchanged HV temp must stay clean");
     TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_LAP].updated, "Unchanged lap must stay clean");
 }
 
