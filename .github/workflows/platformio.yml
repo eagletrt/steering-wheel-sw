@@ -34,12 +34,14 @@ jobs:
       - name: Install Generator Dependencies
         run: pip install Pillow numpy scipy jinja2
 
-      - name: Build
-        run: pio run -e cm4 -e cm7
+      - name: Build CM7
+        run: pio run -e cm7
+
+      - name: Build CM4
+        run: pio run -e cm4
 
       - name: Build bootloader
-        working-directory: steering-wheel-bootloader-sw
-        run: pio run
+        run: pio run -e bootloader
       
       - name: Run Unit Tests
         run: pio test -e tests_cm4 -e tests_cm7 -e tests_common

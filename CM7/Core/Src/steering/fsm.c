@@ -19,6 +19,7 @@ Functions and types have been generated with prefix "fsm_"
 
 #include "post-api.h"
 #include "eagletrt-api.h"
+#include "ipc-ui-data-api.h"
 #include "screen-api.h"
 
 /*** USER CODE END MACROS ***/
@@ -118,7 +119,13 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
     struct FsmData *fsm_data = (struct FsmData *)data;
 
-    if (screen_update(fsm_data->tick) != SCREEN_RC_OK) {
+    // Pull the latest telemetry snapshot into the dashboard before the
+    // raster runs; setters are no-ops when nothing changed, so this is
+    // cheap to call every tick.
+    if (screen_api_sync_data(ipc_ui_data_api_get()) != SCREEN_RC_OK) {
+        next_state = FSM_STATE_ERROR;
+    }
+    if (screen_api_update(fsm_data->tick) != SCREEN_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
 

@@ -155,13 +155,14 @@ HSEM notification */
 
     BootInit();
 
-    draw_boot_screen();
+    display_init();
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        display_draw();
         BootTask();
         /* USER CODE END WHILE */
 

@@ -8,10 +8,18 @@
  */
 
 #include "popup-api.h"
+#include "font.h"
+#include "label-api.h"
+#include "box-api.h"
+#include "popup.h"
 #include "screen.h"
 #include "eagletrt-api.h"
+#include "raster-fonts.h"
 #include <stddef.h>
 #include <stdio.h>
+
+#define POPUP_VALUE_BOX_HEIGHT ((SCREEN_HEIGHT / 10U) * 7U)            /* 70% of the screen height */
+#define POPUP_NAME_BOX_HEIGHT (SCREEN_HEIGHT - POPUP_VALUE_BOX_HEIGHT) /* remaining 30% */
 
 /*!
  * \brief Human-readable names for each parameter, indexed by InputsSharedParameterID.
@@ -20,8 +28,8 @@ EAGLETRT_STATIC const char *prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_COUNT
     [INPUTS_SHARED_PARAMETER_ID_POWER] = "POWER",
     [INPUTS_SHARED_PARAMETER_ID_REGEN] = "REGEN",
     [INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING] = "TORQUE",
-    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "TELEMETRY LOG",
-    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "LAUNCH CONTROL",
+    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "LOG",
+    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "SLIP",
 };
 
 /*!
@@ -62,42 +70,25 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     handler->current_parameter = INPUTS_SHARED_PARAMETER_ID_POWER;
     handler->value_buffer[0] = '\0';
 
-    handler->labels[0] = (struct RasterLabel){
-        .type = LABEL_DATA_STRING,
-        .data.text = (char *)prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER],
-        .format.string_fmt = { .max_length = 0 },
-        .pos = { .x = SCREEN_WIDTH / 2, .y = SCREEN_HEIGHT / 4 },
-        .font = FONT_KONEXY,
-        .size = 48,
-        .color = { .argb = 0xFFFFFFFF },
-        .align = FONT_ALIGN_CENTER,
-    };
-    handler->labels[1] = (struct RasterLabel){
-        .type = LABEL_DATA_STRING,
-        .data.text = handler->value_buffer,
-        .format.string_fmt = { .max_length = 0 },
-        .pos = { .x = SCREEN_WIDTH / 2, .y = SCREEN_HEIGHT / 4 },
-        .font = FONT_KONEXY,
-        .size = 96,
-        .color = { .argb = 0xFFFFFFFF },
-        .align = FONT_ALIGN_CENTER,
-    };
+    /* labels[0] is the value (top, big), labels[1] is the parameter name (bottom, small). */
+    const int16_t value_offset_y = (int16_t)((POPUP_VALUE_BOX_HEIGHT - POPUP_VALUE_FONT_SIZE) / 2U);
+    const int16_t name_offset_y = (int16_t)((POPUP_NAME_BOX_HEIGHT - POPUP_NAME_FONT_SIZE) / 2U);
+    const int16_t center_offset_x = (int16_t)(SCREEN_WIDTH / 2U);
+    const struct Color foreground = { .argb = POPUP_COLOR_FOREGROUND };
+    const struct Color background = { .argb = POPUP_COLOR_BACKGROUND };
 
-    handler->boxes[0] = (struct RasterBox){
-        .updated = true,
-        .id = 0,
-        .rect = { .x = 0, .y = 0, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT / 2 },
-        .color = { .argb = 0xFF101010 },
-        .label = &handler->labels[0],
-    };
-    handler->boxes[1] = (struct RasterBox){
-        .updated = true,
-        .id = 1,
-        .rect = { .x = 0, .y = SCREEN_HEIGHT / 2, .w = SCREEN_WIDTH, .h = SCREEN_HEIGHT / 2 },
-        .color = { .argb = 0xFF1E1E1E },
-        .label = &handler->labels[1],
-    };
-
+    if (label_api_init(&handler->labels[0], handler->value_buffer, center_offset_x, value_offset_y, &font_inter, POPUP_VALUE_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (label_api_init(&handler->labels[1], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], center_offset_x, name_offset_y, &font_inter, POPUP_NAME_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (box_api_init(&handler->boxes[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_WIDTH, .height = POPUP_VALUE_BOX_HEIGHT }, background, &handler->labels[0]) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
+    if (box_api_init(&handler->boxes[1], 1, (struct BoxRectangle){ .x = 0, .y = POPUP_VALUE_BOX_HEIGHT, .width = SCREEN_WIDTH, .height = POPUP_NAME_BOX_HEIGHT }, background, &handler->labels[1]) != RASTER_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
     return POPUP_RC_OK;
 }
 
@@ -111,9 +102,12 @@ enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSha
     handler->last_event_tick = tick;
     handler->current_parameter = parameter_id;
 
-    handler->labels[0].data.text = (char *)prv_parameter_names[parameter_id];
+    handler->labels[1].text = (char *)prv_parameter_names[parameter_id];
 
     prv_popup_format_value(handler, parameter_id, value);
+
+    handler->boxes[0].updated = true;
+    handler->boxes[1].updated = true;
 
     return POPUP_RC_OK;
 }

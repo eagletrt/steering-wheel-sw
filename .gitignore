@@ -423,5 +423,6 @@ STM32Make.make
 .local_gitignore
 
 *.sha256
+raster-fonts.*
 
 ## ---------------- END MANUALLY ADDED ---------------- ##

@@ -336,12 +336,9 @@ void ltdc_swap_framebuffers(void) {
     __HAL_LTDC_RELOAD_CONFIG(&hltdc);
 }
 
-void ltdc_draw_line(uint16_t x, uint16_t y, uint16_t length, struct Color color) {
-    dma2d_draw_line(draw_framebuffer, x, y, length, color);
-}
-
-void ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
     dma2d_draw_rectangle(draw_framebuffer, x, y, w, h, color);
+    return RASTER_RC_OK;
 }
 
 /* USER CODE END 1 */

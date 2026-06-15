@@ -10,7 +10,6 @@
 #ifndef POST_H
 #define POST_H
 
-#include "fontutils.h"
 #include "raster.h"
 
 enum PostReturnCode {
@@ -19,7 +18,6 @@ enum PostReturnCode {
 };
 
 struct PostInitData {
-    font_draw_line_callback draw_line;             /*!< Callback function required by fontutils module. */
     raster_draw_rectangle_callback draw_rectangle; /*!< Callback function required by screen module. */
 };
 

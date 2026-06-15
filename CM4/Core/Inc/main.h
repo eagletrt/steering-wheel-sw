@@ -61,6 +61,8 @@ void Error_Handler(void);
 #define ENC_FL_SW_GPIO_Port GPIOE
 #define ENC_SL_SW_Pin GPIO_PIN_8
 #define ENC_SL_SW_GPIO_Port GPIOI
+#define SENS_CURR_Pin GPIO_PIN_9
+#define SENS_CURR_GPIO_Port GPIOF
 #define BUTT_BR2_Pin GPIO_PIN_1
 #define BUTT_BR2_GPIO_Port GPIOC
 #define ENC_SR_A_Pin GPIO_PIN_0
