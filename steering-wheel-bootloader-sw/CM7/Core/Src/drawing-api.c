@@ -1,7 +1,7 @@
 #include "drawing-api.h"
 
-#define DRAWING_API_FRAMEBUFFER_WIDTH 800
-#define DRAWING_API_FRAMEBUFFER_HEIGHT 480
+#define DRAWING_API_FRAMEBUFFER_WIDTH (800U)
+#define DRAWING_API_FRAMEBUFFER_HEIGHT (480U)
 
 uint32_t framebuffer[DRAWING_API_FRAMEBUFFER_WIDTH * DRAWING_API_FRAMEBUFFER_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));

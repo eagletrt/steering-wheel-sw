@@ -18,6 +18,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define POPUP_VALUE_BOX_HEIGHT ((SCREEN_HEIGHT / 10U) * 7U)            /* 70% of the screen height */
+#define POPUP_NAME_BOX_HEIGHT (SCREEN_HEIGHT - POPUP_VALUE_BOX_HEIGHT) /* remaining 30% */
+
 /*!
  * \brief Human-readable names for each parameter, indexed by InputsSharedParameterID.
  */
@@ -25,8 +28,8 @@ EAGLETRT_STATIC const char *prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_COUNT
     [INPUTS_SHARED_PARAMETER_ID_POWER] = "POWER",
     [INPUTS_SHARED_PARAMETER_ID_REGEN] = "REGEN",
     [INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING] = "TORQUE",
-    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "TELEMETRY LOG",
-    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "LAUNCH CONTROL",
+    [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = "LOG",
+    [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = "SLIP",
 };
 
 /*!
@@ -67,20 +70,23 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
     handler->current_parameter = INPUTS_SHARED_PARAMETER_ID_POWER;
     handler->value_buffer[0] = '\0';
 
-    const int16_t name_offset_y = (int16_t)((POPUP_NAME_BOX_HEIGHT - POPUP_NAME_FONT_SIZE) / 2U);
+    /* labels[0] is the value (top, big), labels[1] is the parameter name (bottom, small). */
     const int16_t value_offset_y = (int16_t)((POPUP_VALUE_BOX_HEIGHT - POPUP_VALUE_FONT_SIZE) / 2U);
+    const int16_t name_offset_y = (int16_t)((POPUP_NAME_BOX_HEIGHT - POPUP_NAME_FONT_SIZE) / 2U);
     const int16_t center_offset_x = (int16_t)(SCREEN_WIDTH / 2U);
+    const struct Color foreground = { .argb = POPUP_COLOR_FOREGROUND };
+    const struct Color background = { .argb = POPUP_COLOR_BACKGROUND };
 
-    if (label_api_init(&handler->labels[0], handler->value_buffer, center_offset_x, value_offset_y, &font_konexy, POPUP_VALUE_FONT_SIZE, FONT_ALIGN_CENTER, (struct Color){ .argb = POPUP_COLOR_SECONDARY }) != RASTER_RC_OK) {
+    if (label_api_init(&handler->labels[0], handler->value_buffer, center_offset_x, value_offset_y, &font_inter, POPUP_VALUE_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
-    if (label_api_init(&handler->labels[1], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], center_offset_x, name_offset_y, &font_konexy, POPUP_NAME_FONT_SIZE, FONT_ALIGN_CENTER, (struct Color){ .argb = POPUP_COLOR_SECONDARY }) != RASTER_RC_OK) {
+    if (label_api_init(&handler->labels[1], prv_parameter_names[INPUTS_SHARED_PARAMETER_ID_POWER], center_offset_x, name_offset_y, &font_inter, POPUP_NAME_FONT_SIZE, FONT_ALIGN_CENTER, foreground) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
-    if (box_api_init(&handler->boxes[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_WIDTH, .height = POPUP_VALUE_BOX_HEIGHT }, (struct Color){ .argb = POPUP_COLOR_PRIMARY }, &handler->labels[0]) != RASTER_RC_OK) {
+    if (box_api_init(&handler->boxes[0], 0, (struct BoxRectangle){ .x = 0, .y = 0, .width = SCREEN_WIDTH, .height = POPUP_VALUE_BOX_HEIGHT }, background, &handler->labels[0]) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
-    if (box_api_init(&handler->boxes[1], 1, (struct BoxRectangle){ .x = 0, .y = POPUP_VALUE_BOX_HEIGHT, .width = SCREEN_WIDTH, .height = POPUP_NAME_BOX_HEIGHT }, (struct Color){ .argb = POPUP_COLOR_PRIMARY }, &handler->labels[1]) != RASTER_RC_OK) {
+    if (box_api_init(&handler->boxes[1], 1, (struct BoxRectangle){ .x = 0, .y = POPUP_VALUE_BOX_HEIGHT, .width = SCREEN_WIDTH, .height = POPUP_NAME_BOX_HEIGHT }, background, &handler->labels[1]) != RASTER_RC_OK) {
         return POPUP_RC_ERROR;
     }
     return POPUP_RC_OK;

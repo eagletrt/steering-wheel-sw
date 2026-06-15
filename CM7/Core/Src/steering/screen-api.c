@@ -90,8 +90,8 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_forward_return_code(enum Da
     return (return_code == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
-enum ScreenReturnCode screen_api_set_state(const char *text) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_state(&screen_handler.dashboard, text));
+enum ScreenReturnCode screen_api_set_car_state(const char *text) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_car_state(&screen_handler.dashboard, text));
 }
 
 enum ScreenReturnCode screen_api_set_power(uint8_t value) {
@@ -114,12 +114,12 @@ enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
     return prv_screen_api_forward_return_code(dashboard_api_set_soc(&screen_handler.dashboard, percent));
 }
 
-enum ScreenReturnCode screen_api_set_hv_temp(int16_t celsius) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_hv_temp(&screen_handler.dashboard, celsius));
+enum ScreenReturnCode screen_api_set_hv_temperature(int16_t celsius) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_hv_temperature(&screen_handler.dashboard, celsius));
 }
 
-enum ScreenReturnCode screen_api_set_inv_temp(int16_t celsius) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_inv_temp(&screen_handler.dashboard, celsius));
+enum ScreenReturnCode screen_api_set_inv_temperature(int16_t celsius) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_inverter_temperature(&screen_handler.dashboard, celsius));
 }
 
 enum ScreenReturnCode screen_api_set_lap(uint8_t current, uint8_t total) {
@@ -130,12 +130,12 @@ enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms) {
     return prv_screen_api_forward_return_code(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
 }
 
-enum ScreenReturnCode screen_api_set_tire_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temps(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
+enum ScreenReturnCode screen_api_set_tire_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temperatures(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
 }
 
-enum ScreenReturnCode screen_api_set_motor_temps(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temps(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
+enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temperatures(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
 }
 
 /*!
@@ -171,7 +171,7 @@ enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
 
     enum ScreenReturnCode return_code = SCREEN_RC_OK;
 
-    if (screen_api_set_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK) {
+    if (screen_api_set_car_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
 
@@ -191,10 +191,10 @@ enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
     if (screen_api_set_soc(ui_data->soc) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
-    if (screen_api_set_hv_temp(ui_data->hv_temp) != SCREEN_RC_OK) {
+    if (screen_api_set_hv_temperature(ui_data->hv_temp) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
-    if (screen_api_set_inv_temp(ui_data->inverter_temp) != SCREEN_RC_OK) {
+    if (screen_api_set_inv_temperature(ui_data->inverter_temp) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
 
@@ -205,10 +205,10 @@ enum ScreenReturnCode screen_api_sync_data(const struct IPCUIData *ui_data) {
         return_code = SCREEN_RC_ERROR;
     }
 
-    if (screen_api_set_tire_temps(ui_data->tire_fl_temp, ui_data->tire_fr_temp, ui_data->tire_rl_temp, ui_data->tire_rr_temp) != SCREEN_RC_OK) {
+    if (screen_api_set_tire_temperatures(ui_data->tire_fl_temp, ui_data->tire_fr_temp, ui_data->tire_rl_temp, ui_data->tire_rr_temp) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
-    if (screen_api_set_motor_temps(ui_data->motor_fl_temp, ui_data->motor_fr_temp, ui_data->motor_rl_temp, ui_data->motor_rr_temp) != SCREEN_RC_OK) {
+    if (screen_api_set_motor_temperatures(ui_data->motor_fl_temp, ui_data->motor_fr_temp, ui_data->motor_rl_temp, ui_data->motor_rr_temp) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
 

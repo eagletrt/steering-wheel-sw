@@ -83,6 +83,7 @@ void test_popup_api_dismiss(void) {
 void test_popup_api_dismiss_null_handler(void) {
     // Should not crash or modify any state when a null handler is provided
     popup_api_dismiss(NULL);
+    TEST_PASS();
 }
 
 /*! \} */

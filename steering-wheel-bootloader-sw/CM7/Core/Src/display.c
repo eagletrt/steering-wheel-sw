@@ -24,6 +24,6 @@ enum RasterReturnCode display_init() {
     return RASTER_RC_OK;
 }
 
-void display_draw() {
-    EAGLETRT_API_UNUSED(raster_api_render(&raster_handler));
+enum RasterReturnCode display_draw() {
+    return raster_api_render(&raster_handler);
 }

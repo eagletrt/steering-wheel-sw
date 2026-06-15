@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -11,6 +12,7 @@ Import("env")
 JSON_PATH = Path("tools/fonts.json")
 HASH_PATH = Path("tools/.fonts.json.sha256")
 OUTPUT_DIR = Path("tools/generated")
+
 
 logging.basicConfig(level=logging.INFO, format="[libraster] %(message)s")
 logger = logging.getLogger("libraster")

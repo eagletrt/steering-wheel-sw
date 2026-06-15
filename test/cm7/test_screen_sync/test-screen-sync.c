@@ -80,78 +80,78 @@ void test_screen_api_sync_empty_snapshot_succeeds(void) {
 void test_screen_api_sync_pushes_scenario_strip(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW 5", screen_handler.dashboard.text[DASHBOARD_FIELD_POWER], "power field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("RGN 10", screen_handler.dashboard.text[DASHBOARD_FIELD_REGEN], "regen field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("TQ 6", screen_handler.dashboard.text[DASHBOARD_FIELD_TORQUE], "torque field must take the snapshot value");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP ON", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP], "slip on translates to 'SLIP ON'");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5", screen_handler.dashboard.text[DASHBOARD_FIELD_POWER], "power value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10", screen_handler.dashboard.text[DASHBOARD_FIELD_REGEN], "regen value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("6", screen_handler.dashboard.text[DASHBOARD_FIELD_TORQUE], "torque value field carries only the number");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("ON", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP], "slip on translates to 'ON' (label box says 'SLIP')");
 }
 
 void test_screen_api_sync_slip_off_when_zero(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     snapshot.slip_on = 0U;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("SLIP OFF", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP]);
+    TEST_ASSERT_EQUAL_STRING("OFF", screen_handler.dashboard.text[DASHBOARD_FIELD_SLIP]);
 }
 
 void test_screen_api_sync_state_idle(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_IDLE;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("IDLE", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("IDLE", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_drive(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_DRIVE;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("DRIVE", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("DRIVE", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_error(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = IPC_UI_VEHICLE_STATE_ERROR;
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING("ERROR", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE]);
+    TEST_ASSERT_EQUAL_STRING("ERROR", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE]);
 }
 
 void test_screen_api_sync_state_unknown_falls_back(void) {
     struct IPCUIData snapshot = { 0 };
     snapshot.vehicle_state = 200U; /* out of range */
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("----", screen_handler.dashboard.text[DASHBOARD_FIELD_STATE], "Unknown state must fall back to '----' rather than show garbage");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("----", screen_handler.dashboard.text[DASHBOARD_FIELD_CAR_STATE], "Unknown state must fall back to '----' rather than show garbage");
 }
 
 void test_screen_api_sync_pushes_hv_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
     TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_SOC], "SoC must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("104C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMP], "HV temp must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("INV 22C", screen_handler.dashboard.text[DASHBOARD_FIELD_INV], "Inverter temp must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("104°C", screen_handler.dashboard.text[DASHBOARD_FIELD_HV_TEMPERATURE], "HV temp must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", screen_handler.dashboard.text[DASHBOARD_FIELD_INVERTER], "Inverter temp value carries the temperature without the 'INV' prefix");
 }
 
 void test_screen_api_sync_pushes_lap_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("LAP 9/11", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP], "Lap counter must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("9/11", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP], "Lap value carries only 'current/total' (label box says 'LAP')");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("-0.420", screen_handler.dashboard.text[DASHBOARD_FIELD_LAP_DELTA], "Lap delta must reflect the snapshot");
 }
 
 void test_screen_api_sync_pushes_tire_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("95C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FL], "FL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("60C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_FR], "FR tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RL], "RL tire must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("40C", screen_handler.dashboard.text[DASHBOARD_FIELD_TRS_RR], "RR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("95°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_FRONT_LEFT], "FL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("60°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_FRONT_RIGHT], "FR tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("10°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_REAR_LEFT], "RL tire must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("40°C", screen_handler.dashboard.text[DASHBOARD_FIELD_TIRES_REAR_RIGHT], "RR tire must reflect the snapshot");
 }
 
 void test_screen_api_sync_pushes_motor_block(void) {
     struct IPCUIData snapshot = prv_make_snapshot();
     screen_api_sync_data(&snapshot);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FL], "FL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("23C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_FR], "FR motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("24C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RL], "RL motor must reflect the snapshot");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("25C", screen_handler.dashboard.text[DASHBOARD_FIELD_MTR_RR], "RR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_FRONT_LEFT], "FL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("23°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_FRONT_RIGHT], "FR motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("24°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_REAR_LEFT], "RL motor must reflect the snapshot");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("25°C", screen_handler.dashboard.text[DASHBOARD_FIELD_MOTORS_REAR_RIGHT], "RR motor must reflect the snapshot");
 }
 
 /*! \} */
@@ -170,10 +170,13 @@ void test_screen_api_sync_called_twice_keeps_dashboard_clean(void) {
 
     enum ScreenReturnCode rc = screen_api_sync_data(&snapshot);
 
-    TEST_ASSERT_EQUAL_MESSAGE(SCREEN_RC_OK, rc, "Second sync must still succeed");
+    uint8_t updated_after_replay[DASHBOARD_FIELD_COUNT];
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[i].updated, "Replaying the same snapshot must not dirty any box");
+        updated_after_replay[i] = screen_handler.dashboard.boxes[i].updated ? 1U : 0U;
     }
+
+    TEST_ASSERT_EQUAL_MESSAGE(SCREEN_RC_OK, rc, "Second sync must still succeed");
+    TEST_ASSERT_EACH_EQUAL_UINT8_MESSAGE(0U, updated_after_replay, DASHBOARD_FIELD_COUNT, "Replaying the same snapshot must not dirty any box");
 }
 
 void test_screen_api_sync_flags_only_changed_fields(void) {
@@ -188,7 +191,7 @@ void test_screen_api_sync_flags_only_changed_fields(void) {
 
     TEST_ASSERT_TRUE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_SOC].updated, "Changed field must be flagged");
     TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_POWER].updated, "Unchanged power must stay clean");
-    TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_TEMP].updated, "Unchanged HV temp must stay clean");
+    TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_HV_TEMPERATURE].updated, "Unchanged HV temp must stay clean");
     TEST_ASSERT_FALSE_MESSAGE(screen_handler.dashboard.boxes[DASHBOARD_FIELD_LAP].updated, "Unchanged lap must stay clean");
 }
 
