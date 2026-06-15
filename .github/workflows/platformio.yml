@@ -49,4 +49,4 @@ jobs:
       - name: Static Code Analysis
         if: github.ref == 'refs/heads/dev'
         run: |
-          pio check -e cm4 -e cm7 || true
+          pio check || true
