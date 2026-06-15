@@ -10,7 +10,7 @@
 #define SCREEN_WIDTH (800U)
 #define SCREEN_HEIGHT (480U)
 
-#define SCREEN_POPUP_TIMEOUT_MS (2500U)
+#define SCREEN_POPUP_TIMEOUT_MS (1500U)
 
 /*!
  * \brief Return codes for screen operations
