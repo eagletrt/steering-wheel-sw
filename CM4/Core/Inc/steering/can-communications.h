@@ -10,19 +10,7 @@
  * \details The CAN module wraps a PAL handler per network and presents a
  *     queue-based API. It deliberately stays network-agnostic: frames
  *     travel as raw {id, length, data} tuples in both directions and the
- *     application is responsible for marshalling them through libcan
- *     (the auto-generated can_*_api_serialize_from_id /
- *     can_*_api_deserialize_from_id helpers, one header per network).
- *
- *     libcan therefore lives in the application/dispatch layer, not inside
- *     this module:
- *       - **TX path**: application calls can_*_api_serialize_from_id(...)
- *         to fill the data bytes, then hands the resulting frame to
- *         can_communications_api_send.
- *       - **RX path**: application drains the queue with
- *         can_communications_api_process_rx and runs the matching
- *         can_*_api_deserialize_from_id(...) on the popped frame.
- *
+ *     application is responsible for moving them through libcan.
  *     The module only ever moves bytes; one CAN module covers every
  *     network because libcan keeps each one in its own translation unit.
  */
@@ -41,7 +29,7 @@
  * \brief Maximum payload size of a classic-CAN frame, in bytes.
  *
  * \details FDCAN in classic mode is limited to 8 data bytes. The PAL queues
- *     are sized off the wire-frame buffer that wraps this payload, so any
+ *     are sized off the raw-frame buffer that wraps this payload, so any
  *     bump here automatically widens the internal staging buffers.
  */
 #define CAN_COMMUNICATIONS_FRAME_DATA_SIZE (8U)
@@ -60,15 +48,16 @@
  * \brief Return codes for CAN-communications operations.
  */
 enum CanCommunicationReturnCode {
-    CAN_COMMUNICATION_RC_OK,                 /*!< Operation completed successfully. */
-    CAN_COMMUNICATION_RC_NULL_POINTER,       /*!< A required pointer argument was NULL. */
-    CAN_COMMUNICATION_RC_INVALID_NETWORK,    /*!< Network ID is out of range or already initialized. */
-    CAN_COMMUNICATION_RC_INVALID_LENGTH,     /*!< Frame length is larger than CAN_COMMUNICATIONS_FRAME_DATA_SIZE. */
-    CAN_COMMUNICATION_RC_NOT_INITIALIZED,    /*!< API called on a network whose init never ran. */
-    CAN_COMMUNICATION_RC_QUEUE_FULL,         /*!< Target queue has no room. */
-    CAN_COMMUNICATION_RC_QUEUE_EMPTY,        /*!< Source queue is empty. */
-    CAN_COMMUNICATION_RC_TRANSMISSION_ERROR, /*!< The user-supplied send callback reported failure. */
-    CAN_COMMUNICATION_RC_ERROR,              /*!< Generic failure (PAL/arena/internal). */
+    CAN_COMMUNICATION_RC_OK,                    /*!< Operation completed successfully. */
+    CAN_COMMUNICATION_RC_NULL_POINTER,          /*!< A required pointer argument was NULL. */
+    CAN_COMMUNICATION_RC_INVALID_NETWORK,       /*!< Network ID is out of range or already initialized. */
+    CAN_COMMUNICATION_RC_INVALID_LENGTH,        /*!< Frame length is larger than CAN_COMMUNICATIONS_FRAME_DATA_SIZE. */
+    CAN_COMMUNICATION_RC_NOT_INITIALIZED,       /*!< API called on a network whose init never ran. */
+    CAN_COMMUNICATION_RC_QUEUE_FULL,            /*!< Target queue has no room. */
+    CAN_COMMUNICATION_RC_QUEUE_EMPTY,           /*!< Source queue is empty. */
+    CAN_COMMUNICATION_RC_TRANSMISSION_ERROR,    /*!< The user-supplied send callback reported failure. */
+    CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR, /*!< The user-supplied receive callback reported failure. */
+    CAN_COMMUNICATION_RC_ERROR,                 /*!< Generic failure (PAL/arena/internal). */
 };
 
 /*!
@@ -98,7 +87,7 @@ struct CanCommunicationFrame {
 };
 
 /*!
- * \brief Callback invoked when the module needs to put a frame on the wire.
+ * \brief Callback invoked when the module needs to put a frame on the raw_frame.
  *
  * \details Registered through can_communications_api_init. Wraps the
  *     vendor HAL call (typically HAL_FDCAN_AddMessageToTxFifoQ on the
@@ -113,6 +102,36 @@ struct CanCommunicationFrame {
 typedef enum CanCommunicationReturnCode (*can_communications_send_callback)(const struct CanCommunicationFrame *frame);
 
 /*!
+ * \brief Callback invoked once per frame drained by can_communications_api_process_rx.
+ *
+ * \details The natural home for the libcan deserialise + switch-on-id:
+ *
+ *     \code
+ *     static enum CanCommunicationReturnCode primary_on_receive(const struct CanCommunicationFrame *frame) {
+ *         union CanPrimaryMessages decoded;
+ *         if (can_primary_api_deserialize_from_id(frame->id, frame->data, &decoded) < 0) {
+ *             return CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR;
+ *         }
+ *         switch (frame->id) {
+ *             case CAN_PRIMARY_MESSAGE_FRAME_ID_ECU_STATUS: ...; break;
+ *             ...
+ *         }
+ *         return CAN_COMMUNICATION_RC_OK;
+ *     }
+ *     \endcode
+ *
+ *     Returning anything other than CAN_COMMUNICATION_RC_OK does not stop
+ *     the drain — the rest of the queue is still processed — but the
+ *     final return code of process_rx will surface the error.
+ *
+ * \param[in] frame The frame just popped off the RX queue.
+ *
+ * \retval CAN_COMMUNICATION_RC_OK on success.
+ * \retval CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR if dispatch fails.
+ */
+typedef enum CanCommunicationReturnCode (*can_communications_receive_callback)(const struct CanCommunicationFrame *frame);
+
+/*!
  * \brief Critical-section enter/exit callback type.
  *
  * \details The module's RX queue is pushed from the FDCAN ISR and popped
@@ -124,6 +143,20 @@ typedef enum CanCommunicationReturnCode (*can_communications_send_callback)(cons
 typedef void (*can_communications_critical_section_callback)(void);
 
 /*!
+ * \brief Init-time configuration for one CAN network.
+ *
+ * \details Bundled in a struct (rather than as four positional arguments
+ *     on init) so adding a new wiring point later is a struct extension
+ *     instead of an API break.
+ */
+struct CanCommunicationsNetworkConfig {
+    can_communications_send_callback send;                 /*!< Required: wraps HAL_FDCAN_AddMessageToTxFifoQ */
+    can_communications_receive_callback on_receive;        /*!< Required: dispatch + libcan deserialise */
+    can_communications_critical_section_callback cs_enter; /*!< Optional, may be NULL */
+    can_communications_critical_section_callback cs_exit;  /*!< Optional, may be NULL */
+};
+
+/*!
  * \brief Per-network slot in the module's file-static handler.
  *
  * \details Bundled here (instead of as parallel arrays in the impl) so the
@@ -131,9 +164,10 @@ typedef void (*can_communications_critical_section_callback)(void);
  *     outside can-communications-api.c.
  */
 struct CanCommunicationsNetworkState {
-    struct PalHandler pal;                 /*!< PAL handler that owns the per-network queues */
-    can_communications_send_callback send; /*!< User-supplied "actually transmit" callback */
-    bool initialized;                      /*!< Whether init has run for this network */
+    struct PalHandler pal;                          /*!< PAL handler that owns the per-network queues */
+    can_communications_send_callback send;          /*!< User-supplied "actually transmit" callback */
+    can_communications_receive_callback on_receive; /*!< User-supplied per-frame dispatcher */
+    bool initialized;                               /*!< Whether init has run for this network */
 };
 
 /*!
@@ -143,8 +177,8 @@ struct CanCommunicationsNetworkState {
  *     across all PAL instances since PAL only allocates at init time.
  */
 struct CanCommunicationsHandler {
-    struct ArenaAllocatorHandler arena;
-    struct CanCommunicationsNetworkState networks[CAN_COMMUNICATION_NETWORK_COUNT];
+    struct ArenaAllocatorHandler arena;                                             /*!< Arena allocator for PAL staging buffers */
+    struct CanCommunicationsNetworkState networks[CAN_COMMUNICATION_NETWORK_COUNT]; /*!< Per-network state */
 };
 
 #endif // CAN_COMMUNICATIONS_H

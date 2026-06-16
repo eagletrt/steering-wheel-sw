@@ -30,28 +30,20 @@
  *     untouched (they end up undefined on the consumer side, which is what
  *     CanCommunicationFrame already documents).
  */
-/*!
- * \brief Byte offset, inside the wire buffer, where the encoded frame id begins.
- */
-#define CAN_COMMUNICATIONS_WIRE_ID_OFFSET (0U)
 
 /*!
  * \brief Byte offset, inside the wire buffer, where the encoded length byte sits.
  */
-#define CAN_COMMUNICATIONS_WIRE_LENGTH_OFFSET ((uint32_t)sizeof(uint32_t))
+#define CAN_COMMUNICATIONS_WIRE_LENGTH_OFFSET (sizeof(uint32_t))
 
 /*!
  * \brief Byte offset, inside the wire buffer, where the payload bytes start.
  */
-#define CAN_COMMUNICATIONS_WIRE_DATA_OFFSET (CAN_COMMUNICATIONS_WIRE_LENGTH_OFFSET + (uint32_t)sizeof(uint8_t))
+#define CAN_COMMUNICATIONS_WIRE_DATA_OFFSET (CAN_COMMUNICATIONS_WIRE_LENGTH_OFFSET + sizeof(uint8_t))
 
 #define CAN_COMMUNICATIONS_WIRE_SIZE (CAN_COMMUNICATIONS_WIRE_DATA_OFFSET + CAN_COMMUNICATIONS_FRAME_DATA_SIZE)
 
 EAGLETRT_STATIC struct CanCommunicationsHandler handler;
-
-/* -------------------------------------------------------------------------- */
-/* helpers                                                                    */
-/* -------------------------------------------------------------------------- */
 
 /*!
  * \brief Whether \p network is a valid index into the per-network arrays.
@@ -215,12 +207,8 @@ EAGLETRT_STATIC void prv_ensure_arena_ready(void) {
     }
 }
 
-/* -------------------------------------------------------------------------- */
-/* public API                                                                 */
-/* -------------------------------------------------------------------------- */
-
-enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicationNetwork network, can_communications_send_callback send, can_communications_critical_section_callback cs_enter, can_communications_critical_section_callback cs_exit) {
-    if (send == NULL) {
+enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicationNetwork network, const struct CanCommunicationsNetworkConfig *config) {
+    if (config == NULL || config->send == NULL || config->on_receive == NULL) {
         return CAN_COMMUNICATION_RC_NULL_POINTER;
     }
     if (!prv_network_is_valid(network)) {
@@ -232,7 +220,8 @@ enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicatio
 
     prv_ensure_arena_ready();
 
-    handler.networks[network].send = send;
+    handler.networks[network].send = config->send;
+    handler.networks[network].on_receive = config->on_receive;
 
     if (pal_api_init(
             &handler.networks[network].pal,
@@ -241,8 +230,8 @@ enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicatio
             CAN_COMMUNICATIONS_WIRE_SIZE,
             prv_pal_deserialize,
             prv_pal_send_shims[network],
-            cs_enter,
-            cs_exit,
+            config->cs_enter,
+            config->cs_exit,
             &handler.arena) != PAL_RC_OK) {
         return CAN_COMMUNICATION_RC_ERROR;
     }
@@ -302,7 +291,7 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_enqueue(enum CanCommunicatio
     }
 }
 
-enum CanCommunicationReturnCode can_communications_api_send(enum CanCommunicationNetwork network, const struct CanCommunicationFrame *frame) {
+enum CanCommunicationReturnCode can_communications_api_add_to_tx_buffer(enum CanCommunicationNetwork network, const struct CanCommunicationFrame *frame) {
     return prv_enqueue(network, frame, true);
 }
 
@@ -318,22 +307,25 @@ enum CanCommunicationReturnCode can_communications_api_process_tx(enum CanCommun
         return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
     }
 
-    switch (pal_api_process_tx(&handler.networks[network].pal)) {
-        case PAL_RC_OK:
-            return CAN_COMMUNICATION_RC_OK;
-        case PAL_RC_QUEUE_EMPTY:
-            return CAN_COMMUNICATION_RC_QUEUE_EMPTY;
-        case PAL_RC_IO_ERROR:
-            return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
-        default:
+    enum CanCommunicationReturnCode result = CAN_COMMUNICATION_RC_OK;
+    while (true) {
+        const enum PalReturnCode return_code = pal_api_process_tx(&handler.networks[network].pal);
+        if (return_code == PAL_RC_QUEUE_EMPTY) {
+            break;
+        }
+        if (return_code == PAL_RC_IO_ERROR) {
+            /* User send callback reported failure on this frame; keep draining. */
+            result = CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
+            continue;
+        }
+        if (return_code != PAL_RC_OK) {
             return CAN_COMMUNICATION_RC_ERROR;
+        }
     }
+    return result;
 }
 
-enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommunicationNetwork network, struct CanCommunicationFrame *frame_out) {
-    if (frame_out == NULL) {
-        return CAN_COMMUNICATION_RC_NULL_POINTER;
-    }
+enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommunicationNetwork network) {
     if (!prv_network_is_valid(network)) {
         return CAN_COMMUNICATION_RC_INVALID_NETWORK;
     }
@@ -341,12 +333,21 @@ enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommun
         return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
     }
 
-    switch (pal_api_process_rx(&handler.networks[network].pal, frame_out)) {
-        case PAL_RC_OK:
-            return CAN_COMMUNICATION_RC_OK;
-        case PAL_RC_QUEUE_EMPTY:
-            return CAN_COMMUNICATION_RC_QUEUE_EMPTY;
-        default:
+    const can_communications_receive_callback dispatcher = handler.networks[network].on_receive;
+    enum CanCommunicationReturnCode result = CAN_COMMUNICATION_RC_OK;
+    while (true) {
+        struct CanCommunicationFrame frame;
+        const enum PalReturnCode return_code = pal_api_process_rx(&handler.networks[network].pal, &frame);
+        if (return_code == PAL_RC_QUEUE_EMPTY) {
+            break;
+        }
+        if (return_code != PAL_RC_OK) {
             return CAN_COMMUNICATION_RC_ERROR;
+        }
+        if (dispatcher(&frame) != CAN_COMMUNICATION_RC_OK) {
+            /* Surface the failure but keep draining the queue. */
+            result = CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR;
+        }
     }
+    return result;
 }
