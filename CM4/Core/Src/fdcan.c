@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "can-communications-api.h"
+
 /* USER CODE END 0 */
 
 FDCAN_HandleTypeDef hfdcan1;
@@ -249,5 +251,65 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+enum CanCommunicationReturnCode fdcan_send_primary(const struct CanCommunicationFrame *frame) {
+    FDCAN_TxHeaderTypeDef header = { 0 };
+    header.Identifier = frame->id;
+    header.IdType = FDCAN_STANDARD_ID;
+    header.TxFrameType = FDCAN_DATA_FRAME;
+    header.DataLength = (uint32_t)(frame->length << 16U);
+    header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    header.BitRateSwitch = FDCAN_BRS_OFF;
+    header.FDFormat = FDCAN_CLASSIC_CAN;
+    header.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+    header.MessageMarker = 0;
+
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &header, frame->data) != HAL_OK) {
+        return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
+    }
+    return CAN_COMMUNICATION_RC_OK;
+}
+
+enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicationFrame *frame) {
+    FDCAN_TxHeaderTypeDef header = { 0 };
+    header.Identifier = frame->id;
+    header.IdType = FDCAN_STANDARD_ID;
+    header.TxFrameType = FDCAN_DATA_FRAME;
+    header.DataLength = (uint32_t)(frame->length << 16U);
+    header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+    header.BitRateSwitch = FDCAN_BRS_OFF;
+    header.FDFormat = FDCAN_CLASSIC_CAN;
+    header.TxEventFifoControl = FDCAN_STORE_TX_EVENTS;
+    header.MessageMarker = 0;
+
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &header, frame->data) != HAL_OK) {
+        return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
+    }
+    return CAN_COMMUNICATION_RC_OK;
+}
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs) {
+    if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
+        FDCAN_RxHeaderTypeDef header = { 0 };
+        struct CanCommunicationFrame msg;
+        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+        HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+        msg.id = header.Identifier;
+        msg.length = (uint8_t)(header.DataLength >> 16U);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+    }
+}
+
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs) {
+    if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != RESET) {
+        FDCAN_RxHeaderTypeDef header = { 0 };
+        struct CanCommunicationFrame msg;
+        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
+        HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
+        msg.id = header.Identifier;
+        msg.length = (uint8_t)(header.DataLength >> 16U);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+    }
+}
 
 /* USER CODE END 1 */
