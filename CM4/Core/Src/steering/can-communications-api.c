@@ -209,9 +209,7 @@ enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicatio
     if (!prv_network_is_valid(network)) {
         return CAN_COMMUNICATION_RC_INVALID_NETWORK;
     }
-    if (handler.networks[network].initialized) {
-        return CAN_COMMUNICATION_RC_INVALID_NETWORK;
-    }
+    memset(&handler.networks[network], 0, sizeof(handler.networks[network]));
 
     prv_ensure_arena_ready();
 
