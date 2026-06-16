@@ -17,6 +17,7 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
+#include "can-communications-api.h"
 #include "inputs-api.h"
 #include "leds-api.h"
 #include "post-api.h"
@@ -129,6 +130,12 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     if (leds_api_show() != LEDS_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
+
+    EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY));
+    EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_SECONDARY));
+
+    EAGLETRT_API_UNUSED(can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY));
+    EAGLETRT_API_UNUSED(can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_SECONDARY));
 
     /*** USER CODE END DO_IDLE ***/
 
