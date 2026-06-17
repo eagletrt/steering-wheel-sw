@@ -11,7 +11,7 @@
  * \retval CAN_COMMUNICATION_RC_OK on success.
  * \retval CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR if dispatch fails.
  */
-enum CanCommunicationReturnCode can_communications_router_receive_primary(const struct CanCommunicationFrame *frame);
+enum CanCommunicationReturnCode can_communications_router_api_receive_primary(const struct CanCommunicationFrame *frame);
 
 /*!
  * \brief Router function for incoming CAN frames on the secondary network.
@@ -21,6 +21,6 @@ enum CanCommunicationReturnCode can_communications_router_receive_primary(const 
  * \retval CAN_COMMUNICATION_RC_OK on success.
  * \retval CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR if dispatch fails.
  */
-enum CanCommunicationReturnCode can_communications_router_receive_secondary(const struct CanCommunicationFrame *frame);
+enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(const struct CanCommunicationFrame *frame);
 
 #endif // CAN_COMMUNICATIONS_ROUTER_H

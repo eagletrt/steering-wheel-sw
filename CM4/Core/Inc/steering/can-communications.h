@@ -34,6 +34,8 @@
  */
 #define CAN_COMMUNICATIONS_FRAME_DATA_SIZE (8U)
 
+// TODO: adjust capactities to fit libcan later
+
 /*!
  * \brief Depth of the per-network reception queue.
  */

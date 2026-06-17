@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "can-communications-router.h"
+#include "can-communications-router-api.h"
 #include "dma.h"
 #include "fdcan.h"
 #include "tim.h"
@@ -148,21 +148,19 @@ int main(void) {
     struct PostInitData data = {
         .leds_transmit = tim_leds_transmit,
         .parameters_on_change = main_on_parameter_change,
-        .can_send = {
-            [CAN_COMMUNICATION_NETWORK_PRIMARY] = fdcan_send_primary,
-            [CAN_COMMUNICATION_NETWORK_SECONDARY] = fdcan_send_secondary,
-        },
-        .can_on_receive = {
-            [CAN_COMMUNICATION_NETWORK_PRIMARY] = can_communications_router_receive_primary,
-            [CAN_COMMUNICATION_NETWORK_SECONDARY] = can_communications_router_receive_secondary,
-        },
-        .can_cs_enter = {
-            [CAN_COMMUNICATION_NETWORK_PRIMARY] = __disable_irq,
-            [CAN_COMMUNICATION_NETWORK_SECONDARY] = __disable_irq,
-        },
-        .can_cs_exit = {
-            [CAN_COMMUNICATION_NETWORK_PRIMARY] = __enable_irq,
-            [CAN_COMMUNICATION_NETWORK_SECONDARY] = __enable_irq,
+        .can_network_configs = {
+            [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_primary,
+                .send = fdcan_send_primary,
+            },
+            [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_secondary,
+                .send = fdcan_send_secondary,
+            },
         },
     };
 

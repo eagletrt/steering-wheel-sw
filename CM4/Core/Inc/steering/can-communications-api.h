@@ -26,11 +26,10 @@
 #include "can-communications.h"
 
 /*!
- * \brief Initialize one CAN network.
+ * \brief Initialize the CAN-communications module.
  *
- * \param[in] network The CAN bus to initialize.
- * \param[in] config  Per-network wiring (send + on_receive required, cs
- *     callbacks optional). Must be non-NULL.
+ * \param[in] configs  Per-network wiring (send + on_receive required, cs
+ *     callbacks optional). One for each network, in order.
  *
  * \retval CAN_COMMUNICATION_RC_OK on success.
  * \retval CAN_COMMUNICATION_RC_NULL_POINTER if \p config is NULL or any
@@ -39,7 +38,7 @@
  *     range or already initialized.
  * \retval CAN_COMMUNICATION_RC_ERROR if PAL or the arena fail to set up.
  */
-enum CanCommunicationReturnCode can_communications_api_init(enum CanCommunicationNetwork network, const struct CanCommunicationsNetworkConfig *config);
+enum CanCommunicationReturnCode can_communications_api_init(const struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT]);
 
 /*!
  * \brief Push a frame into the TX queue.

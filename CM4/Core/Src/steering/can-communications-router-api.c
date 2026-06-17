@@ -1,6 +1,6 @@
-#include "can-communications-router.h"
+#include "can-communications-router-api.h"
 
-enum CanCommunicationReturnCode can_communications_router_receive_primary(const struct CanCommunicationFrame *frame) {
+enum CanCommunicationReturnCode can_communications_router_api_receive_primary(const struct CanCommunicationFrame *frame) {
     if (frame == NULL) {
         return CAN_COMMUNICATION_RC_NULL_POINTER;
     }
@@ -10,7 +10,7 @@ enum CanCommunicationReturnCode can_communications_router_receive_primary(const 
     return CAN_COMMUNICATION_RC_OK;
 }
 
-enum CanCommunicationReturnCode can_communications_router_receive_secondary(const struct CanCommunicationFrame *frame) {
+enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(const struct CanCommunicationFrame *frame) {
     if (frame == NULL) {
         return CAN_COMMUNICATION_RC_NULL_POINTER;
     }

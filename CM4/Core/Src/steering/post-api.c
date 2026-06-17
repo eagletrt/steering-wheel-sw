@@ -17,10 +17,14 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (post_init_data == NULL ||
         post_init_data->leds_transmit == NULL ||
         post_init_data->parameters_on_change == NULL ||
-        post_init_data->can_send[0] == NULL ||
-        post_init_data->can_send[1] == NULL ||
-        post_init_data->can_on_receive[0] == NULL ||
-        post_init_data->can_on_receive[1] == NULL) {
+        post_init_data->can_network_configs[0].cs_enter == NULL ||
+        post_init_data->can_network_configs[0].cs_exit == NULL ||
+        post_init_data->can_network_configs[0].on_receive == NULL ||
+        post_init_data->can_network_configs[0].send == NULL ||
+        post_init_data->can_network_configs[1].cs_enter == NULL ||
+        post_init_data->can_network_configs[1].cs_exit == NULL ||
+        post_init_data->can_network_configs[1].on_receive == NULL ||
+        post_init_data->can_network_configs[1].send == NULL) {
         return POST_RC_ERROR;
     }
 
@@ -45,25 +49,7 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         ret_code = POST_RC_ERROR;
     }
 
-    struct CanCommunicationsNetworkConfig primary_config = {
-        .send = post_init_data->can_send[CAN_COMMUNICATION_NETWORK_PRIMARY],
-        .on_receive = post_init_data->can_on_receive[CAN_COMMUNICATION_NETWORK_PRIMARY],
-        .cs_enter = post_init_data->can_cs_enter[CAN_COMMUNICATION_NETWORK_PRIMARY],
-        .cs_exit = post_init_data->can_cs_exit[CAN_COMMUNICATION_NETWORK_PRIMARY],
-    };
-
-    if (can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &primary_config) != CAN_COMMUNICATION_RC_OK) {
-        ret_code = POST_RC_ERROR;
-    }
-
-    struct CanCommunicationsNetworkConfig secondary_config = {
-        .send = post_init_data->can_send[CAN_COMMUNICATION_NETWORK_SECONDARY],
-        .on_receive = post_init_data->can_on_receive[CAN_COMMUNICATION_NETWORK_SECONDARY],
-        .cs_enter = post_init_data->can_cs_enter[CAN_COMMUNICATION_NETWORK_SECONDARY],
-        .cs_exit = post_init_data->can_cs_exit[CAN_COMMUNICATION_NETWORK_SECONDARY],
-    };
-
-    if (can_communications_api_init(CAN_COMMUNICATION_NETWORK_SECONDARY, &secondary_config) != CAN_COMMUNICATION_RC_OK) {
+    if (can_communications_api_init(post_init_data->can_network_configs) != CAN_COMMUNICATION_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 
