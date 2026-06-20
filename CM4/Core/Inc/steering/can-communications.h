@@ -82,7 +82,7 @@ enum CanCommunicationNetwork {
  *     consumer how many bytes are valid. Bytes past \c length are left
  *     undefined and must not be read.
  */
-struct CanCommunicationFrame {
+struct [[gnu::packed]] CanCommunicationFrame {
     uint32_t id;                                      /*!< CAN identifier (standard or extended) */
     uint8_t length;                                   /*!< Valid bytes in \c data, 0..CAN_COMMUNICATIONS_FRAME_DATA_SIZE */
     uint8_t data[CAN_COMMUNICATIONS_FRAME_DATA_SIZE]; /*!< Raw payload bytes */

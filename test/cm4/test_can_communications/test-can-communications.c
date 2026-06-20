@@ -53,6 +53,12 @@ static struct CanCommunicationsNetworkConfig default_config(void) {
     };
 }
 
+static void fill_default_configs(struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT]) {
+    for (enum CanCommunicationNetwork network = 0; network < CAN_COMMUNICATION_NETWORK_COUNT; ++network) {
+        configs[network] = default_config();
+    }
+}
+
 static struct CanCommunicationFrame make_frame(uint32_t id, uint8_t length) {
     struct CanCommunicationFrame frame = {
         .id = id,
@@ -81,8 +87,9 @@ void setUp(void) {
     handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized = false;
     handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized = false;
 
-    const struct CanCommunicationsNetworkConfig cfg = default_config();
-    can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg);
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    can_communications_api_init(configs);
 }
 
 /*!
@@ -91,53 +98,61 @@ void setUp(void) {
  */
 
 void test_init_success(void) {
-    const struct CanCommunicationsNetworkConfig cfg = default_config();
-    enum CanCommunicationReturnCode rc = can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg);
-    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc, "Expected init to succeed on valid config");
-    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized, "Initialised flag must be set on the target network");
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    enum CanCommunicationReturnCode rc = can_communications_api_init(configs);
+    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc, "Expected init to succeed on a valid configs array");
+    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized, "Primary initialised flag must be set");
+    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized, "Secondary initialised flag must be set");
 }
 
-void test_init_null_config(void) {
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, NULL));
+void test_init_null_configs(void) {
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(NULL));
 }
 
-void test_init_null_send(void) {
-    struct CanCommunicationsNetworkConfig cfg = default_config();
-    cfg.send = NULL;
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg));
+void test_init_null_send_in_any_slot(void) {
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    configs[CAN_COMMUNICATION_NETWORK_SECONDARY].send = NULL;
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(configs));
 }
 
-void test_init_null_on_receive(void) {
-    struct CanCommunicationsNetworkConfig cfg = default_config();
-    cfg.on_receive = NULL;
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg));
-}
-
-void test_init_invalid_network(void) {
-    const struct CanCommunicationsNetworkConfig cfg = default_config();
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_INVALID_NETWORK, can_communications_api_init(CAN_COMMUNICATION_NETWORK_COUNT, &cfg));
+void test_init_null_on_receive_in_any_slot(void) {
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    configs[CAN_COMMUNICATION_NETWORK_PRIMARY].on_receive = NULL;
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(configs));
 }
 
 void test_init_stores_callbacks_in_handler(void) {
-    const struct CanCommunicationsNetworkConfig cfg = default_config();
-    can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg);
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].send, "Send callback must be stored");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].on_receive, "Receive callback must be stored");
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    can_communications_api_init(configs);
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].send, "Primary send callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].on_receive, "Primary receive callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].send, "Secondary send callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].on_receive, "Secondary receive callback must be stored");
 }
 
 void test_init_accepts_null_critical_section_callbacks(void) {
-    struct CanCommunicationsNetworkConfig cfg = default_config();
-    cfg.cs_enter = NULL;
-    cfg.cs_exit = NULL;
-    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg), "Critical-section callbacks are optional; NULL on both is allowed");
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    for (enum CanCommunicationNetwork network = 0; network < CAN_COMMUNICATION_NETWORK_COUNT; ++network) {
+        configs[network].cs_enter = NULL;
+        configs[network].cs_exit = NULL;
+    }
+    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, can_communications_api_init(configs), "Critical-section callbacks are optional; NULL on both is allowed");
 }
 
-void test_init_independent_per_network(void) {
-    const struct CanCommunicationsNetworkConfig cfg = default_config();
-    enum CanCommunicationReturnCode rc_primary = can_communications_api_init(CAN_COMMUNICATION_NETWORK_PRIMARY, &cfg);
-    enum CanCommunicationReturnCode rc_secondary = can_communications_api_init(CAN_COMMUNICATION_NETWORK_SECONDARY, &cfg);
-    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc_primary, "Primary init must succeed");
-    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc_secondary, "Secondary init must succeed ");
+void test_init_resets_state_on_repeated_call(void) {
+    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
+    fill_default_configs(configs);
+    enum CanCommunicationReturnCode first = can_communications_api_init(configs);
+    enum CanCommunicationReturnCode second = can_communications_api_init(configs);
+    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, first, "First init must succeed");
+    TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, second, "Re-init must succeed and reset state");
+    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized, "Primary must still be initialised after re-init");
+    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized, "Secondary must still be initialised after re-init");
 }
 
 /*! \} */
@@ -378,13 +393,12 @@ int main(void) {
     UNITY_BEGIN();
 
     RUN_TEST(test_init_success);
-    RUN_TEST(test_init_null_config);
-    RUN_TEST(test_init_null_send);
-    RUN_TEST(test_init_null_on_receive);
-    RUN_TEST(test_init_invalid_network);
+    RUN_TEST(test_init_null_configs);
+    RUN_TEST(test_init_null_send_in_any_slot);
+    RUN_TEST(test_init_null_on_receive_in_any_slot);
     RUN_TEST(test_init_stores_callbacks_in_handler);
     RUN_TEST(test_init_accepts_null_critical_section_callbacks);
-    RUN_TEST(test_init_independent_per_network);
+    RUN_TEST(test_init_resets_state_on_repeated_call);
 
     RUN_TEST(test_add_to_tx_success);
     RUN_TEST(test_add_to_tx_null_frame);

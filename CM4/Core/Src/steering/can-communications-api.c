@@ -7,10 +7,10 @@
  * \brief Implementation of the CAN-bus communication module.
  *
  * \details One file-static handler owns a PAL handler per network plus a
- *     shared arena. The raw_frame format used between the API and PAL's byte
- *     queues stays inside this translation unit. libcan never appears
- *     here: serialisation/deserialisation lives in the application layer
- *     that calls the public API.
+ *     shared arena. Frames travel through PAL as raw bytes of the
+ *     CanCommunicationFrame struct itself, and PAL's built-in
+ *     memcpy-deserialiser (selected by passing NULL for the deserialise
+ *     callback at init) takes care of the copy in both directions..
  */
 
 #include "can-communications-api.h"
@@ -20,65 +20,7 @@
 
 #include <string.h>
 
-/*!
- * \brief Byte offset, inside the raw_frame buffer, where the encoded length byte sits.
- */
-#define CAN_COMMUNICATIONS_RAW_FRAME_LENGTH_OFFSET (sizeof(uint32_t))
-
-/*!
- * \brief Byte offset, inside the raw_frame buffer, where the payload bytes start.
- */
-#define CAN_COMMUNICATIONS_RAW_FRAME_DATA_OFFSET (CAN_COMMUNICATIONS_RAW_FRAME_LENGTH_OFFSET + sizeof(uint8_t))
-
-/*!
- * \brief RawFrame-format size pushed through PAL.
- *
- * \details Each queued frame is encoded as
- *     [id (4 bytes, little-endian)][length (1 byte)][data (8 bytes)]
- *     so PAL can treat the queue as a flat byte stream regardless of the
- *     CAN frame shape. Bytes past \c length are still copied through
- *     untouched (they end up undefined on the consumer side, which is what
- *     CanCommunicationFrame already documents).
- */
-#define CAN_COMMUNICATIONS_RAW_FRAME_SIZE (CAN_COMMUNICATIONS_RAW_FRAME_DATA_OFFSET + CAN_COMMUNICATIONS_FRAME_DATA_SIZE)
-
 EAGLETRT_STATIC struct CanCommunicationsHandler handler;
-
-/*!
- * \brief Encode a CanCommunicationFrame into the PAL raw_frame buffer.
- *
- * \param[in]  frame Source frame.
- * \param[out] raw_frame  Destination buffer, at least CAN_COMMUNICATIONS_RAW_FRAME_SIZE bytes long.
- */
-EAGLETRT_STATIC void prv_encode_frame(const struct CanCommunicationFrame *frame, uint8_t *raw_frame) {
-    raw_frame[0U] = (uint8_t)(frame->id & 0xFFU);
-    raw_frame[1U] = (uint8_t)((frame->id >> 8U) & 0xFFU);
-    raw_frame[2U] = (uint8_t)((frame->id >> 16U) & 0xFFU);
-    raw_frame[3U] = (uint8_t)((frame->id >> 24U) & 0xFFU);
-    raw_frame[CAN_COMMUNICATIONS_RAW_FRAME_LENGTH_OFFSET] = frame->length;
-    (void)memcpy(&raw_frame[CAN_COMMUNICATIONS_RAW_FRAME_DATA_OFFSET], frame->data, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-}
-
-/*!
- * \brief Decode a raw_frame buffer back into a CanCommunicationFrame.
- *
- * \details Mirrors prv_encode_frame and is used both by the PAL send shim
- *     (TX path) and the PAL deserialiser (RX path).
- *
- * \param[in]  raw_frame  Source buffer, at least CAN_COMMUNICATIONS_RAW_FRAME_SIZE bytes long.
- * \param[out] frame Destination frame.
- */
-EAGLETRT_STATIC void prv_decode_frame(const uint8_t *raw_frame, struct CanCommunicationFrame *frame) {
-    frame->id = (uint32_t)raw_frame[0U] |
-                ((uint32_t)raw_frame[1U] << 8U) |
-                ((uint32_t)raw_frame[2U] << 16U) |
-                ((uint32_t)raw_frame[3U] << 24U);
-    frame->length = raw_frame[CAN_COMMUNICATIONS_RAW_FRAME_LENGTH_OFFSET];
-    if (frame->length > CAN_COMMUNICATIONS_FRAME_DATA_SIZE) {
-        frame->length = CAN_COMMUNICATIONS_FRAME_DATA_SIZE;
-    }
-    (void)memcpy(frame->data, &raw_frame[CAN_COMMUNICATIONS_RAW_FRAME_DATA_OFFSET], CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-}
 
 /*!
  * \brief Shared body of the per-network PAL send shims.
@@ -88,23 +30,23 @@ EAGLETRT_STATIC void prv_decode_frame(const uint8_t *raw_frame, struct CanCommun
  *     helper with the right network ID.
  *
  * \param[in] network Network ID of the slot whose user send to dispatch to.
- * \param[in] msg     PAL message carrying the raw_frame-encoded frame.
+ * \param[in] message PAL message whose payload is a raw CanCommunicationFrame.
  *
  * \retval PAL_RC_OK on success.
- * \retval PAL_RC_NULL_POINTER if \p msg or the user send callback is NULL.
- * \retval PAL_RC_INVALID_ARGUMENT if the raw_frame size is wrong.
+ * \retval PAL_RC_NULL_POINTER if \p message or the user send callback is NULL.
+ * \retval PAL_RC_INVALID_ARGUMENT if the message size does not match a frame.
  * \retval PAL_RC_IO_ERROR if the user send callback reported failure.
  */
-EAGLETRT_STATIC enum PalReturnCode prv_pal_send_dispatch(enum CanCommunicationNetwork network, const struct PalMessage *msg) {
-    if (msg == NULL) {
+EAGLETRT_STATIC enum PalReturnCode prv_pal_send_dispatch(enum CanCommunicationNetwork network, const struct PalMessage *message) {
+    if (message == NULL) {
         return PAL_RC_NULL_POINTER;
     }
-    if (msg->size != CAN_COMMUNICATIONS_RAW_FRAME_SIZE) {
+    if (message->size != sizeof(struct CanCommunicationFrame)) {
         return PAL_RC_INVALID_ARGUMENT;
     }
 
     struct CanCommunicationFrame frame;
-    prv_decode_frame(msg->payload, &frame);
+    (void)memcpy(&frame, message->payload, sizeof(frame));
 
     const can_communications_send_callback user_send = handler.networks[network].send;
     if (user_send == NULL) {
@@ -119,54 +61,31 @@ EAGLETRT_STATIC enum PalReturnCode prv_pal_send_dispatch(enum CanCommunicationNe
 /*!
  * \brief PAL send shim for the primary network.
  *
- * \param[in] msg PAL message carrying the raw_frame-encoded frame.
+ * \param[in] message PAL message whose payload is a raw CanCommunicationFrame.
  *
  * \return Whatever prv_pal_send_dispatch returns.
  */
-EAGLETRT_STATIC enum PalReturnCode prv_pal_send_primary(const struct PalMessage *msg) {
-    return prv_pal_send_dispatch(CAN_COMMUNICATION_NETWORK_PRIMARY, msg);
+EAGLETRT_STATIC enum PalReturnCode prv_pal_send_primary(const struct PalMessage *message) {
+    return prv_pal_send_dispatch(CAN_COMMUNICATION_NETWORK_PRIMARY, message);
 }
 
 /*!
  * \brief PAL send shim for the secondary network.
  *
- * \param[in] msg PAL message carrying the raw_frame-encoded frame.
+ * \param[in] message PAL message whose payload is a raw CanCommunicationFrame.
  *
  * \return Whatever prv_pal_send_dispatch returns.
  */
-EAGLETRT_STATIC enum PalReturnCode prv_pal_send_secondary(const struct PalMessage *msg) {
-    return prv_pal_send_dispatch(CAN_COMMUNICATION_NETWORK_SECONDARY, msg);
-}
-
-/*!
- * \brief PAL deserialiser used on the RX path.
- *
- * \details Converts a raw_frame buffer back into a CanCommunicationFrame.
- *     Shared across networks because the raw_frame format is network-agnostic.
- *
- * \param[in]  message     PAL message carrying the raw_frame-encoded frame.
- * \param[out] frame_out   Pointer to a CanCommunicationFrame to populate.
- *
- * \retval PAL_RC_OK on success.
- * \retval PAL_RC_NULL_POINTER if \p message or \p frame_out is NULL.
- * \retval PAL_RC_DESERIALIZATION_ERROR if the raw_frame size is wrong.
- */
-EAGLETRT_STATIC enum PalReturnCode prv_pal_deserialize(const struct PalMessage *message, void *frame_out) {
-    if (message == NULL || frame_out == NULL) {
-        return PAL_RC_NULL_POINTER;
-    }
-    if (message->size != CAN_COMMUNICATIONS_RAW_FRAME_SIZE) {
-        return PAL_RC_DESERIALIZATION_ERROR;
-    }
-    prv_decode_frame(message->payload, (struct CanCommunicationFrame *)frame_out);
-    return PAL_RC_OK;
+EAGLETRT_STATIC enum PalReturnCode prv_pal_send_secondary(const struct PalMessage *message) {
+    return prv_pal_send_dispatch(CAN_COMMUNICATION_NETWORK_SECONDARY, message);
 }
 
 /*!
  * \brief Initialise one network slot in the module's file-static handler.
  *
- * \param[in] network Network ID to initialise.
- * \param[in] config  User-supplied wiring for this network.
+ * \param[in] network  Network ID to initialise.
+ * \param[in] config   User-supplied wiring for this network.
+ * \param[in] pal_send PAL send shim hard-wired to this network.
  *
  * \retval CAN_COMMUNICATION_RC_OK on success.
  * \retval CAN_COMMUNICATION_RC_NULL_POINTER if any required callback is NULL.
@@ -189,8 +108,8 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_can_communications_api_init_
             &handler.networks[network].pal,
             CAN_COMMUNICATIONS_RX_QUEUE_CAPACITY,
             CAN_COMMUNICATIONS_TX_QUEUE_CAPACITY,
-            CAN_COMMUNICATIONS_RAW_FRAME_SIZE,
-            prv_pal_deserialize,
+            (uint32_t)sizeof(struct CanCommunicationFrame),
+            NULL,
             pal_send,
             config.cs_enter,
             config.cs_exit,
@@ -216,9 +135,9 @@ enum CanCommunicationReturnCode can_communications_api_init(const struct CanComm
     };
 
     for (enum CanCommunicationNetwork network = 0; network < CAN_COMMUNICATION_NETWORK_COUNT; ++network) {
-        const enum CanCommunicationReturnCode rc = prv_can_communications_api_init_network(network, configs[network], pal_send_callbacks[network]);
-        if (rc != CAN_COMMUNICATION_RC_OK) {
-            return rc;
+        const enum CanCommunicationReturnCode return_code = prv_can_communications_api_init_network(network, configs[network], pal_send_callbacks[network]);
+        if (return_code != CAN_COMMUNICATION_RC_OK) {
+            return return_code;
         }
     }
 
@@ -226,7 +145,7 @@ enum CanCommunicationReturnCode can_communications_api_init(const struct CanComm
 }
 
 /*!
- * \brief Shared body of can_communications_api_send and
+ * \brief Shared body of can_communications_api_add_to_tx_buffer and
  *     can_communications_api_add_to_rx_buffer.
  *
  * \param[in] network Target network.
@@ -257,12 +176,11 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_enqueue(enum CanCommunicatio
         return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
     }
 
-    uint8_t raw_frame[CAN_COMMUNICATIONS_RAW_FRAME_SIZE];
-    prv_encode_frame(frame, raw_frame);
-
+    // PAL needs a non-const pointer
+    struct CanCommunicationFrame buffer = *frame;
     const enum PalReturnCode return_code = to_tx
-                                               ? pal_api_add_to_tx_queue(&handler.networks[network].pal, raw_frame, CAN_COMMUNICATIONS_RAW_FRAME_SIZE)
-                                               : pal_api_add_to_rx_queue(&handler.networks[network].pal, raw_frame, CAN_COMMUNICATIONS_RAW_FRAME_SIZE);
+                                               ? pal_api_add_to_tx_queue(&handler.networks[network].pal, &buffer, (uint32_t)sizeof(buffer))
+                                               : pal_api_add_to_rx_queue(&handler.networks[network].pal, (uint8_t *)&buffer, (uint32_t)sizeof(buffer));
 
     switch (return_code) {
         case PAL_RC_OK:

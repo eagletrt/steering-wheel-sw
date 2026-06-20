@@ -131,6 +131,7 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
         next_state = FSM_STATE_ERROR;
     }
 
+    // TODO: add check for return values, and handle errors accordingly
     EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY));
     EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_SECONDARY));
 
