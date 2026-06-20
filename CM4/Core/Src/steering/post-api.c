@@ -17,12 +17,8 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (post_init_data == NULL ||
         post_init_data->leds_transmit == NULL ||
         post_init_data->parameters_on_change == NULL ||
-        post_init_data->can_network_configs[0].cs_enter == NULL ||
-        post_init_data->can_network_configs[0].cs_exit == NULL ||
         post_init_data->can_network_configs[0].on_receive == NULL ||
         post_init_data->can_network_configs[0].send == NULL ||
-        post_init_data->can_network_configs[1].cs_enter == NULL ||
-        post_init_data->can_network_configs[1].cs_exit == NULL ||
         post_init_data->can_network_configs[1].on_receive == NULL ||
         post_init_data->can_network_configs[1].send == NULL) {
         return POST_RC_ERROR;

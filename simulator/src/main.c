@@ -25,6 +25,7 @@
 #include "post.h"
 #include "raster.h"
 #include "screen-api.h"
+#include "can-communications-router-api.h"
 
 #include "inputs-api.h"
 #include "leds-api.h"
@@ -320,6 +321,16 @@ EAGLETRT_STATIC void simulator_seed_ui_snapshot(void) {
     ui->lap_total = 10U;
 }
 
+enum CanCommunicationReturnCode simulator_can_send_primary(const struct CanCommunicationFrame *frame) {
+    (void)frame;
+    return CAN_COMMUNICATION_RC_OK;
+}
+
+enum CanCommunicationReturnCode simulator_can_send_secondary(const struct CanCommunicationFrame *frame) {
+    (void)frame;
+    return CAN_COMMUNICATION_RC_OK;
+}
+
 int main(void) {
     window = tigrWindow(SIMULATOR_WIDTH, SIMULATOR_HEIGHT, "Steering wheel simulator", 0);
 
@@ -338,6 +349,20 @@ int main(void) {
     struct CM4PostInitData cm4_post = {
         .leds_transmit = simulator_leds_transmit,
         .parameters_on_change = simulator_on_parameter_change,
+        .can_network_configs = {
+            [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                .cs_enter = NULL,
+                .cs_exit = NULL,
+                .on_receive = can_communications_router_api_receive_primary,
+                .send = simulator_can_send_primary,
+            },
+            [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                .cs_enter = NULL,
+                .cs_exit = NULL,
+                .on_receive = can_communications_router_api_receive_secondary,
+                .send = simulator_can_send_secondary,
+            },
+        },
     };
     cm4_state = cm4_fsm_run_state(cm4_state, &cm4_post);
     if (cm4_state == FSM_STATE_ERROR) {
