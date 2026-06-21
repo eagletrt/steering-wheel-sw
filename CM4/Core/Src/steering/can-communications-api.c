@@ -210,9 +210,7 @@ enum CanCommunicationReturnCode can_communications_api_process_tx(enum CanCommun
         if (return_code == PAL_RC_IO_ERROR) {
             /* User send callback reported failure on this frame; keep draining. */
             result = CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
-            continue;
-        }
-        if (return_code != PAL_RC_OK) {
+        } else if (return_code != PAL_RC_OK) {
             return CAN_COMMUNICATION_RC_ERROR;
         }
     }
@@ -224,8 +222,10 @@ enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommun
         return CAN_COMMUNICATION_RC_INVALID_NETWORK;
     }
 
-    const can_communications_receive_callback dispatcher = handler.networks[network].on_receive;
+    const can_communications_receive_callback dispatch = handler.networks[network].on_receive;
+
     enum CanCommunicationReturnCode result = CAN_COMMUNICATION_RC_OK;
+
     for (uint8_t i = 0; i < CAN_COMMUNICATIONS_RX_QUEUE_CAPACITY; ++i) {
         struct CanCommunicationFrame frame;
         const enum PalReturnCode return_code = pal_api_process_rx(&handler.networks[network].pal, &frame);
@@ -235,7 +235,7 @@ enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommun
         if (return_code != PAL_RC_OK) {
             return CAN_COMMUNICATION_RC_ERROR;
         }
-        if (dispatcher(&frame) != CAN_COMMUNICATION_RC_OK) {
+        if (dispatch(&frame) != CAN_COMMUNICATION_RC_OK) {
             /* Surface the failure but keep draining the queue. */
             result = CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR;
         }

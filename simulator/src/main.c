@@ -39,7 +39,7 @@
 #include "simulator-leds.h"
 
 #include "tigr.h"
-#include "eagletrt.h"
+#include "eagletrt-api.h"
 
 #define SIMULATOR_DASHBOARD_WIDTH (800)
 #define SIMULATOR_DASHBOARD_HEIGHT (480)
@@ -322,12 +322,12 @@ EAGLETRT_STATIC void simulator_seed_ui_snapshot(void) {
 }
 
 enum CanCommunicationReturnCode simulator_can_send_primary(const struct CanCommunicationFrame *frame) {
-    (void)frame;
+    EAGLETRT_API_UNUSED(frame);
     return CAN_COMMUNICATION_RC_OK;
 }
 
 enum CanCommunicationReturnCode simulator_can_send_secondary(const struct CanCommunicationFrame *frame) {
-    (void)frame;
+    EAGLETRT_API_UNUSED(frame);
     return CAN_COMMUNICATION_RC_OK;
 }
 
