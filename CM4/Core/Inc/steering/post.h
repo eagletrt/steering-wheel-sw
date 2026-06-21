@@ -11,6 +11,7 @@
 #define POST_H
 
 #include "leds.h"
+#include "can-communications.h"
 #include "parameters.h"
 
 enum PostReturnCode {
@@ -19,8 +20,9 @@ enum PostReturnCode {
 };
 
 struct PostInitData {
-    leds_transmit_callback leds_transmit;               /*!< Callback function required by leds module. */
-    parameters_on_change_callback parameters_on_change; /*!< Callback fired on every parameter transition. */
+    leds_transmit_callback leds_transmit;                                                       /*!< Callback function required by leds module. */
+    parameters_on_change_callback parameters_on_change;                                         /*!< Callback fired on every parameter transition. */
+    struct CanCommunicationsNetworkConfig can_network_configs[CAN_COMMUNICATION_NETWORK_COUNT]; /*!< Configuration for each CAN network. */
 };
 
 #endif // POST_H

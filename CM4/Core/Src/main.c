@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "can-communications-router-api.h"
 #include "dma.h"
 #include "fdcan.h"
 #include "tim.h"
@@ -147,6 +148,20 @@ int main(void) {
     struct PostInitData data = {
         .leds_transmit = tim_leds_transmit,
         .parameters_on_change = main_on_parameter_change,
+        .can_network_configs = {
+            [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_primary,
+                .send = fdcan_send_primary,
+            },
+            [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_secondary,
+                .send = fdcan_send_secondary,
+            },
+        },
     };
 
     current_state = fsm_run_state(current_state, &data);

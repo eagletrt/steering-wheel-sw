@@ -12,13 +12,15 @@
 #include "fsm.h"
 #include "leds.h"
 #include "parameters.h"
+#include "can-communications.h"
 
 /*!
  * \brief CM4 post-init payload, mirrored under a different struct tag.
  */
 struct CM4PostInitData {
-    leds_transmit_callback leds_transmit;               /*!< WS2812B transmit callback */
-    parameters_on_change_callback parameters_on_change; /*!< Fired on every parameter transition */
+    leds_transmit_callback leds_transmit;                                                       /*!< Callback function required by leds module. */
+    parameters_on_change_callback parameters_on_change;                                         /*!< Callback fired on every parameter transition. */
+    struct CanCommunicationsNetworkConfig can_network_configs[CAN_COMMUNICATION_NETWORK_COUNT]; /*!< Configuration for each CAN network. */
 };
 
 /*!
