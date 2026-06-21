@@ -117,7 +117,6 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_can_communications_api_init_
         return CAN_COMMUNICATION_RC_ERROR;
     }
 
-    handler.networks[network].initialized = true;
     return CAN_COMMUNICATION_RC_OK;
 }
 
@@ -157,8 +156,6 @@ enum CanCommunicationReturnCode can_communications_api_init(const struct CanComm
  * \retval CAN_COMMUNICATION_RC_NULL_POINTER if \p frame is NULL.
  * \retval CAN_COMMUNICATION_RC_INVALID_NETWORK if \p network is out of range.
  * \retval CAN_COMMUNICATION_RC_INVALID_LENGTH if \p frame->length is too large.
- * \retval CAN_COMMUNICATION_RC_NOT_INITIALIZED if \p network has not been
- *     initialised yet.
  * \retval CAN_COMMUNICATION_RC_QUEUE_FULL if the target queue is saturated.
  * \retval CAN_COMMUNICATION_RC_ERROR on a PAL-internal failure.
  */
@@ -171,9 +168,6 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_enqueue(enum CanCommunicatio
     }
     if (frame->length > CAN_COMMUNICATIONS_FRAME_DATA_SIZE) {
         return CAN_COMMUNICATION_RC_INVALID_LENGTH;
-    }
-    if (!handler.networks[network].initialized) {
-        return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
     }
 
     // PAL needs a non-const pointer
@@ -206,9 +200,6 @@ enum CanCommunicationReturnCode can_communications_api_process_tx(enum CanCommun
     if (network >= CAN_COMMUNICATION_NETWORK_COUNT) {
         return CAN_COMMUNICATION_RC_INVALID_NETWORK;
     }
-    if (!handler.networks[network].initialized) {
-        return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
-    }
 
     enum CanCommunicationReturnCode result = CAN_COMMUNICATION_RC_OK;
     for (uint8_t i = 0; i < CAN_COMMUNICATIONS_TX_QUEUE_CAPACITY; ++i) {
@@ -231,9 +222,6 @@ enum CanCommunicationReturnCode can_communications_api_process_tx(enum CanCommun
 enum CanCommunicationReturnCode can_communications_api_process_rx(enum CanCommunicationNetwork network) {
     if (network >= CAN_COMMUNICATION_NETWORK_COUNT) {
         return CAN_COMMUNICATION_RC_INVALID_NETWORK;
-    }
-    if (!handler.networks[network].initialized) {
-        return CAN_COMMUNICATION_RC_NOT_INITIALIZED;
     }
 
     const can_communications_receive_callback dispatcher = handler.networks[network].on_receive;

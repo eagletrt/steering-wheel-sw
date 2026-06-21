@@ -84,9 +84,6 @@ void setUp(void) {
     memset(captured_send, 0, sizeof(captured_send));
     memset(captured_receive, 0, sizeof(captured_receive));
 
-    handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized = false;
-    handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized = false;
-
     struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
     fill_default_configs(configs);
     can_communications_api_init(configs);
@@ -102,8 +99,10 @@ void test_init_success(void) {
     fill_default_configs(configs);
     enum CanCommunicationReturnCode rc = can_communications_api_init(configs);
     TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc, "Expected init to succeed on a valid configs array");
-    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized, "Primary initialised flag must be set");
-    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized, "Secondary initialised flag must be set");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].send, "Primary send callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].on_receive, "Primary receive callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].send, "Secondary send callback must be stored");
+    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].on_receive, "Secondary receive callback must be stored");
 }
 
 void test_init_null_configs(void) {
@@ -124,16 +123,6 @@ void test_init_null_on_receive_in_any_slot(void) {
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NULL_POINTER, can_communications_api_init(configs));
 }
 
-void test_init_stores_callbacks_in_handler(void) {
-    struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
-    fill_default_configs(configs);
-    can_communications_api_init(configs);
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].send, "Primary send callback must be stored");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].on_receive, "Primary receive callback must be stored");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_send, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].send, "Secondary send callback must be stored");
-    TEST_ASSERT_EQUAL_PTR_MESSAGE(fake_on_receive, handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].on_receive, "Secondary receive callback must be stored");
-}
-
 void test_init_accepts_null_critical_section_callbacks(void) {
     struct CanCommunicationsNetworkConfig configs[CAN_COMMUNICATION_NETWORK_COUNT];
     fill_default_configs(configs);
@@ -151,8 +140,6 @@ void test_init_resets_state_on_repeated_call(void) {
     enum CanCommunicationReturnCode second = can_communications_api_init(configs);
     TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, first, "First init must succeed");
     TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, second, "Re-init must succeed and reset state");
-    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY].initialized, "Primary must still be initialised after re-init");
-    TEST_ASSERT_TRUE_MESSAGE(handler.networks[CAN_COMMUNICATION_NETWORK_SECONDARY].initialized, "Secondary must still be initialised after re-init");
 }
 
 /*! \} */
@@ -180,12 +167,6 @@ void test_add_to_tx_invalid_length(void) {
     struct CanCommunicationFrame frame = make_frame(0x123U, 4U);
     frame.length = (uint8_t)(CAN_COMMUNICATIONS_FRAME_DATA_SIZE + 1U);
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_INVALID_LENGTH, can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
-}
-
-void test_add_to_tx_not_initialized(void) {
-    memset(&handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY], 0, sizeof(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY]));
-    struct CanCommunicationFrame frame = make_frame(0x123U, 4U);
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NOT_INITIALIZED, can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
 }
 
 void test_add_to_tx_queue_full(void) {
@@ -229,12 +210,6 @@ void test_add_to_rx_invalid_length(void) {
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_INVALID_LENGTH, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
 }
 
-void test_add_to_rx_not_initialized(void) {
-    memset(&handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY], 0, sizeof(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY]));
-    struct CanCommunicationFrame frame = make_frame(0x123U, 4U);
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NOT_INITIALIZED, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
-}
-
 /*! \} */
 
 /*!
@@ -244,11 +219,6 @@ void test_add_to_rx_not_initialized(void) {
 
 void test_process_tx_invalid_network(void) {
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_INVALID_NETWORK, can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_COUNT));
-}
-
-void test_process_tx_not_initialized(void) {
-    memset(&handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY], 0, sizeof(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY]));
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NOT_INITIALIZED, can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY));
 }
 
 void test_process_tx_empty_queue_succeeds_without_calling_send(void) {
@@ -322,11 +292,6 @@ void test_process_rx_invalid_network(void) {
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_INVALID_NETWORK, can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_COUNT));
 }
 
-void test_process_rx_not_initialized(void) {
-    memset(&handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY], 0, sizeof(handler.networks[CAN_COMMUNICATION_NETWORK_PRIMARY]));
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_NOT_INITIALIZED, can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY));
-}
-
 void test_process_rx_empty_queue_succeeds_without_dispatching(void) {
     enum CanCommunicationReturnCode rc = can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
     TEST_ASSERT_EQUAL_MESSAGE(CAN_COMMUNICATION_RC_OK, rc, "Empty drain must return OK");
@@ -396,7 +361,6 @@ int main(void) {
     RUN_TEST(test_init_null_configs);
     RUN_TEST(test_init_null_send_in_any_slot);
     RUN_TEST(test_init_null_on_receive_in_any_slot);
-    RUN_TEST(test_init_stores_callbacks_in_handler);
     RUN_TEST(test_init_accepts_null_critical_section_callbacks);
     RUN_TEST(test_init_resets_state_on_repeated_call);
 
@@ -404,17 +368,14 @@ int main(void) {
     RUN_TEST(test_add_to_tx_null_frame);
     RUN_TEST(test_add_to_tx_invalid_network);
     RUN_TEST(test_add_to_tx_invalid_length);
-    RUN_TEST(test_add_to_tx_not_initialized);
     RUN_TEST(test_add_to_tx_queue_full);
 
     RUN_TEST(test_add_to_rx_success);
     RUN_TEST(test_add_to_rx_null_frame);
     RUN_TEST(test_add_to_rx_invalid_network);
     RUN_TEST(test_add_to_rx_invalid_length);
-    RUN_TEST(test_add_to_rx_not_initialized);
 
     RUN_TEST(test_process_tx_invalid_network);
-    RUN_TEST(test_process_tx_not_initialized);
     RUN_TEST(test_process_tx_empty_queue_succeeds_without_calling_send);
     RUN_TEST(test_process_tx_drains_a_single_frame);
     RUN_TEST(test_process_tx_drains_every_queued_frame_in_one_call);
@@ -422,7 +383,6 @@ int main(void) {
     RUN_TEST(test_process_tx_surfaces_send_failure_but_keeps_draining);
 
     RUN_TEST(test_process_rx_invalid_network);
-    RUN_TEST(test_process_rx_not_initialized);
     RUN_TEST(test_process_rx_empty_queue_succeeds_without_dispatching);
     RUN_TEST(test_process_rx_drains_a_single_frame);
     RUN_TEST(test_process_rx_drains_every_queued_frame_in_one_call);

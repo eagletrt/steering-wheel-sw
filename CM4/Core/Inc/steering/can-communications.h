@@ -54,7 +54,6 @@ enum CanCommunicationReturnCode {
     CAN_COMMUNICATION_RC_NULL_POINTER,          /*!< A required pointer argument was NULL. */
     CAN_COMMUNICATION_RC_INVALID_NETWORK,       /*!< Network ID is out of range or already initialized. */
     CAN_COMMUNICATION_RC_INVALID_LENGTH,        /*!< Frame length is larger than CAN_COMMUNICATIONS_FRAME_DATA_SIZE. */
-    CAN_COMMUNICATION_RC_NOT_INITIALIZED,       /*!< API called on a network whose init never ran. */
     CAN_COMMUNICATION_RC_QUEUE_FULL,            /*!< Target queue has no room. */
     CAN_COMMUNICATION_RC_QUEUE_EMPTY,           /*!< Source queue is empty. */
     CAN_COMMUNICATION_RC_TRANSMISSION_ERROR,    /*!< The user-supplied send callback reported failure. */
@@ -169,7 +168,6 @@ struct CanCommunicationsNetworkState {
     struct PalHandler pal;                          /*!< PAL handler that owns the per-network queues */
     can_communications_send_callback send;          /*!< User-supplied "actually transmit" callback */
     can_communications_receive_callback on_receive; /*!< User-supplied per-frame dispatcher */
-    bool initialized;                               /*!< Whether init has run for this network */
 };
 
 /*!
