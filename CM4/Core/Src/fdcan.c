@@ -160,6 +160,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
         /* FDCAN1 interrupt Init */
         HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
+        HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
         /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
         /* USER CODE END FDCAN1_MspInit 1 */
@@ -197,6 +199,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
         /* FDCAN2 interrupt Init */
         HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+        HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
         /* USER CODE BEGIN FDCAN2_MspInit 1 */
 
         /* USER CODE END FDCAN2_MspInit 1 */
@@ -223,6 +227,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
         /* FDCAN1 interrupt Deinit */
         HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+        HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
         /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
         /* USER CODE END FDCAN1_MspDeInit 1 */
@@ -244,6 +249,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
         /* FDCAN2 interrupt Deinit */
         HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
+        HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
         /* USER CODE BEGIN FDCAN2_MspDeInit 1 */
 
         /* USER CODE END FDCAN2_MspDeInit 1 */
@@ -257,13 +263,44 @@ enum CanCommunicationReturnCode fdcan_send_primary(const struct CanCommunication
         .Identifier = frame->id,
         .IdType = FDCAN_STANDARD_ID,
         .TxFrameType = FDCAN_DATA_FRAME,
-        .DataLength = (uint32_t)(frame->length << 16U),
         .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
         .BitRateSwitch = FDCAN_BRS_OFF,
         .FDFormat = FDCAN_CLASSIC_CAN,
         .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
         .MessageMarker = 0
     };
+
+    switch (frame->length) {
+        case 0:
+            header.DataLength = FDCAN_DLC_BYTES_0;
+            break;
+        case 1:
+            header.DataLength = FDCAN_DLC_BYTES_1;
+            break;
+        case 2:
+            header.DataLength = FDCAN_DLC_BYTES_2;
+            break;
+        case 3:
+            header.DataLength = FDCAN_DLC_BYTES_3;
+            break;
+        case 4:
+            header.DataLength = FDCAN_DLC_BYTES_4;
+            break;
+        case 5:
+            header.DataLength = FDCAN_DLC_BYTES_5;
+            break;
+        case 6:
+            header.DataLength = FDCAN_DLC_BYTES_6;
+            break;
+        case 7:
+            header.DataLength = FDCAN_DLC_BYTES_7;
+            break;
+        case 8:
+            header.DataLength = FDCAN_DLC_BYTES_8;
+            break;
+        default:
+            return CAN_COMMUNICATION_RC_INVALID_LENGTH;
+    }
 
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &header, frame->data) != HAL_OK) {
         return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
@@ -276,13 +313,44 @@ enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicati
         .Identifier = frame->id,
         .IdType = FDCAN_STANDARD_ID,
         .TxFrameType = FDCAN_DATA_FRAME,
-        .DataLength = (uint32_t)(frame->length << 16U),
         .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
         .BitRateSwitch = FDCAN_BRS_OFF,
         .FDFormat = FDCAN_CLASSIC_CAN,
         .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
         .MessageMarker = 0
     };
+
+    switch (frame->length) {
+        case 0:
+            header.DataLength = FDCAN_DLC_BYTES_0;
+            break;
+        case 1:
+            header.DataLength = FDCAN_DLC_BYTES_1;
+            break;
+        case 2:
+            header.DataLength = FDCAN_DLC_BYTES_2;
+            break;
+        case 3:
+            header.DataLength = FDCAN_DLC_BYTES_3;
+            break;
+        case 4:
+            header.DataLength = FDCAN_DLC_BYTES_4;
+            break;
+        case 5:
+            header.DataLength = FDCAN_DLC_BYTES_5;
+            break;
+        case 6:
+            header.DataLength = FDCAN_DLC_BYTES_6;
+            break;
+        case 7:
+            header.DataLength = FDCAN_DLC_BYTES_7;
+            break;
+        case 8:
+            header.DataLength = FDCAN_DLC_BYTES_8;
+            break;
+        default:
+            return CAN_COMMUNICATION_RC_INVALID_LENGTH;
+    }
 
     if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &header, frame->data) != HAL_OK) {
         return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;

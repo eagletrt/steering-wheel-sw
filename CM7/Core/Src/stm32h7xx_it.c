@@ -57,7 +57,6 @@
 /* External variables --------------------------------------------------------*/
 extern DMA2D_HandleTypeDef hdma2d;
 extern JPEG_HandleTypeDef hjpeg;
-extern UART_HandleTypeDef hlpuart1;
 extern LTDC_HandleTypeDef hltdc;
 extern SD_HandleTypeDef hsd1;
 /* USER CODE BEGIN EV */
@@ -251,19 +250,6 @@ void HSEM1_IRQHandler(void) {
     /* USER CODE BEGIN HSEM1_IRQn 1 */
 
     /* USER CODE END HSEM1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles LPUART1 global interrupt.
-  */
-void LPUART1_IRQHandler(void) {
-    /* USER CODE BEGIN LPUART1_IRQn 0 */
-
-    /* USER CODE END LPUART1_IRQn 0 */
-    HAL_UART_IRQHandler(&hlpuart1);
-    /* USER CODE BEGIN LPUART1_IRQn 1 */
-
-    /* USER CODE END LPUART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

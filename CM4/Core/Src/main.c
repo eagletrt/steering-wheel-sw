@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "can-communications-router-api.h"
 #include "dma.h"
 #include "fdcan.h"
 #include "tim.h"
@@ -33,6 +32,7 @@
 #include "post.h"
 #include "ipc-queue-api.h"
 #include "shared.h"
+#include "can-communications-router-api.h"
 
 /* USER CODE END Includes */
 
