@@ -69,8 +69,6 @@ void Error_Handler(void);
 #define M4_STATUS_GPIO_Port GPIOH
 #define FATFS_INPUT_Pin GPIO_PIN_13
 #define FATFS_INPUT_GPIO_Port GPIOH
-#define BL_EN_Pin GPIO_PIN_5
-#define BL_EN_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 
