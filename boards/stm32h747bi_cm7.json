@@ -1,0 +1,30 @@
+{
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m7",
+    "extra_flags": "-DSTM32H747xx -DCORE_CM7",
+    "f_cpu": "480000000L",
+    "mcu": "stm32h747bit6"
+  },
+  "debug": {
+    "jlink_device": "STM32H747BI_M7",
+    "openocd_target": "stm32h7x_dual_bank",
+    "svd_path": "STM32H747_CM7.svd"
+  },
+  "frameworks": [
+    "stm32cube"
+  ],
+  "name": "Custom STM32H747BIT6 (Cortex-M7)",
+  "upload": {
+    "maximum_ram_size": 131072,
+    "maximum_size": 1048576,
+    "protocol": "stlink",
+    "protocols": [
+      "stlink",
+      "jlink",
+      "cmsis-dap"
+    ]
+  },
+  "url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h747bi.html",
+  "vendor": "Generic"
+}

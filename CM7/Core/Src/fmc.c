@@ -24,6 +24,38 @@
 /* USER CODE BEGIN 0 */
 
 #include "eagletrt-api.h"
+#include "micron-steer-sdram-api.h"
+
+void fmc_micron_steer_sdram_delay(uint32_t delay_ms) {
+    HAL_Delay(delay_ms);
+}
+
+enum MicronSteerSdramReturnCode fmc_micron_steer_send_command(struct MicronSteerSdramCommand *cmd) {
+    if (cmd == NULL) {
+        return MICRON_STEER_SDRAM_RC_ERROR;
+    }
+
+    FMC_SDRAM_CommandTypeDef command = {
+        .CommandMode = cmd->command_mode,
+        .CommandTarget = cmd->target_bank,
+        .AutoRefreshNumber = cmd->auto_refresh_number,
+        .ModeRegisterDefinition = cmd->mode_register_definition
+    };
+
+    if (HAL_SDRAM_SendCommand(&hsdram1, &command, MICRON_STEER_SDRAM_TIMEOUT) != HAL_OK) {
+        return MICRON_STEER_SDRAM_RC_ERROR;
+    }
+
+    return MICRON_STEER_SDRAM_RC_OK;
+}
+
+enum MicronSteerSdramReturnCode fmc_micron_steer_program_refresh_rate(uint32_t refresh_rate) {
+    if (HAL_SDRAM_ProgramRefreshRate(&hsdram1, refresh_rate) != HAL_OK) {
+        return MICRON_STEER_SDRAM_RC_ERROR;
+    }
+
+    return MICRON_STEER_SDRAM_RC_OK;
+}
 
 /* USER CODE END 0 */
 
@@ -69,6 +101,39 @@ void MX_FMC_Init(void) {
     }
 
     /* USER CODE BEGIN FMC_Init 2 */
+
+    // this commands before the actual init is used to recover from a self-refresh or power-down state, which can happen if the SDRAM is not properly initialized after a reset
+    struct MicronSteerSdramCommand recovery_cmd = {
+        .command_mode = MICRON_STEER_SDRAM_CLK_ENABLE_CMD,
+        .target_bank = FMC_SDRAM_CMD_TARGET_BANK1,
+        .auto_refresh_number = 1,
+        .mode_register_definition = 0,
+    };
+    fmc_micron_steer_send_command(&recovery_cmd); /* CKE high: exits self-refresh/power-down */
+    HAL_Delay(1);                                 /* covers tXSR (67 ns) with huge margin     */
+
+    recovery_cmd.command_mode = MICRON_STEER_SDRAM_PALL_CMD;
+    fmc_micron_steer_send_command(&recovery_cmd); /* close any row left open mid-burst        */
+
+    recovery_cmd.command_mode = MICRON_STEER_SDRAM_AUTOREFRESH_MODE_CMD;
+    recovery_cmd.auto_refresh_number = 8;
+    fmc_micron_steer_send_command(&recovery_cmd); /* re-stabilise the internal refresh state  */
+
+    // TODO: try configurations for speed
+    struct MicronSteerSdramContext micron_steer_sdram_ctx = {
+        .target_bank = FMC_SDRAM_CMD_TARGET_BANK1,
+        .refresh_mode = MICRON_STEER_SDRAM_AUTOREFRESH_MODE_CMD, // TODO: try MICRON_STEER_SELFREFRESH_MODE_CMD
+        .refresh_rate = MICRON_STEER_SDRAM_REFRESH_COUNT,
+        .burst_length = MICRON_STEER_SDRAM_BURST_LENGTH_1,
+        .burst_type = MICRON_STEER_SDRAM_BURST_TYPE_SEQUENTIAL,
+        .cas_latency = MICRON_STEER_SDRAM_CAS_LATENCY_3,
+        .operation_mode = MICRON_STEER_SDRAM_OPERATING_MODE_STANDARD,
+        .write_burst_mode = MICRON_STEER_SDRAM_WRITEBURST_MODE_SINGLE,
+    };
+
+    if (micron_steer_sdram_api_init(&micron_steer_sdram_ctx, fmc_micron_steer_sdram_delay, fmc_micron_steer_send_command, fmc_micron_steer_program_refresh_rate) != MICRON_STEER_SDRAM_RC_OK) {
+        Error_Handler();
+    }
 
     /* USER CODE END FMC_Init 2 */
 }
