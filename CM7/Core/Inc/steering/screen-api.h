@@ -193,4 +193,14 @@ enum ScreenReturnCode screen_api_set_tire_temperatures(int16_t front_left, int16
  */
 enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
 
+/*!
+ * \brief Check if any of the given boxes need to be redrawn.
+ *
+ * \param boxes Pointer to an array of Box structures to check.
+ * \param count Number of boxes in the array.
+ *
+ * \return true if any box needs to be redrawn, false otherwise.
+ */
+bool screen_api_is_to_redraw(struct Box *boxes, uint16_t count);
+
 #endif // SCREEN_API_H

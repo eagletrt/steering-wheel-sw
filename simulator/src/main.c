@@ -331,6 +331,10 @@ enum CanCommunicationReturnCode simulator_can_send_secondary(const struct CanCom
     return CAN_COMMUNICATION_RC_OK;
 }
 
+void swap_framebuffers(void) {
+    /* No-op: the simulator draws directly into the window framebuffer. */
+}
+
 int main(void) {
     window = tigrWindow(SIMULATOR_WIDTH, SIMULATOR_HEIGHT, "Steering wheel simulator", 0);
 
@@ -374,6 +378,7 @@ int main(void) {
     simulator_seed_ui_snapshot();
 
     struct FsmData fsm_data;
+    fsm_data.swap_framebuffers = swap_framebuffers;
 
     while (!tigrClosed(window)) {
         const uint32_t tick = simulator_tick_ms();

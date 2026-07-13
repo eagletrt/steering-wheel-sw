@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "eagletrt.h"
+
 /* USER CODE END 0 */
 
 DMA2D_HandleTypeDef hdma2d;
@@ -95,57 +97,40 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
 /* USER CODE BEGIN 1 */
 
-void dma2d_draw_line(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t length, struct Color color) {
-    while (DMA2D->CR & DMA2D_CR_START)
-        ;
+#define DMA2D_FB_WIDTH 800U /*!< Framebuffer stride, in pixels */
 
-    uint32_t dst = (uint32_t)(framebuffer + (y * 800 + x) * 4);
+EAGLETRT_STATIC volatile uint32_t dma2d_error_counter = 0; /*!< Count of DMA2D errors (TEIF or CEIF) since boot */
 
-    if (color.a == 0xFF) {
-        DMA2D->CR = DMA2D_R2M;
-        DMA2D->OCOLR = color.argb;
-        DMA2D->OMAR = dst;
-        DMA2D->OOR = 800 - length;
-        DMA2D->NLR = (1 << 16) | length;
-    } else {
-        DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
-
-        DMA2D->FGCOLR = color.argb;
-        DMA2D->FGPFCCR = DMA2D_INPUT_A8 | (color.a << DMA2D_FGPFCCR_ALPHA_Pos) | DMA2D_FGPFCCR_AM_0;
-        DMA2D->FGMAR = dst;
-        DMA2D->FGOR = 800 - length;
-
-        DMA2D->BGMAR = dst;
-        DMA2D->BGPFCCR = DMA2D_INPUT_ARGB8888;
-        DMA2D->BGOR = 800 - length;
-
-        DMA2D->OMAR = dst;
-        DMA2D->OOR = 800 - length;
-        DMA2D->NLR = (1 << 16) | length;
+enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+    if (framebuffer == NULL) {
+        return RASTER_RC_NULL_POINTER;
+    }
+    if (w == 0 || h == 0 || color.a == 0) {
+        return RASTER_RC_OK; /* nothing to draw */
     }
 
-    DMA2D->CR |= DMA2D_CR_START;
-}
+    /* Wait for any previous fill, then clear stale flags before starting. */
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
+    DMA2D->IFCR = DMA2D_IFCR_CTCIF | DMA2D_IFCR_CTEIF | DMA2D_IFCR_CCEIF;
 
-void dma2d_draw_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
-    while (DMA2D->CR & DMA2D_CR_START)
-        ;
-
-    uint32_t dst = (uint32_t)(framebuffer + (y * 800 + x) * 4);
-    uint32_t oor = 800 - w;
+    uint32_t dst = (uint32_t)(framebuffer + (uint32_t)y * DMA2D_FB_WIDTH + x);
+    uint32_t oor = DMA2D_FB_WIDTH - w;
 
     if (color.a == 0xFF) {
-        DMA2D->CR = (0x3UL << DMA2D_CR_MODE_Pos);
         DMA2D->OCOLR = color.argb;
         DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
         DMA2D->OMAR = dst;
         DMA2D->OOR = oor;
-        DMA2D->NLR = ((uint32_t)h << 16) | w;
-    } else if (color.a > 0) {
-        DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
-
+        DMA2D->NLR = ((uint32_t)w << DMA2D_NLR_PL_Pos) | h; // PL=width [29:16], NL=height [15:0]
+        DMA2D->CR = (0x3UL << DMA2D_CR_MODE_Pos);
+    } else {
+        /* Constant colour + constant alpha blended over the framebuffer. Foreground is an A8
+         * source whose per-pixel alpha is REPLACED (AM_0) by the constant alpha, so the colour
+         * comes from FGCOLR and the FG memory content is irrelevant (same trick as
+         * dma2d_draw_line). ARGB8888 here would read the framebuffer as the colour -> garbage. */
         DMA2D->FGCOLR = color.argb & 0x00FFFFFF;
-        DMA2D->FGPFCCR = DMA2D_INPUT_ARGB8888 | DMA2D_FGPFCCR_AM_0 | ((uint32_t)color.a << DMA2D_FGPFCCR_ALPHA_Pos);
+        DMA2D->FGPFCCR = DMA2D_INPUT_A8 | DMA2D_FGPFCCR_AM_0 | ((uint32_t)color.a << DMA2D_FGPFCCR_ALPHA_Pos);
         DMA2D->FGMAR = dst;
         DMA2D->FGOR = oor;
 
@@ -156,9 +141,27 @@ void dma2d_draw_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_
         DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
         DMA2D->OMAR = dst;
         DMA2D->OOR = oor;
-        DMA2D->NLR = ((uint32_t)h << 16) | w;
+        DMA2D->NLR = ((uint32_t)w << DMA2D_NLR_PL_Pos) | h; // PL=width [29:16], NL=height [15:0]
+        DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
     }
+
     DMA2D->CR |= DMA2D_CR_START;
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
+    if (DMA2D->ISR & (DMA2D_ISR_TEIF | DMA2D_ISR_CEIF)) {
+        dma2d_error_counter++;
+    }
+
+    return RASTER_RC_OK;
+}
+
+uint32_t dma2d_get_error_count(void) {
+    return dma2d_error_counter;
+}
+
+void dma2d_draw_drain(void) {
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
 }
 
 /* USER CODE END 1 */

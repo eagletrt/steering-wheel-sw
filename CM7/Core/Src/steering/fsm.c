@@ -21,6 +21,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "eagletrt-api.h"
 #include "ipc-ui-data-api.h"
 #include "screen-api.h"
+#include "screen.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -125,8 +126,21 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     if (screen_api_sync_data(ipc_ui_data_api_get()) != SCREEN_RC_OK) {
         next_state = FSM_STATE_ERROR;
     }
-    if (screen_api_update(fsm_data->tick) != SCREEN_RC_OK) {
-        next_state = FSM_STATE_ERROR;
+    switch (screen_api_update(fsm_data->tick)) {
+        case SCREEN_RC_OK:
+            break;
+        case SCREEN_RC_RENDERED: {
+            if (fsm_data->swap_framebuffers == NULL) {
+                next_state = FSM_STATE_ERROR;
+                break;
+            }
+            fsm_data->swap_framebuffers();
+            break;
+        }
+
+        case SCREEN_RC_ERROR:
+        case SCREEN_RC_NULL_POINTER:
+            next_state = FSM_STATE_ERROR;
     }
 
     /*** USER CODE END DO_IDLE ***/
