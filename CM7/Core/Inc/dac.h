@@ -42,6 +42,23 @@ void MX_DAC1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+/*!
+ * \brief Set DAC value to 0 and starts it
+ */
+void backlight_init(void);
+
+/*!
+ * \brief Set DAC value to \c percent of the maximum value
+ *
+ * \param percent Value between 0.0 and 1.0
+ */
+void backlight_set_percent(float percent);
+
+/*!
+ * \brief Set DAC value to 0
+ */
+void backlight_off(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

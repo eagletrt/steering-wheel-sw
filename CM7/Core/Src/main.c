@@ -39,6 +39,9 @@
 #include "eagletrt-api.h"
 #include "post.h"
 
+#include <stdio.h>
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,9 +75,11 @@ void PeriphCommonClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
+bool to_process_input_events = false;
+
 void HAL_HSEM_FreeCallback(uint32_t SemMask) {
     if (EAGLETRT_API_BIT_GET(SemMask, HSEM_INPUT_ID)) {
-        ipc_queue_api_read_and_process_all(input_events_api_handle_event);
+        to_process_input_events = true;
         HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_INPUT_ID));
     }
 }
@@ -183,6 +188,13 @@ HSEM notification */
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
 
+    HAL_Delay(10);
+    HAL_GPIO_WritePin(LCD_DISP_EN_GPIO_Port, LCD_DISP_EN_Pin, GPIO_PIN_SET);
+
+    backlight_init();
+    HAL_Delay(250);
+    backlight_set_percent(1.0f);
+
     struct PostInitData post_init_data = {
         .draw_rectangle = ltdc_draw_rectangle,
     };
@@ -197,6 +209,10 @@ HSEM notification */
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+        if (to_process_input_events) {
+            ipc_queue_api_read_and_process_all(input_events_api_handle_event);
+            to_process_input_events = false;
+        }
         fsm_data.tick = HAL_GetTick();
         current_state = fsm_run_state(current_state, &fsm_data);
         /* USER CODE END WHILE */
@@ -343,7 +359,10 @@ void Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
+    char *error_msg = "Error_Handler() called!\n";
     while (1) {
+        HAL_UART_Transmit(&huart1, (uint8_t *)error_msg, strlen(error_msg), HAL_MAX_DELAY);
+        HAL_Delay(1000);
     }
     /* USER CODE END Error_Handler_Debug */
 }

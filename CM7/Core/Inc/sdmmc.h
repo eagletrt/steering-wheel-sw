@@ -30,6 +30,8 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include <stdbool.h>
+
 /* USER CODE END Includes */
 
 extern SD_HandleTypeDef hsd1;
@@ -41,6 +43,15 @@ extern SD_HandleTypeDef hsd1;
 void MX_SDMMC1_SD_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+/*!
+ * \brief Whether an SD card answered during MX_SDMMC1_SD_Init.
+ *
+ * \details There is no card-detect GPIO on this board, so presence is probed by
+ *     the init itself. Anything that wants to mount FatFs or read assets must
+ *     check this first and degrade gracefully when it returns false.
+ */
+bool sdmmc_sd_card_present(void);
 
 /* USER CODE END Prototypes */
 

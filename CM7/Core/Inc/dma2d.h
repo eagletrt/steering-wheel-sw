@@ -72,6 +72,22 @@ uint32_t dma2d_get_error_count(void);
  */
 void dma2d_draw_drain(void);
 
+/*!
+ * \brief Copy a full framebuffer (SCREEN_WIDTH * SCREEN_HEIGHT ARGB8888 pixels) via DMA2D M2M.
+ *
+ * \details Used right after a framebuffer swap to seed the freshly-becoming-draw
+ *     buffer with the currently-visible frame, so the next partial-mode render
+ *     starts on top of the frame the user is looking at instead of a two-frames-old
+ *     back buffer. Busy-waits until the DMA2D engine reports completion.
+ *
+ * \param dst Destination framebuffer (write-only).
+ * \param src Source framebuffer (read-only).
+ *
+ * \retval RASTER_RC_OK on success.
+ * \retval RASTER_RC_NULL_POINTER if \p dst or \p src is NULL.
+ */
+enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32_t *src);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

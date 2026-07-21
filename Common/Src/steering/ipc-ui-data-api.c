@@ -14,6 +14,11 @@
 
 #include "ipc-ui-data-api.h"
 #include "shared-ipc-ui.h"
+#include <string.h>
+
+void ipc_ui_data_api_init(void) {
+    memset(&ipc_ui_data, 0, sizeof(ipc_ui_data));
+}
 
 struct IPCUIData *ipc_ui_data_api_get(void) {
     return &ipc_ui_data;

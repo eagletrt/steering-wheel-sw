@@ -17,7 +17,7 @@
 /*!
  * \brief Empties the IPC input queue by resetting the whole memory to 0s.
  */
-void ipc_queue_api_reset(void);
+void ipc_queue_api_init(void);
 
 /*!
  * \brief Read and process all input events in the IPC input queue.

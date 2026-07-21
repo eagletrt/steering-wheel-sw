@@ -33,6 +33,7 @@
 #include "ipc-queue-api.h"
 #include "shared.h"
 #include "can-communications-router-api.h"
+#include "inputs-shared.h"
 
 /* USER CODE END Includes */
 

@@ -97,7 +97,8 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
 /* USER CODE BEGIN 1 */
 
-#define DMA2D_FB_WIDTH 800U /*!< Framebuffer stride, in pixels */
+#define DMA2D_FB_WIDTH 800U  /*!< Framebuffer stride, in pixels */
+#define DMA2D_FB_HEIGHT 480U /*!< Framebuffer height, in lines */
 
 EAGLETRT_STATIC volatile uint32_t dma2d_error_counter = 0; /*!< Count of DMA2D errors (TEIF or CEIF) since boot */
 
@@ -162,6 +163,37 @@ uint32_t dma2d_get_error_count(void) {
 void dma2d_draw_drain(void) {
     while (DMA2D->CR & DMA2D_CR_START) {
     }
+}
+
+enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32_t *src) {
+    if (dst == NULL || src == NULL) {
+        return RASTER_RC_NULL_POINTER;
+    }
+
+    /* Wait for any previous fill, then clear stale flags before starting. */
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
+    DMA2D->IFCR = DMA2D_IFCR_CTCIF | DMA2D_IFCR_CTEIF | DMA2D_IFCR_CCEIF;
+
+    /* Foreground = source framebuffer, straight ARGB8888, no PFC, no offset. */
+    DMA2D->FGMAR = (uint32_t)src;
+    DMA2D->FGOR = 0;
+    DMA2D->FGPFCCR = DMA2D_INPUT_ARGB8888;
+
+    DMA2D->OMAR = (uint32_t)dst;
+    DMA2D->OOR = 0;
+    DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
+
+    DMA2D->NLR = ((uint32_t)DMA2D_FB_WIDTH << DMA2D_NLR_PL_Pos) | DMA2D_FB_HEIGHT;
+    DMA2D->CR = (0x0UL << DMA2D_CR_MODE_Pos); /* M2M, no PFC, no blend */
+    DMA2D->CR |= DMA2D_CR_START;
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
+    if (DMA2D->ISR & (DMA2D_ISR_TEIF | DMA2D_ISR_CEIF)) {
+        dma2d_error_counter++;
+    }
+
+    return RASTER_RC_OK;
 }
 
 /* USER CODE END 1 */

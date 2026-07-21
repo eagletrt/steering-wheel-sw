@@ -316,6 +316,11 @@ void ltdc_swap_framebuffers(void) {
 
     __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
     __HAL_LTDC_RELOAD_CONFIG(&hltdc);
+
+    /* Seed the new draw buffer with the currently-visible frame so partial
+     * renders after this point overlay changes on the frame the user is
+     * looking at, not on stale content left in the back buffer. */
+    (void)dma2d_enqueue_framebuffer_copy(draw_framebuffer, display_framebuffer);
 }
 
 enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
