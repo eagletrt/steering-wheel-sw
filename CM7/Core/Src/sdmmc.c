@@ -24,10 +24,10 @@
 
 /* No card-detect GPIO on this board: presence is known only from whether the
  * card answers the HAL_SD_Init enumeration (CMD0/CMD8/ACMD41). */
-static bool sdmmc_card_present = false;
+static bool sdmmc_card_is_present = false;
 
-bool sdmmc_sd_card_present(void) {
-    return sdmmc_card_present;
+bool sdmmc_sd_card_is_present(void) {
+    return sdmmc_card_is_present;
 }
 
 /* USER CODE END 0 */
@@ -51,8 +51,8 @@ void MX_SDMMC1_SD_Init(void) {
     hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
     hsd1.Init.ClockDiv = 0;
 
-    sdmmc_card_present = (HAL_SD_Init(&hsd1) == HAL_OK);
-    if (!sdmmc_card_present) {
+    sdmmc_card_is_present = (HAL_SD_Init(&hsd1) == HAL_OK);
+    if (!sdmmc_card_is_present) {
         /* Release pins, clock and NVIC so the dead peripheral can't interfere;
          * a later hot-insert retry just calls MX_SDMMC1_SD_Init again. */
         HAL_SD_DeInit(&hsd1);

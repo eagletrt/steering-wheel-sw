@@ -97,8 +97,8 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
 /* USER CODE BEGIN 1 */
 
-#define DMA2D_FB_WIDTH 800U  /*!< Framebuffer stride, in pixels */
-#define DMA2D_FB_HEIGHT 480U /*!< Framebuffer height, in lines */
+#define DMA2D_FRAMEBUFFER_WIDTH (800U)  /*!< Framebuffer stride, in pixels */
+#define DMA2D_FRAMEBUFFER_HEIGHT (480U) /*!< Framebuffer height, in lines */
 
 EAGLETRT_STATIC volatile uint32_t dma2d_error_counter = 0; /*!< Count of DMA2D errors (TEIF or CEIF) since boot */
 
@@ -115,8 +115,8 @@ enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x,
     }
     DMA2D->IFCR = DMA2D_IFCR_CTCIF | DMA2D_IFCR_CTEIF | DMA2D_IFCR_CCEIF;
 
-    uint32_t dst = (uint32_t)(framebuffer + (uint32_t)y * DMA2D_FB_WIDTH + x);
-    uint32_t oor = DMA2D_FB_WIDTH - w;
+    uint32_t dst = (uint32_t)(framebuffer + (uint32_t)y * DMA2D_FRAMEBUFFER_WIDTH + x);
+    uint32_t oor = DMA2D_FRAMEBUFFER_WIDTH - w;
 
     if (color.a == 0xFF) {
         DMA2D->OCOLR = color.argb;
@@ -184,7 +184,7 @@ enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32
     DMA2D->OOR = 0;
     DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
 
-    DMA2D->NLR = ((uint32_t)DMA2D_FB_WIDTH << DMA2D_NLR_PL_Pos) | DMA2D_FB_HEIGHT;
+    DMA2D->NLR = ((uint32_t)DMA2D_FRAMEBUFFER_WIDTH << DMA2D_NLR_PL_Pos) | DMA2D_FRAMEBUFFER_HEIGHT;
     DMA2D->CR = (0x0UL << DMA2D_CR_MODE_Pos); /* M2M, no PFC, no blend */
     DMA2D->CR |= DMA2D_CR_START;
     while (DMA2D->CR & DMA2D_CR_START) {

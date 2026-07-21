@@ -51,7 +51,7 @@ void MX_SDMMC1_SD_Init(void);
  *     the init itself. Anything that wants to mount FatFs or read assets must
  *     check this first and degrade gracefully when it returns false.
  */
-bool sdmmc_sd_card_present(void);
+bool sdmmc_sd_card_is_present(void);
 
 /* USER CODE END Prototypes */
 

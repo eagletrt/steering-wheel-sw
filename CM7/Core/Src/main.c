@@ -191,9 +191,9 @@ HSEM notification */
     HAL_Delay(10);
     HAL_GPIO_WritePin(LCD_DISP_EN_GPIO_Port, LCD_DISP_EN_Pin, GPIO_PIN_SET);
 
-    backlight_init();
+    dac_backlight_init();
     HAL_Delay(250);
-    backlight_set_percent(1.0f);
+    dac_backlight_set_percent(1.0f);
 
     struct PostInitData post_init_data = {
         .draw_rectangle = ltdc_draw_rectangle,
