@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include "fsm.h"
@@ -52,11 +53,23 @@ EAGLETRT_STATIC Tigr *window;
 EAGLETRT_STATIC int16_t simulator_knob_positions[INPUTS_SHARED_KNOB_ID_COUNT];
 EAGLETRT_STATIC bool simulator_paddle_held[INPUTS_SHARED_BUTTON_ID_COUNT];
 
+/* Double-buffered dashboard framebuffers, one played back by the "LTDC"
+ * scanout (the Tigr window blit) while the other is being drawn into by
+ * the "DMA2D" callback (simulator_draw_rectangle). Same convention as
+ * CM7/Core/Src/ltdc.c: draw and display alternate on every swap. */
+EAGLETRT_STATIC TPixel simulator_framebuffer_a[SIMULATOR_DASHBOARD_WIDTH * SIMULATOR_DASHBOARD_HEIGHT];
+EAGLETRT_STATIC TPixel simulator_framebuffer_b[SIMULATOR_DASHBOARD_WIDTH * SIMULATOR_DASHBOARD_HEIGHT];
+EAGLETRT_STATIC TPixel *simulator_display_framebuffer = simulator_framebuffer_a;
+EAGLETRT_STATIC TPixel *simulator_draw_framebuffer = simulator_framebuffer_b;
+
 /*!
- * \brief Raster rectangle callback backed by the Tigr framebuffer.
+ * \brief Raster rectangle callback backed by the draw framebuffer.
  *
- * \details Clamps to the window size so an off-by-one in some upstream
- *     layout cannot bleed into invalid memory.
+ * \details Stand-in for CM7 \c ltdc_draw_rectangle: DMA2D there enqueues
+ *     fills into \c draw_framebuffer, we walk the pixels ourselves. Only
+ *     the dashboard area (0..SIMULATOR_DASHBOARD_HEIGHT) is bounded by
+ *     this callback — the LED strip lives outside the LTDC-simulated
+ *     framebuffers.
  *
  * \param x Top-left corner X coordinate.
  * \param y Top-left corner Y coordinate.
@@ -69,14 +82,14 @@ EAGLETRT_STATIC bool simulator_paddle_held[INPUTS_SHARED_BUTTON_ID_COUNT];
  * \retval RASTER_RC_ERROR if an error occurred (e.g. invalid parameters)
  */
 EAGLETRT_STATIC enum RasterReturnCode simulator_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
-    if (x >= SIMULATOR_WIDTH || y >= SIMULATOR_HEIGHT) {
+    if (x >= SIMULATOR_DASHBOARD_WIDTH || y >= SIMULATOR_DASHBOARD_HEIGHT) {
         return RASTER_RC_OK;
     }
-    const uint16_t x_end = ((uint32_t)x + w > SIMULATOR_WIDTH) ? SIMULATOR_WIDTH : (uint16_t)(x + w);
-    const uint16_t y_end = ((uint32_t)y + h > SIMULATOR_HEIGHT) ? SIMULATOR_HEIGHT : (uint16_t)(y + h);
+    const uint16_t x_end = ((uint32_t)x + w > SIMULATOR_DASHBOARD_WIDTH) ? SIMULATOR_DASHBOARD_WIDTH : (uint16_t)(x + w);
+    const uint16_t y_end = ((uint32_t)y + h > SIMULATOR_DASHBOARD_HEIGHT) ? SIMULATOR_DASHBOARD_HEIGHT : (uint16_t)(y + h);
     for (uint16_t row = y; row < y_end; row++) {
         for (uint16_t col = x; col < x_end; col++) {
-            TPixel *dst = &window->pix[(row * window->w) + col];
+            TPixel *dst = &simulator_draw_framebuffer[(row * SIMULATOR_DASHBOARD_WIDTH) + col];
             const uint8_t a = color.a;
             dst->r = (uint8_t)(((color.r * a) + (dst->r * (255U - a))) / 255U);
             dst->g = (uint8_t)(((color.g * a) + (dst->g * (255U - a))) / 255U);
@@ -331,6 +344,44 @@ enum CanCommunicationReturnCode simulator_can_send_secondary(const struct CanCom
     return CAN_COMMUNICATION_RC_OK;
 }
 
+/*!
+ * \brief Mirror of ltdc_swap_framebuffers: flip pointers, then copy the new
+ *     display buffer into the new draw buffer.
+ *
+ * \details Same two steps as CM7 on hardware: pointer swap so future
+ *     draw_rectangle calls target what was previously the display buffer,
+ *     followed by a DMA2D M2M copy of the currently-visible frame into
+ *     the new draw buffer. Without the second step, partial-mode renders
+ *     would overlay changed boxes on a two-frames-old background — this
+ *     memcpy seeds the draw buffer with the same content the user is
+ *     looking at.
+ */
+EAGLETRT_STATIC void simulator_swap_framebuffers(void) {
+    TPixel *tmp = simulator_display_framebuffer;
+    simulator_display_framebuffer = simulator_draw_framebuffer;
+    simulator_draw_framebuffer = tmp;
+
+    memcpy(simulator_draw_framebuffer, simulator_display_framebuffer,
+           (size_t)SIMULATOR_DASHBOARD_WIDTH * (size_t)SIMULATOR_DASHBOARD_HEIGHT * sizeof(TPixel));
+}
+
+/*!
+ * \brief Copy the currently displayed framebuffer to the Tigr window.
+ *
+ * \details Stand-in for the LTDC scanout: on hardware LTDC pushes the
+ *     display framebuffer straight to the panel at ~60 Hz; here we blit
+ *     one row at a time into the top SIMULATOR_DASHBOARD_HEIGHT rows of
+ *     the Tigr framebuffer. The LED strip lives underneath and is painted
+ *     separately by simulator_draw_led_strip.
+ */
+EAGLETRT_STATIC void simulator_blit_display_framebuffer(void) {
+    for (int y = 0; y < SIMULATOR_DASHBOARD_HEIGHT; y++) {
+        memcpy(&window->pix[y * window->w],
+               &simulator_display_framebuffer[y * SIMULATOR_DASHBOARD_WIDTH],
+               (size_t)SIMULATOR_DASHBOARD_WIDTH * sizeof(TPixel));
+    }
+}
+
 int main(void) {
     window = tigrWindow(SIMULATOR_WIDTH, SIMULATOR_HEIGHT, "Steering wheel simulator", 0);
 
@@ -374,6 +425,7 @@ int main(void) {
     simulator_seed_ui_snapshot();
 
     struct FsmData fsm_data;
+    fsm_data.swap_framebuffers = simulator_swap_framebuffers;
 
     while (!tigrClosed(window)) {
         const uint32_t tick = simulator_tick_ms();
@@ -396,6 +448,7 @@ int main(void) {
             break;
         }
 
+        simulator_blit_display_framebuffer();
         simulator_draw_led_strip();
         tigrUpdate(window);
     }

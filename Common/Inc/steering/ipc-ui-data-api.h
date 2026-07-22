@@ -20,6 +20,13 @@
 #include "ipc-ui-data.h"
 
 /*!
+ * \brief Initialise the shared IPCUIData instance.
+ *
+ * \details This function is generally called by the producer core at startup.
+ */
+void ipc_ui_data_api_init(void);
+
+/*!
  * \brief Return the shared IPCUIData instance.
  *
  * \details Both cores get a pointer to the same physical memory thanks to

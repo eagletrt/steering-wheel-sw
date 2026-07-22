@@ -18,7 +18,7 @@ DEFINE_FFF_GLOBALS;
 FAKE_VOID_FUNC(read_and_process_callback, struct InputsSharedEvent);
 
 void setUp() {
-    ipc_queue_api_reset();
+    ipc_queue_api_init();
     RESET_FAKE(read_and_process_callback);
     FFF_RESET_HISTORY();
 }

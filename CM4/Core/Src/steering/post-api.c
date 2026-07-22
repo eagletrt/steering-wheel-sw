@@ -12,6 +12,8 @@
 #include "leds-api.h"
 #include "parameters-api.h"
 #include "can-communications-api.h"
+#include "ipc-queue-api.h"
+#include "ipc-ui-data-api.h"
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (post_init_data == NULL ||
@@ -48,6 +50,9 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (can_communications_api_init(post_init_data->can_network_configs) != CAN_COMMUNICATION_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
+
+    ipc_queue_api_init();
+    ipc_ui_data_api_init();
 
     return ret_code;
 }

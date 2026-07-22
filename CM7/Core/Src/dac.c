@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+#include "eagletrt-api.h"
+
 /* USER CODE END 0 */
 
 DAC_HandleTypeDef hdac1;
@@ -107,5 +109,25 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef *dacHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+#define BACKLIGHT_DIMMING_MAX_VALUE ((1U << 12) - 1U) // 12-bit DAC
+
+void dac_backlight_init(void) {
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0U); // retval ignored because \c USE_FULL_ASSERT is not defined and \c &hdac1 is not NULL
+    if (HAL_DAC_Start(&hdac1, DAC_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+void dac_backlight_set_percent(float percent) {
+    percent = EAGLETRT_API_CLAMP(percent, 0.0F, 1.0F);
+
+    uint32_t code = percent * (float)BACKLIGHT_DIMMING_MAX_VALUE;
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, code); // retval ignored because \c USE_FULL_ASSERT is not defined and \c &hdac1 is not NULL
+}
+
+void dac_backlight_off(void) {
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0U); // retval ignored because \c USE_FULL_ASSERT is not defined and \c &hdac1 is not NULL
+}
 
 /* USER CODE END 1 */

@@ -11,7 +11,7 @@
 #include "shared-ipc.h"
 #include <stdio.h>
 
-void ipc_queue_api_reset(void) {
+void ipc_queue_api_init(void) {
     ipc_input = (struct IPCInputQueue){ 0 };
 }
 

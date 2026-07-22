@@ -27,7 +27,6 @@
 
 EAGLETRT_STATIC uint32_t framebuffer1[SCREEN_WIDTH * SCREEN_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));
-
 EAGLETRT_STATIC uint32_t framebuffer2[SCREEN_WIDTH * SCREEN_HEIGHT]
     __attribute__((section(".framebuffer"), aligned(32)));
 
@@ -95,27 +94,10 @@ void MX_LTDC_Init(void) {
 void HAL_LTDC_MspInit(LTDC_HandleTypeDef *ltdcHandle) {
 
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
     if (ltdcHandle->Instance == LTDC) {
         /* USER CODE BEGIN LTDC_MspInit 0 */
 
         /* USER CODE END LTDC_MspInit 0 */
-
-        /** Initializes the peripherals clock
-  */
-        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC;
-        PeriphClkInitStruct.PLL3.PLL3M = 1;
-        PeriphClkInitStruct.PLL3.PLL3N = 18;
-        PeriphClkInitStruct.PLL3.PLL3P = 2;
-        PeriphClkInitStruct.PLL3.PLL3Q = 2;
-        PeriphClkInitStruct.PLL3.PLL3R = 2;
-        PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_3;
-        PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
-        PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
-        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-            Error_Handler();
-        }
-
         /* LTDC clock enable */
         __HAL_RCC_LTDC_CLK_ENABLE();
 
@@ -326,19 +308,37 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef *ltdcHandle) {
 /* USER CODE BEGIN 1 */
 
 void ltdc_swap_framebuffers(void) {
-    // Swap the display and draw framebuffers
+    dma2d_draw_drain();
+
     uint32_t *temp = display_framebuffer;
     display_framebuffer = draw_framebuffer;
     draw_framebuffer = temp;
 
-    // Update the LTDC layer's framebuffer address
     __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
     __HAL_LTDC_RELOAD_CONFIG(&hltdc);
+
+    /* Seed the new draw buffer with the currently-visible frame so partial
+     * renders after this point overlay changes on the frame the user is
+     * looking at, not on stale content left in the back buffer. */
+    (void)dma2d_enqueue_framebuffer_copy(draw_framebuffer, display_framebuffer);
 }
 
 enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
-    dma2d_draw_rectangle(draw_framebuffer, x, y, w, h, color);
-    return RASTER_RC_OK;
+    if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
+        return RASTER_RC_OK;
+    }
+    if (x + w > SCREEN_WIDTH) {
+        w = (int)SCREEN_WIDTH - x;
+    }
+    if (y + h > SCREEN_HEIGHT) {
+        h = (int)SCREEN_HEIGHT - y;
+    }
+
+    return dma2d_enqueue_rectangle(draw_framebuffer, x, y, w, h, color);
+}
+
+enum RasterReturnCode ltdc_clear_screen(void) {
+    return dma2d_enqueue_rectangle(draw_framebuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (struct Color){ .argb = 0xFF000000 });
 }
 
 /* USER CODE END 1 */
