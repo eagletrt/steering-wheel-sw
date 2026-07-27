@@ -16,19 +16,13 @@
 #define fsm_do_idle cm4_fsm_do_idle
 #define fsm_do_error cm4_fsm_do_error
 #define fsm_do_flash cm4_fsm_do_flash
-#define fsm_do_ts_on cm4_fsm_do_ts_on
 #define fsm_do_autonomous cm4_fsm_do_autonomous
-#define fsm_do_drive cm4_fsm_do_drive
 #define fsm_init_done cm4_fsm_init_done
 #define fsm_init_error cm4_fsm_init_error
 #define fsm_start_flash cm4_fsm_start_flash
 #define fsm_error_detected cm4_fsm_error_detected
-#define fsm_ts_on_request cm4_fsm_ts_on_request
 #define fsm_autonomous_enable cm4_fsm_autonomous_enable
 #define fsm_flash_done cm4_fsm_flash_done
-#define fsm_ts_cancel cm4_fsm_ts_cancel
-#define fsm_ts_on_accepted cm4_fsm_ts_on_accepted
-#define fsm_ts_off cm4_fsm_ts_off
 #define fsm_autonomous_disable cm4_fsm_autonomous_disable
 #define fsm_run_state cm4_fsm_run_state
 

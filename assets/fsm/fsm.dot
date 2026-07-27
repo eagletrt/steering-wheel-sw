@@ -19,8 +19,6 @@ digraph "steering_wheel_fsm" {
         fillcolor="#ffc1c1"
     ]
 
-    ts_on
-    drive
     autonomous
 
     // ========================
@@ -32,24 +30,10 @@ digraph "steering_wheel_fsm" {
     // ========================
     // Idle transitions
     // ========================
-    idle -> ts_on        [label="ts_on_request"]
     idle -> autonomous  [label="autonomous_enable"]
     idle -> flash       [label="start_flash"]
     idle -> error       [label="error_detected"]
     idle -> idle
-
-    // ========================
-    // TS-on transitions
-    // ========================
-    ts_on -> drive [label="ts_on_accepted"]
-    ts_on -> idle  [label="ts_cancel"]
-    ts_on -> error [label="error_detected"]
-
-    // ========================
-    // Drive transitions
-    // ========================
-    drive -> idle  [label="ts_off"]
-    drive -> error [label="error_detected"]
 
     // ========================
     // Autonomous transitions
